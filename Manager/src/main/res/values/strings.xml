@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2018 The Android Open Source Project
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<resources>
+    <string name="app_name">Rxposed</string>
+
+    <!-- Menu strings -->
+    <string name="shopping_cart">Shopping Cart</string>
+    <string name="settings">Settings</string>
+    <string name="modules">Modules</string>
+    <string name="home">Rxposed</string>
+    <string name="deeplink">Deep Link</string>
+
+    <!-- Screen strings -->
+    <string name="step_one">Step One</string>
+    <string name="step_two">Step Two</string>
+    <string name="deep_link_instructions">Type your deep link args</string>
+    <string name="settings_fragment_text">Settings Fragment</string>
+    <string name="modules_fragment_text">Modules Fragment</string>
+    <string name="shopping_fragment_text">Shopping Fragment</string>
+    <string name="navigate_destination_button">Navigate to destination</string>
+    <string name="navigate_action_button">Navigate with action</string>
+    <string name="next_step_button">Navigate next step</string>
+    <string name="finish_button">Finish Flow</string>
+    <string name="send_deep_link_notification_button">Send deep link notification</string>
+    <string name="framework_active">Xposed Framework version  is active.</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="vpn">vpn</string>
+    <string name="apps">applist</string>
+    <string name="zygote_reboot">zygote重启(root)</string>
+    <string name="app_reboot">应用重启</string>
+    <string name="app_activity_reboot">应用重启</string>
+    <string name="applist_searchTips">应用搜索</string>
+    <string name="setRootTips">设置ROOT</string>
+    <string name="RootShowTips">当前ROOT设置</string>
+    <string name="Edit">编辑</string>
+    <string name="setRootPathMessage">设置获取root权限的命令，或者是文件路径</string>
+    <string name="useGoogleLocationServicesPrompt">useGoogleLocationServicesPrompt</string>
+    <string name="activityTips">激活提示:</string>
+    <string name="activityMessage">rxposed激活需要提供root权限,通过ptrace的方式注入zygtoe进程</string>
+    <string name="rxrebootMessage">rxposed管理应用在rxposed激活后需要重启一次来刷新状态,是否立即重启应用</string>
+    <string name="rebootMessage">重新启动应用程序</string>
+    <string name="zygoteMessage">系统软重启是通过重启zygote实现了，重启后rxposed激活状态将消除</string>
+    <string name="appTips">应用提示:</string>
+    <string name="signalStrength">signalStrength</string>
+    <string name="excellent">excellent</string>
+    <string name="ssid">ssid</string>
+    <string name="system_app">显示系统应用</string>
+    <string name="user_app">显示用户应用</string>
+    <string name="securityType">securityType</string>
+    <string name="password">password</string>
+    <string name="showPassword">showPassword</string>
+    <string name="connect">connect</string>
+</resources>

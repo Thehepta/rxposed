@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <Button
+        android:layout_marginTop="@dimen/dp_10"
+        android:id="@+id/app_filter_system"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/system_app"
+        android:textColor="?android:textColorPrimary"
+        android:textSize="@dimen/customEntry" />
+
+    <Button
+        android:id="@+id/app_filter_user"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/user_app"
+        android:textSize="@dimen/customEntry"
+        android:textColor="?android:textColorPrimary" />
+</LinearLayout>

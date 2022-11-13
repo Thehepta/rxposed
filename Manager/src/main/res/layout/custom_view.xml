@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <Button
+        android:layout_marginTop="@dimen/dp_10"
+        android:id="@+id/zygote_reboot"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/zygote_reboot"
+        android:textColor="?android:textColorPrimary"
+        android:textSize="@dimen/customEntry"
+        />
+    <Button
+        android:id="@+id/app_reboot"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/app_reboot"
+        android:textSize="@dimen/customEntry"
+        android:textColor="?android:textColorPrimary" />
+</LinearLayout>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2018 The Android Open Source Project
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+    app:startDestination="@+id/home_dest">
+    <fragment
+        android:id="@+id/home_dest"
+        android:name="hepta.rxposed.manager.fragment.HomeFragment"
+        android:label="@string/home"
+        tools:layout="@layout/fragment_home">
+
+        <!-- TODO STEP 7.1 - Add action with transitions -->
+        <action
+            android:id="@+id/next_action"
+            app:destination="@+id/flow_step_one_dest"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+
+        <!-- TODO END STEP 7.1 -->
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/flow_step_one_dest"
+        android:name="hepta.rxposed.manager.fragment.FlowStepFragment"
+        tools:layout="@layout/flow_step_one_fragment">
+        <argument
+            android:name="flowStepNumber"
+            app:argType="integer"
+            android:defaultValue="1"/>
+
+        <action
+            android:id="@+id/next_action"
+            app:destination="@+id/flow_step_two_dest">
+        </action>
+    </fragment>
+
+    <fragment
+        android:id="@+id/flow_step_two_dest"
+        android:name="hepta.rxposed.manager.fragment.FlowStepFragment"
+        tools:layout="@layout/flow_step_two_fragment">
+
+        <argument
+            android:name="flowStepNumber"
+            app:argType="integer"
+            android:defaultValue="2"/>
+
+        <action
+            android:id="@+id/next_action"
+            app:popUpTo="@id/home_dest">
+        </action>
+    </fragment>
+
+    <!-- TODO STEP 4 Create a new navigation destination pointing to SettingsFragment -->
+    <fragment
+        android:id="@+id/settings_dest"
+        android:name="hepta.rxposed.manager.fragment.SettingsFragment"
+        android:label="@string/settings"
+        tools:layout="@layout/fragment_settings" />
+    <!-- TODO END STEP 4 -->
+
+
+    <fragment
+        android:id="@+id/modules_dest"
+        android:name="hepta.rxposed.manager.fragment.modules.ModulesFragment"
+        android:label="@string/modules"
+        tools:layout="@layout/fragment_modules" />
+
+    <fragment
+        android:id="@+id/apps_dest"
+        android:name="hepta.rxposed.manager.fragment.apps.ApplistFragment"
+        android:label="@string/apps"
+        tools:layout="@layout/fragment_applist" />
+
+    <fragment
+        android:id="@+id/vpn_dest"
+        android:name="hepta.rxposed.manager.fragment.VpnFragment"
+        android:label="@string/vpn"
+        tools:layout="@layout/fragment_vpn" />
+
+    <fragment
+        android:id="@+id/deeplink_dest"
+        android:name="hepta.rxposed.manager.fragment.DeepLinkFragment"
+        android:label="@string/deeplink"
+        tools:layout="@layout/deeplink_fragment">
+
+        <argument
+            android:name="myarg"
+            android:defaultValue="Android!"/>
+        <!-- TODO STEP 11.1 - Add a deep link to www.example.com/{myarg}/ -->
+        <!--<deepLink app:uri="www.example.com/{myarg}" />-->
+        <!-- TODO END STEP 11.1 -->
+    </fragment>
+</navigation>

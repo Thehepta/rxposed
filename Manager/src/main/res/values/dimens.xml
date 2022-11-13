@@ -1,0 +1,40 @@
+<!--
+  ~ Copyright 2018, The Android Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="item_horizontal_margin">8dp</dimen>
+    <dimen name="dp_10">10dp</dimen>
+    <dimen name="nav_header_vertical_spacing">8dp</dimen>
+    <dimen name="app_bar_height">180dp</dimen>
+    <dimen name="app_icon_size">48dp</dimen>
+    <dimen name="switchbar_text_padding">56dp</dimen>
+
+
+
+    <dimen name="sample_button_spacing">2dp</dimen>
+    <dimen name="headerTitle">20sp</dimen>
+    <dimen name="headerMarginVertical">16dp</dimen>
+    <dimen name="headerMarginStart">12dp</dimen>
+
+    <dimen name="sample_button_height">56dp</dimen>
+
+    <!-- Custom view example -->
+    <dimen name="customTitle">14sp</dimen>
+    <dimen name="customEntry">18sp</dimen>
+
+</resources>
