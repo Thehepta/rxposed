@@ -39,11 +39,13 @@ public class RxposedApp extends Application {
     }
 
     private void initConfig() {
-        ModuleInfoProvider.getInstance();
-        for (ModuleInfo moduleInfo : ModuleInfoProvider.getInstance().getModuleList()){
-            LogUtil.LogD(moduleInfo.getAppName());
-        }
-        InjectTool.su_path = getSharedPreferences("rxposed",MODE_PRIVATE).getString("supath","su");
+        new Thread(){
+            @Override
+            public void run() {
+                ModuleInfoProvider.getInstance();
+                InjectTool.su_path = getSharedPreferences("rxposed",MODE_PRIVATE).getString("supath","su");
+            }
+        }.start();
     }
 
     static {

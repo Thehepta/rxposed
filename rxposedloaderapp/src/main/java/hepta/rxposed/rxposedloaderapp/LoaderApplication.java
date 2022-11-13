@@ -42,6 +42,8 @@ public class LoaderApplication extends Application{
 //        callpm();
 
 //        LoadFramework();
+        GetConfigByProvider(getApplicationContext());
+
     }
 
 
@@ -63,6 +65,7 @@ public class LoaderApplication extends Application{
 
     }
 
+    public native Context getApplicationContext();
 
     //onServiceConnected 调用时机会延迟，这个方案不太好
     private void callaidl() {
@@ -94,9 +97,8 @@ public class LoaderApplication extends Application{
     static {
 //        Thread.dumpStack();
         System.loadLibrary("Loadtest");
-//
-//
-        SystemContext = getSystemContext();
+
+//        SystemContext = getSystemContext();
 //        currentUid = android.os.Process.myUid();
 //        if(RxposedContext != null){
 //            LoadFramework();
@@ -214,10 +216,10 @@ public class LoaderApplication extends Application{
         Object mActivityThread = currentActivityThread.invoke(null);
         //final ArrayMap<String, WeakReference<LoadedApk>> mPackages = new ArrayMap<>();
         //获取 mPackages 属性
-        Field mPackagesField = mActivityThreadClass.getDeclaredField("mPackages");
-        mPackagesField.setAccessible(true);
+//        Field mPackagesField = mActivityThreadClass.getDeclaredField("mPackages");
+//        mPackagesField.setAccessible(true);
         //获取 mPackages 属性的值
-        ArrayMap<String, Object> mPackages = (ArrayMap<String, Object>) mPackagesField.get(mActivityThread);
+//        ArrayMap<String, Object> mPackages = (ArrayMap<String, Object>) mPackagesField.get(mActivityThread);
 //        if (mPackages.size() >= 2) {
 //            return;
 //        }

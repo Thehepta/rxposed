@@ -8,7 +8,7 @@ import android.os.RemoteException;
 
 import androidx.annotation.Nullable;
 
-
+//aidl服务，进行进程通讯，目前弃用，android service启动时机不可控，不是立即启动
 public class RxConfigService extends Service {
 
 

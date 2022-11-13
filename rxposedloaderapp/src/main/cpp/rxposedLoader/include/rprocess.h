@@ -72,7 +72,7 @@ public:
     AppinfoNative *GetAppInfoNative(JNIEnv *env, string pkgName, string Entry_class, string Entry_method);
     bool LoadFramework(JNIEnv *env);
     jobject getRxposedContext(JNIEnv *env);
-    jobject getApplicationContext(JNIEnv *env);
+    jobject getApplicationContext(JNIEnv *env,jstring pkgName);
     bool GetConfigByProvider(JNIEnv *env);
     bool is_serviceProcess(JNIEnv *env, jstring pJstring);
     void load_apk_And_exe_Class_Method(JNIEnv *pEnv, AppinfoNative *appinfo);

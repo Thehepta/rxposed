@@ -35,8 +35,6 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
         return -1;
     }
 
-
-//    rprocess * rprocess = rprocess::GetInstance();
 //    rprocess->setRxposedContext(rprocess->getApplicationContext(pEnv));
 //    rprocess->setProcessName("hepta.rxposed.rxposedloaderapp");
 //    rprocess->setAUTHORITY("hepta.rxposed.manager:hepta.rxposed.manager.provider");
@@ -66,3 +64,15 @@ void constructor_101() { // __attribute__((constructor))修饰 最先执行
 //
 //}
 
+
+extern "C"
+JNIEXPORT jobject JNICALL
+Java_hepta_rxposed_rxposedloaderapp_LoaderApplication_getApplicationContext(JNIEnv *env,
+                                                                            jobject thiz) {
+    // TODO: implement getApplicationContext()
+    jstring java_pkaName = env->NewStringUTF("hepta.rxposed.rxposedloaderapp");
+
+    rprocess * rprocess = rprocess::GetInstance();
+    jobject context = rprocess->getApplicationContext(env,java_pkaName);
+    return context;
+}
