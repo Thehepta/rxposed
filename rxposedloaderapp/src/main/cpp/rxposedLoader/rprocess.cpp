@@ -27,8 +27,8 @@ bool rprocess::Init(JNIEnv *env, jstring name) {
 
 }
 
-bool rprocess::is_serviceProcess(JNIEnv *env, jstring name) {
-    processName= env->GetStringUTFChars(name, nullptr);
+bool rprocess::is_providerHostProcess(JNIEnv *env, jstring pJstring) {
+    processName= env->GetStringUTFChars(pJstring, nullptr);
 //    LOGE("pkg compare provider:%s  processName:%s",providerHost_pkgName.c_str(),processName.c_str());
     if(!strncmp(providerHost_pkgName.c_str(), processName.c_str(), providerHost_pkgName.size())){
         return true;
@@ -175,32 +175,22 @@ bool rprocess::LoadFramework(JNIEnv *env){
         }
 
     }
-//    load_apk(env,str, nullptr, nullptr,class_name,method_name);
     return true;
 }
 
 jobject rprocess::getRxposedContext(JNIEnv *env)
 {
-    //获取Activity Thread的实例对象
-    jclass activityThreadClass = env->FindClass("android/app/ActivityThread");
-    if(!NDK_ExceptionCheck(env,"find class android/app/ActivityThread failed")){
-        return nullptr;
-    }
-    jmethodID currentActivityThread = env->GetStaticMethodID(activityThreadClass, "currentActivityThread", "()Landroid/app/ActivityThread;");
-    jobject at = env->CallStaticObjectMethod(activityThreadClass, currentActivityThread);
-    if(at == nullptr){
-//        LOGE("Failed to call currentActivityThread,at is null");
-        return nullptr;
-    }
-    //ContextImpl，RxposedContext
-    jmethodID getApplication = env->GetMethodID(activityThreadClass, "getRxposedContext", "()Landroid/app/ContextImpl;");
-    jobject context = env->CallObjectMethod(at, getApplication);
-    if(context == nullptr){
-        LOGE("Failed to call getRxposedContext,context is null");
-        return nullptr;
-    }
-    env->DeleteLocalRef(at);
-    return context;
+    char sdk[128] = "0";
+    __system_property_get("ro.system.build.version.release", sdk);
+    int sdk_verison = atoi(sdk);
+    switch (sdk_verison) {
+        case 9:
+            return getSystemContext(env);
+        case 10:
+            return getApplicationContext(env,processName);
+
+    };
+
 }
 
 
@@ -234,10 +224,7 @@ void rprocess::load_apk_And_exe_Class_Method(JNIEnv *pEnv, AppinfoNative *appinf
     jobject dexClassLoader = pEnv->NewObject(DexClassLoader_cls,init,apk,dexOutput,nativelib,LoadModuleClassLoader);
     pEnv->DeleteGlobalRef(LoadModuleClassLoader);
     LoadModuleClassLoader = pEnv->NewGlobalRef(dexClassLoader);
-
 //    LoadModuleClassLoader = pEnv->NewGlobalRef(dexClassLoader);
-
-
     if(pEnv->ExceptionCheck()){
         goto out2;
     }
@@ -267,7 +254,7 @@ void rprocess::load_apk_And_exe_Class_Method(JNIEnv *pEnv, AppinfoNative *appinf
     pEnv->DeleteLocalRef(entryClass_obj);
 }
 
-jobject rprocess::getApplicationContext(JNIEnv *env,jstring pkgName) {
+jobject rprocess::getApplicationContext(JNIEnv *env,string pkgName) {
 
     //获取Activity Thread的实例对象
     jclass mActivityThreadClass = env->FindClass("android/app/ActivityThread");
@@ -299,11 +286,12 @@ jobject rprocess::getApplicationContext(JNIEnv *env,jstring pkgName) {
     jclass PackageManager_cls = env->FindClass("android/content/pm/PackageManager");
     jmethodID pm_getApplicationInfo_method = env->GetMethodID(PackageManager_cls, "getApplicationInfo", "(Ljava/lang/String;I)Landroid/content/pm/ApplicationInfo;");
     jobject PackageManager = env->CallObjectMethod(context, getPackageManager_method);
+    jobject java_pkaName = env->NewStringUTF(pkgName.c_str());
 
 
     jfieldID mCompatibilityInfoDefaultField = env->GetStaticFieldID(mCompatibilityInfoClass,"DEFAULT_COMPATIBILITY_INFO","Landroid/content/res/CompatibilityInfo;");
     jobject mCompatibilityInfo = env->GetStaticObjectField(mCompatibilityInfoClass,mCompatibilityInfoDefaultField);
-    jobject applicationInfo = env->CallObjectMethod(PackageManager,pm_getApplicationInfo_method,pkgName,0);
+    jobject applicationInfo = env->CallObjectMethod(PackageManager,pm_getApplicationInfo_method,java_pkaName,0);
     jmethodID createAppContext_method = env->GetStaticMethodID(mContextImplClass, "createAppContext", "(Landroid/app/ActivityThread;Landroid/app/LoadedApk;)Landroid/app/ContextImpl;");
     jobject  mLoadedApk = env->CallObjectMethod(at,getLoadedApkMethod,applicationInfo,mCompatibilityInfo);
     jobject ApplicationContext = env->CallStaticObjectMethod(mContextImplClass,createAppContext_method,at,mLoadedApk);

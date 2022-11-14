@@ -70,9 +70,7 @@ JNIEXPORT jobject JNICALL
 Java_hepta_rxposed_rxposedloaderapp_LoaderApplication_getApplicationContext(JNIEnv *env,
                                                                             jobject thiz) {
     // TODO: implement getApplicationContext()
-    jstring java_pkaName = env->NewStringUTF("hepta.rxposed.rxposedloaderapp");
-
     rprocess * rprocess = rprocess::GetInstance();
-    jobject context = rprocess->getApplicationContext(env,java_pkaName);
+    jobject context = rprocess->getApplicationContext(env,"hepta.rxposed.rxposedloaderapp");
     return context;
 }

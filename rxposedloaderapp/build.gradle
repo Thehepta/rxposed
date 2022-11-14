@@ -2,6 +2,10 @@ plugins {
     id 'com.android.application'
 }
 
+//自动修改编译cmake 中so的名字，java中加载的so的名字也会修改
+def InjectSo = "Loadtest"
+
+
 android {
     compileSdk 32
 
@@ -15,12 +19,16 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
-                arguments '-DRXDEBUG=OFF'   //给cmake传参数
+                arguments "-DRXDEBUG=OFF" ,"-DSONAME=${InjectSo}"   //给cmake传参数
                 cppFlags '-DRXDEBUG=0'      //源文件文件编译宏参数
 //                cppFlags "-frtti -fexceptions -Wpointer-arith"
                 abiFilters 'armeabi-v7a', 'arm64-v8a'
             }
         }
+
+        //给java传递参数
+        buildConfigField "String", "APP_NAME", "\"${InjectSo}\""
+
     }
 
     buildTypes {
@@ -48,7 +56,6 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.5.1'
     implementation 'com.google.android.material:material:1.7.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation project(path: ':RxposedTool')
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'

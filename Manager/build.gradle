@@ -4,6 +4,55 @@ plugins {
 
 }
 
+
+
+
+def FileCopy(src_file,dst_dir,src_name,dst_name){
+
+    copy {
+        from src_file
+        into dst_dir
+        rename(src_name,dst_name)
+        println("copy file success:"+src_file)
+        println("copy file success:"+dst_dir+":"+dst_name)
+    }
+}
+
+def build_Module_copy_file(type,taskname,file_name){
+    def command
+    def Asset_dir
+    if(type.equals("debug")){
+        command = "../gradlew -p ../${taskname} externalNativeBuildDebug"
+        Asset_dir = "mergeDebugAssets"
+        println("gradlr:"+"externalNativeBuildDebug")
+    }
+    if(type.equals("release")){
+        println("gradlr:"+"externalNativeBuildRelease")
+        Asset_dir = "mergeReleaseAssets"
+        command = "../gradlew -p ../${taskname} externalNativeBuildRelease"
+    }
+    exec {
+        try {
+            executable 'bash'
+            args '-c', command
+            println("the command is execute success")
+        } catch (GradleException e) {
+            println("the command is execute failed")
+        }
+
+    }
+    def arch_arm64 = "arm64-v8a"
+    def arm64_fromFile = rootProject.file("${taskname}/build/intermediates/cmake/${type}/obj/${arch_arm64}/${file_name}")
+    def arm64_intoDir = rootProject.file("Manager/build/intermediates/assets/${type}/${Asset_dir}")
+    FileCopy(arm64_fromFile,arm64_intoDir,file_name,"arm64_${file_name}")
+
+    def arch_armv7 = "armeabi-v7a"
+    def armv7_fromFile = rootProject.file("${taskname}/build/intermediates/cmake/${type}/obj/${arch_armv7}/${file_name}")
+    def armv7_intoDir = rootProject.file("Manager/build/intermediates/assets/${type}/${Asset_dir}")
+    FileCopy(armv7_fromFile,armv7_intoDir,file_name,"armv7_${file_name}")
+
+}
+
 android {
     compileSdk 32
 
@@ -20,6 +69,8 @@ android {
                 cppFlags ''
             }
         }
+
+
     }
 
     buildTypes {
@@ -49,7 +100,29 @@ android {
     dataBinding {
         enabled = true
     }
+
+    android.applicationVariants.all { variant ->
+        variant.outputs.each { variantOutput ->
+//            println("applicationVariants.name----------------${variant.name}")
+//            println("applicationVariants.description----------------${variant.description}")
+//            println("applicationVariants.mergeAssets----------------${variant.mergeAssets}")
+//            println("applicationVariants.name----------------${variant.mergeAssets.name}")
+
+
+            variant.mergeAssetsProvider.get().doLast {
+
+                build_Module_copy_file(variant.name,"rxposedloaderapp","librxposedLoader.so")
+                build_Module_copy_file(variant.name,"RxposedTool","InjectTool")
+
+
+            }
+
+        }
+    }
 }
+
+
+
 
 dependencies {
 

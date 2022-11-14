@@ -11,12 +11,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include "NDKhelper.h"
-//#include "../../../../../../../../Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/asm-generic/mman-common.h"
-//#include "../../../../../../../../Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/fcntl.h"
-//#include "../../../../../../../../Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/linux/mman.h"
-//#include "../../../../../../../../Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/sys/mman.h"
-//#include "../../../../../../../../Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/vector"
-
 using namespace std;
 
 
@@ -41,18 +35,7 @@ class rprocess {
         }
     };
 
-
-
-
-
 public:
-
-
-
-
-
-
-
 
     static rprocess *GetInstance()
     {
@@ -72,9 +55,9 @@ public:
     AppinfoNative *GetAppInfoNative(JNIEnv *env, string pkgName, string Entry_class, string Entry_method);
     bool LoadFramework(JNIEnv *env);
     jobject getRxposedContext(JNIEnv *env);
-    jobject getApplicationContext(JNIEnv *env,jstring pkgName);
+    jobject getApplicationContext(JNIEnv *env,string pkgName);
     bool GetConfigByProvider(JNIEnv *env);
-    bool is_serviceProcess(JNIEnv *env, jstring pJstring);
+    bool is_providerHostProcess(JNIEnv *env, jstring pJstring);
     void load_apk_And_exe_Class_Method(JNIEnv *pEnv, AppinfoNative *appinfo);
 
 
@@ -87,8 +70,6 @@ protected:
     static rprocess  *instance_; //引用性声明
 
 private:
-
-
     rprocess(const rprocess& other);
     rprocess & operator=(const rprocess & other);
     rprocess();

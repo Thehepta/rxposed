@@ -95,7 +95,7 @@ void android_os_Process_setArg_call(JNIEnv* env, jobject clazz, jstring name){
     android_os_Process_setArg_org(env,clazz,name);
     bool Destroy = false;
 //    LOGE("android_os_Process_setArg_call name %s ",env->GetStringUTFChars(name, nullptr));
-    if(rprocess::GetInstance()->is_serviceProcess(env, name)){
+    if(rprocess::GetInstance()->is_providerHostProcess(env, name)){
         //service process
         system_property_get_addr = (int (*)( char*, char *))DobbySymbolResolver (nullptr, "__system_property_get");
         DobbyHook((void *)system_property_get_addr, (void *)system_property_get_call, (void **)&system_property_get_org);

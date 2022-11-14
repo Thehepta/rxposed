@@ -17,7 +17,7 @@ project("framework")
 add_subdirectory(rxposedLoader)
 
 add_library( # Sets the name of the library.
-        Loadtest
+        ${SONAME}
         # Sets the library as a shared library.
         SHARED
         # Provides a relative path to your source file(s).
@@ -26,6 +26,7 @@ add_library( # Sets the name of the library.
 # in android studio build.gradle
 if (${RXDEBUG} STREQUAL OFF)
     message("this is RXDEBUG OFF")
+    message("this is ${SONAME}")
 else()
     message("this is RXDEBUG ON")
 endif()
@@ -33,7 +34,6 @@ endif()
 
 
 
-message("${RXDEBUG}")
 
 find_library( # Sets the name of the path variable.
         log-lib
@@ -43,7 +43,7 @@ find_library( # Sets the name of the path variable.
         log )
 
 target_link_libraries( # Specifies the target library.
-        Loadtest
+        ${SONAME}
         #        hookbase                         #直接链接就可以，不用进行导入等操作
         # Links the target library to the log library
         # included in the NDK.

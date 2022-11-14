@@ -22,6 +22,7 @@ import androidx.annotation.RequiresApi;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+//需要编译一次，会自动生成
 import hepta.rxposed.manager.IRxposedService;
 
 public class LoaderApplication extends Application{
@@ -96,8 +97,7 @@ public class LoaderApplication extends Application{
 
     static {
 //        Thread.dumpStack();
-        System.loadLibrary("Loadtest");
-
+        System.loadLibrary(BuildConfig.APP_NAME);
 //        SystemContext = getSystemContext();
 //        currentUid = android.os.Process.myUid();
 //        if(RxposedContext != null){
