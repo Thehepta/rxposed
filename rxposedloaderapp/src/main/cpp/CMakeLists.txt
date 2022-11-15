@@ -24,6 +24,9 @@ add_library( # Sets the name of the library.
         InjectProxySo.cpp)
 
 # in android studio build.gradle
+
+message("cmake project name is  ${CMAKE_PROJECT_NAME}")
+
 if (${RXDEBUG} STREQUAL OFF)
     message("this is RXDEBUG OFF")
     message("this is ${SONAME}")

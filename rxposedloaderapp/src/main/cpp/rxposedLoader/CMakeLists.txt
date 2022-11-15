@@ -13,6 +13,17 @@ cmake_minimum_required(VERSION 3.18.1)
 # Gradle automatically packages shared libraries with your APK.
 
 # 设置目标导入路径，这里是一行
+
+message("cmake project name is  ${CMAKE_PROJECT_NAME}")
+
+if (${RXDEBUG} STREQUAL OFF)
+    message("this is RXDEBUG OFF")
+else()
+    message("this is RXDEBUG ON")
+endif()
+
+
+
 add_library(libdobby STATIC IMPORTED)
 set_target_properties(libdobby PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/libs/${ANDROID_ABI}/libdobby.a)
 

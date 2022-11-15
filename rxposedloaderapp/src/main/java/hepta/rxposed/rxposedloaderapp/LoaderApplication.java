@@ -97,7 +97,7 @@ public class LoaderApplication extends Application{
 
     static {
 //        Thread.dumpStack();
-        System.loadLibrary(BuildConfig.APP_NAME);
+        System.loadLibrary(BuildConfig.SO_NAME);
 //        SystemContext = getSystemContext();
 //        currentUid = android.os.Process.myUid();
 //        if(RxposedContext != null){

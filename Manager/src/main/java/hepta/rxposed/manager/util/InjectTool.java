@@ -13,6 +13,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 
+import hepta.rxposed.manager.BuildConfig;
+
 public  class InjectTool {
 
     // Used to load the 'injecttool' library on application startup.
@@ -23,11 +25,18 @@ public  class InjectTool {
      */
 
     public static String su_path;
-
-
+    public static String arm64_so = "arm64_lib"+ BuildConfig.Rxposed_Inject_So+".so";
+    public static String armv7_so = "armv7_lib"+ BuildConfig.Rxposed_Inject_So+".so";
+    public static String arm64_InjectTool = "arm64_"+"InjectTool";
+    public static String armv7_InjectTool = "armv7_"+"InjectTool";
+    public static String HostName = BuildConfig.APPLICATION_ID;
+    public static String HostProviderName = BuildConfig.APPLICATION_ID+".Provider";
+    public static String InjectArg = HostName+":"+HostProviderName;
     public static void zygote_reboot() throws IOException {
         rootRun(su_path,"killall zygote");
     }
+
+
     public static void zygote_reboot(Context context) throws IOException {
         Intent intent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); //与正常页面跳转一样可传递序列化数据,在Launch页面内获得
@@ -40,23 +49,23 @@ public  class InjectTool {
 
     public static boolean zygote_patrace(Context context) throws IOException {
 
-        String InjectTool_arm64_path = context.getFilesDir().getAbsolutePath()+ File.separator+"InjectTool_arm64";
-        String InjectTool_armv7_path = context.getFilesDir().getAbsolutePath()+ File.separator+"InjectTool_armv7";
-        String InjectSo_arm64_path   = context.getFilesDir().getAbsolutePath()+ File.separator+"libhookbase_arm64.so";
-        String InjectSo_armv7_path   = context.getFilesDir().getAbsolutePath()+ File.separator+"libhookbase_armv7.so";
+        String InjectTool_arm64_path = context.getFilesDir().getAbsolutePath()+ File.separator+arm64_InjectTool;
+        String InjectTool_armv7_path = context.getFilesDir().getAbsolutePath()+ File.separator+armv7_InjectTool;
+        String InjectSo_arm64_path   = context.getFilesDir().getAbsolutePath()+ File.separator+arm64_so;
+        String InjectSo_armv7_path   = context.getFilesDir().getAbsolutePath()+ File.separator+armv7_so;
 
-        InjectTool.copyAssetToDst(context,"InjectTool_arm64",InjectTool_arm64_path);
+        InjectTool.copyAssetToDst(context,arm64_InjectTool,InjectTool_arm64_path);
         Runtime.getRuntime().exec("chmod +x "+InjectTool_arm64_path);
-        InjectTool.copyAssetToDst(context,"InjectTool_armv7",InjectTool_armv7_path);
+        InjectTool.copyAssetToDst(context,armv7_InjectTool,InjectTool_armv7_path);
         Runtime.getRuntime().exec("chmod +x "+InjectTool_armv7_path);
-        InjectTool.copyAssetToDst(context,"libhookbase_arm64.so",InjectSo_arm64_path);
-        InjectTool.copyAssetToDst(context,"libhookbase_armv7.so",InjectSo_armv7_path);
+        InjectTool.copyAssetToDst(context,arm64_so,InjectSo_arm64_path);
+        InjectTool.copyAssetToDst(context,armv7_so,InjectSo_armv7_path);
 
         //修改函数或者参数，记得修改符号
 //        String cmd = InjectTool_arm64_path+" -n zygote64 -so "+ injectSo+" -symbols _Z9dobby_strPKc com.rxposed.qmulkt:com.rxposed.qmulkt.Provider";
 
-        String cmd_arm64 = InjectTool_arm64_path+" -n zygote64 -so "+ InjectSo_arm64_path+" -symbols _Z9dobby_strPKc com.example.android.codelabs.navigation:com.rxposed.android.Provider";
-        String cmd_armv7 = InjectTool_armv7_path+" -n zygote -so "  + InjectSo_armv7_path+" -symbols _Z9dobby_strPKc com.example.android.codelabs.navigation:com.rxposed.android.Provider";
+        String cmd_arm64 = InjectTool_arm64_path+" -n zygote64 -so "+ InjectSo_arm64_path+" -symbols _Z9dobby_strPKc "+InjectArg;
+        String cmd_armv7 = InjectTool_armv7_path+" -n zygote -so "  + InjectSo_armv7_path+" -symbols _Z9dobby_strPKc "+InjectArg;
         Log.d("rzx",cmd_arm64);
         Log.d("rzx",cmd_armv7);
 //        Runtime.getRuntime().exec("su "+cmd_arm64);
@@ -139,11 +148,5 @@ public  class InjectTool {
             t.printStackTrace();
         }
     }
-
-
-
-
-
-
 
 }

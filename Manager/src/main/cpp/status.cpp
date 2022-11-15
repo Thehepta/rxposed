@@ -51,7 +51,7 @@ void constructor_102() { // __attribute__((constructor))修饰 最先执行
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_hepta_rxposed_manager_fragment_HomeFragment_get_1rxposed_1activity(JNIEnv *env, jobject thiz) {
+ Java_hepta_rxposed_manager_fragment_HomeFragment_get_1rxposed_1activity(JNIEnv *env, jobject thiz) {
     // TODO: implement get_rxposed_activity()
     jboolean re = false;
     char sdk_ver[32];
