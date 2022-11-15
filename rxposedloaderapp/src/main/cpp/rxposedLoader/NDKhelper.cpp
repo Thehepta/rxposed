@@ -8,16 +8,16 @@
 #include <android/log.h>
 #include "include/NDKhelper.h"
 
-
+//清除异常，打印java堆栈好用户输入，继续执行
 bool NDK_ExceptionCheck(JNIEnv *env,char* message){
+
     if(env->ExceptionCheck()){
+        LOGD("%s",message);
         env->ExceptionDescribe();
         env->ExceptionClear();
-        jclass cls_exception = env->FindClass("java/lang/Exception");
-        env->ThrowNew(cls_exception,message);
-        return false;
+        return true;
     }
-    return true;
+    return false;
 }
 
 
@@ -25,7 +25,7 @@ jobject getSystemContext(JNIEnv *env)
 {
     //获取Activity Thread的实例对象
     jclass activityThreadClass = env->FindClass("android/app/ActivityThread");
-    if(!NDK_ExceptionCheck(env,"find class android/app/ActivityThread failed")){
+    if(NDK_ExceptionCheck(env,"find class android/app/ActivityThread failed")){
         return nullptr;
     }
     jmethodID currentActivityThread = env->GetStaticMethodID(activityThreadClass, "currentActivityThread", "()Landroid/app/ActivityThread;");

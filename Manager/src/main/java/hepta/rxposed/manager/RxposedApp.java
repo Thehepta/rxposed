@@ -2,15 +2,8 @@ package hepta.rxposed.manager;
 
 
 import android.app.Application;
-
-
-
-import java.io.File;
-
-import hepta.rxposed.manager.fragment.modules.ModuleInfo;
 import hepta.rxposed.manager.fragment.modules.ModuleInfoProvider;
 import hepta.rxposed.manager.util.InjectTool;
-import hepta.rxposed.manager.util.LogUtil;
 
 
 public class RxposedApp extends Application {

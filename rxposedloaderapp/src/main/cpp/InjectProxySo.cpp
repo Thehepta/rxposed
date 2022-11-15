@@ -68,9 +68,20 @@ void constructor_101() { // __attribute__((constructor))修饰 最先执行
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_hepta_rxposed_rxposedloaderapp_LoaderApplication_getApplicationContext(JNIEnv *env,
-                                                                            jobject thiz) {
+                                                                            jclass thiz,jstring AppName) {
     // TODO: implement getApplicationContext()
     rprocess * rprocess = rprocess::GetInstance();
-    jobject context = rprocess->getApplicationContext(env,"hepta.rxposed.rxposedloaderapp");
+    string c_appName = env->GetStringUTFChars(AppName, nullptr);
+    jobject context = rprocess->getApplicationContext(env,c_appName);
     return context;
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_hepta_rxposed_rxposedloaderapp_LoaderApplication_NDK_1ExceptionCheckTest(JNIEnv *pEnv,
+                                                                              jclass clazz) {
+
+    pEnv->FindClass("eqweqeqwewqewq");
+    if(NDK_ExceptionCheck(pEnv,"ExceptionText eqweqeqwewqewq not found")){
+        LOGE("start");
+    }
 }

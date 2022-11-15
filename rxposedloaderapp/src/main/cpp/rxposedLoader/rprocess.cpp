@@ -58,6 +58,7 @@ vector<string> string_split(string str,string pattern)
 
 
 bool rprocess::GetConfigByProvider(JNIEnv *env) {
+    string err_message="";
     jclass Context_cls = env->FindClass("android/content/Context");
     jclass Uri_cls = env->FindClass("android/net/Uri");
     jclass ContentResolver_cls = env->FindClass("android/content/ContentResolver");
@@ -70,12 +71,6 @@ bool rprocess::GetConfigByProvider(JNIEnv *env) {
     AUTHORITY = "content://"+AUTHORITY;
     jmethodID Uri_parse_method = env->GetStaticMethodID(Uri_cls, "parse",
                                                         "(Ljava/lang/String;)Landroid/net/Uri;");
-    if (env->ExceptionCheck()) {
-        env->ExceptionDescribe();
-        env->ExceptionClear();
-        jclass cls_exception = env->FindClass("java/lang/Exception");
-        env->ThrowNew(cls_exception, "call GetStaticMethodID error");
-    }
     jmethodID Bundle_getString_method = env->GetMethodID(Bundle_cls, "getString",
                                                          "(Ljava/lang/String;)Ljava/lang/String;");
     jobject extras = nullptr;
@@ -84,23 +79,24 @@ bool rprocess::GetConfigByProvider(JNIEnv *env) {
     jstring method_arg = env->NewStringUTF(processName.c_str());
     jobject URI = env->CallStaticObjectMethod(Uri_cls, Uri_parse_method,env->NewStringUTF(AUTHORITY.c_str()));
 
-    jobject ContentResolver_obj = env->CallObjectMethod(RxposedContext,
-                                                        context_getContentResolver_method);
+    jobject ContentResolver_obj = env->CallObjectMethod(RxposedContext,context_getContentResolver_method);
+
     jobject bundle_obj = env->CallObjectMethod(ContentResolver_obj, ContentResolver_call_method,
                                                URI, method, method_arg, extras);
-    if(!NDK_ExceptionCheck(env,"")){
-        LOGE("get config privider failed AUTHORITY:%s package:%s", AUTHORITY.c_str(), providerHost_pkgName.c_str());
-        return true;
+
+    err_message = "processName:"+processName+"get config privider failed AUTHORITY:"+ AUTHORITY;
+    if(NDK_ExceptionCheck(env,(char *)err_message.c_str())){
+        return false;
     }
     jstring key = env->NewStringUTF("enableUidList");
-    jstring config = static_cast<jstring>(env->CallObjectMethod(bundle_obj, Bundle_getString_method,
-                                                                key));
+    jstring config = static_cast<jstring>(env->CallObjectMethod(bundle_obj, Bundle_getString_method,key));
     string enableUidList_str = env->GetStringUTFChars(config, nullptr);
 
     if(!strncmp(enableUidList_str.c_str(),"null", strlen("null"))){
-        LOGE("processName %s get RxConfigPrvider is null",processName.c_str());
-        return true;
+        LOGE("processName: %s get RxConfigPrvider is null",processName.c_str());
+        return false;
     }
+
     vector<string> app_vec = string_split(enableUidList_str, "|");
     for (auto i : app_vec)
     {
@@ -136,7 +132,7 @@ rprocess::AppinfoNative* rprocess::GetAppInfoNative(JNIEnv *env, string pkgName,
         LOGE("appinfo == nullptr");
         return nullptr;
     }
-    if(!NDK_ExceptionCheck(env,"GetAppInfoNative error")){
+    if(NDK_ExceptionCheck(env,"GetAppInfoNative error")){
         LOGE("ndk error");
         return nullptr;
     }
@@ -256,15 +252,15 @@ void rprocess::load_apk_And_exe_Class_Method(JNIEnv *pEnv, AppinfoNative *appinf
 
 jobject rprocess::getApplicationContext(JNIEnv *env,string pkgName) {
 
+    jobject ApplicationContext = nullptr;
     //获取Activity Thread的实例对象
     jclass mActivityThreadClass = env->FindClass("android/app/ActivityThread");
     jclass mLoadedApkClass = env->FindClass("android/app/LoadedApk");
     jclass mContextImplClass = env->FindClass("android/app/ContextImpl");
     jclass mCompatibilityInfoClass = env->FindClass("android/content/res/CompatibilityInfo");
-
     jmethodID getLoadedApkMethod = env->GetMethodID(mActivityThreadClass,"getPackageInfoNoCheck","(Landroid/content/pm/ApplicationInfo;Landroid/content/res/CompatibilityInfo;)Landroid/app/LoadedApk;");
 
-    if(!NDK_ExceptionCheck(env,"find class android/app/ActivityThread failed")){
+    if(NDK_ExceptionCheck(env,"find class android/app/ActivityThread failed")){
         return nullptr;
     }
 
@@ -277,24 +273,28 @@ jobject rprocess::getApplicationContext(JNIEnv *env,string pkgName) {
 
     //ContextImpl，getSystemContext
     jmethodID getApplication = env->GetMethodID(mActivityThreadClass, "getSystemContext", "()Landroid/app/ContextImpl;");
-    jobject context = env->CallObjectMethod(at, getApplication);
-    if(context == nullptr){
-        LOGE("Failed to call getRxposedContext,context is null");
+    jobject SystemContext = env->CallObjectMethod(at, getApplication);
+    if(SystemContext == nullptr){
+        LOGE("Failed to call getRxposedContext,SystemContext is null");
         return nullptr;
     }
     jmethodID getPackageManager_method = env->GetMethodID(mContextImplClass, "getPackageManager", "()Landroid/content/pm/PackageManager;");
     jclass PackageManager_cls = env->FindClass("android/content/pm/PackageManager");
     jmethodID pm_getApplicationInfo_method = env->GetMethodID(PackageManager_cls, "getApplicationInfo", "(Ljava/lang/String;I)Landroid/content/pm/ApplicationInfo;");
-    jobject PackageManager = env->CallObjectMethod(context, getPackageManager_method);
+    jobject PackageManager = env->CallObjectMethod(SystemContext, getPackageManager_method);
     jobject java_pkaName = env->NewStringUTF(pkgName.c_str());
-
+    jobject applicationInfo = env->CallObjectMethod(PackageManager,pm_getApplicationInfo_method,java_pkaName,0);
+    string err_message = "processName:"+pkgName+" getApplicationInfo not found,return SystemContext";
+    if(NDK_ExceptionCheck(env,(char *)err_message.c_str())){
+        ApplicationContext = SystemContext;
+        return ApplicationContext;
+    }
 
     jfieldID mCompatibilityInfoDefaultField = env->GetStaticFieldID(mCompatibilityInfoClass,"DEFAULT_COMPATIBILITY_INFO","Landroid/content/res/CompatibilityInfo;");
     jobject mCompatibilityInfo = env->GetStaticObjectField(mCompatibilityInfoClass,mCompatibilityInfoDefaultField);
-    jobject applicationInfo = env->CallObjectMethod(PackageManager,pm_getApplicationInfo_method,java_pkaName,0);
     jmethodID createAppContext_method = env->GetStaticMethodID(mContextImplClass, "createAppContext", "(Landroid/app/ActivityThread;Landroid/app/LoadedApk;)Landroid/app/ContextImpl;");
     jobject  mLoadedApk = env->CallObjectMethod(at,getLoadedApkMethod,applicationInfo,mCompatibilityInfo);
-    jobject ApplicationContext = env->CallStaticObjectMethod(mContextImplClass,createAppContext_method,at,mLoadedApk);
+    ApplicationContext = env->CallStaticObjectMethod(mContextImplClass,createAppContext_method,at,mLoadedApk);
 
     env->DeleteLocalRef(at);
     return ApplicationContext;

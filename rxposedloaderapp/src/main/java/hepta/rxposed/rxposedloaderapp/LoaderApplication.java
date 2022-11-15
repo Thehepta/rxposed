@@ -37,13 +37,9 @@ public class LoaderApplication extends Application{
     @Override
     public void onCreate() {
         super.onCreate();
+        //aidl
+        callaidl();
 
-
-//        callaidl();
-//        callpm();
-
-//        LoadFramework();
-        GetConfigByProvider(getApplicationContext());
 
     }
 
@@ -66,91 +62,28 @@ public class LoaderApplication extends Application{
 
     }
 
-    public native Context getApplicationContext();
-
-    //onServiceConnected 调用时机会延迟，这个方案不太好
-    private void callaidl() {
-        Intent intent = new Intent();
-        intent.setAction("com.example.aidl");
-        intent.setPackage("com.example.android.codelabs.navigation");
-        bindService(intent,mConnection,Context.BIND_AUTO_CREATE);
-        Log.e("rzx","bindService before");
-
-    }
-    IRxposedService iRxposedService;
-    private ServiceConnection mConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-            iRxposedService = IRxposedService.Stub.asInterface(iBinder);
-            try {
-                String string = iRxposedService.getConfig("wrewrew");
-                Log.e("rzx","ffffffffffffffff"+string);
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
-        }
-        @Override
-        public void onServiceDisconnected(ComponentName componentName) {
-
-        }
-    };
+    public static native Context getApplicationContext(String AppName);
+    public static native void NDK_ExceptionCheckTest();
 
     static {
-//        Thread.dumpStack();
+//        Thread.dumpStack(); //测试代码位置
         System.loadLibrary(BuildConfig.SO_NAME);
-//        SystemContext = getSystemContext();
-//        currentUid = android.os.Process.myUid();
-//        if(RxposedContext != null){
-//            LoadFramework();
-//            String name = RxposedContext.getPackageManager().getNameForUid(currentUid);
-//            Log.w(TAG," get RxConfigPrvider is:"+name);
-//        }else {
-//            Log.w(TAG," get getSystemContext is: null");
-//
-//        }
-
-
-
-//        try {
-//            customLoadApkAction();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-    }
-
-
-
-    private static void LoadFramework() {
-        ConfigSysContext();
-        if(GetConfigByProvider(SystemContext)){
+//        Context context = Java_getApplicationContext(currentName);
+//        Context context = getApplicationContext("android.process.media");
+        Context context = getApplicationContext("hepta.rxposed.manager");
+        if(GetConfigByProvider(context)){
 
         }
+//        NDK_ExceptionCheckTest();
+
     }
 
-    private static void ConfigSysContext() {
-        try {
-            Class<?> mContextImplClass = Class.forName("android.app.ContextImpl");
-            Field mOpPackageName =  mContextImplClass.getField("mOpPackageName");
-            mOpPackageName.setAccessible(true);
-            mOpPackageName.set(String.class,currentName);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-
-//        RxposedContext.getOpPackageName()
-    }
-
-    private static boolean GetConfigByProvider(Context SystemContext) {
+    private static boolean GetConfigByProvider(Context context) {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            Uri uri = Uri.parse("content://com.rxposed.qmulkt.Provider");
-            ContentResolver contentResolver = SystemContext.getContentResolver();
+            Uri uri = Uri.parse("content://hepta.rxposed.manager.Provider");
+            ContentResolver contentResolver = context.getContentResolver();
             Bundle bundle =contentResolver.call(uri,"getConfig",currentName,null);
-//            ContentProviderClient contentProviderClient = RxposedContext.getContentResolver().acquireContentProviderClient(uri);
             String enableUidList_str =  bundle.getString("enableUidList");
             if(enableUidList_str.equals("null")){
                 Log.w(TAG," get RxConfigPrvider is null");
@@ -164,10 +97,8 @@ public class LoaderApplication extends Application{
             }
 
         }
-
         Log.w(TAG," android version not support rxposed");
         return true;
-
     }
 
     private static void GetAppInfoNative(String[] appinfo_vec) {
@@ -184,29 +115,19 @@ public class LoaderApplication extends Application{
             context = (Context) activityThread.getClass().getMethod("getSystemContext").invoke(activityThread);
 
         } catch (final Exception e) {
+            e.printStackTrace();
             Log.e(TAG, "getSystemContext:"+e.toString());
         }
         return context;
     }
 
-    private static ApplicationInfo GetAppInfobyUID(int uid) {
-        ApplicationInfo applicationInfo = null;
-        Context context = getSystemContext();
-        String pkgName = context.getPackageManager().getNameForUid(uid);
-        try {
-            applicationInfo = context.getPackageManager().getApplicationInfo(pkgName,0);
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
-        return applicationInfo;
-    }
-
-
-
     //经过测试在android 10 可以用
-    public static void customLoadApkAction() throws Exception {
+    public static Context Java_getApplicationContext(String currentAppName) {
         //获取 ActivityThread 类
-        Class<?> mActivityThreadClass = Class.forName("android.app.ActivityThread");
+        Class<?> mActivityThreadClass = null;
+        try {
+            mActivityThreadClass = Class.forName("android.app.ActivityThread");
+
         //获取 ActivityThread 类
         Class<?> mLoadedApkClass = Class.forName("android.app.LoadedApk");
         //获取 ActivityThread 的 currentActivityThread() 方法
@@ -243,32 +164,67 @@ public class LoaderApplication extends Application{
         Object mCompatibilityInfo = mCompatibilityInfoDefaultField.get(null);
 
         //获取一个 ApplicationInfo实例
-        ApplicationInfo applicationInfo = SystemContext.getPackageManager().getApplicationInfo(currentName,0);
-//        applicationInfo.uid = context.getApplicationInfo().uid;
+        ApplicationInfo applicationInfo = getSystemContext().getPackageManager().getApplicationInfo(currentAppName,0);
         //执行此方法，获取一个 LoadedApk
         Object mLoadedApk = getLoadedApkMethod.invoke(mActivityThread, applicationInfo, mCompatibilityInfo);
-
         Class<?> mContextImplClass = Class.forName("android.app.ContextImpl");
         Method createAppContext = mContextImplClass.getDeclaredMethod("createAppContext",mActivityThreadClass,mLoadedApkClass);
         createAppContext.setAccessible(true);
-
         Object context =  createAppContext.invoke(null,mActivityThread,mLoadedApk);
+        return (Context) context;
 
-        Uri uri = Uri.parse("content://com.rxposed.qmulkt.Provider");
-        ContentResolver contentResolver = ((Context)context).getContentResolver();
-        Bundle bundle = contentResolver.call(uri,"getConfig",currentName,null);
-        String enableUidList_str =  bundle.getString("enableUidList");
-        if(enableUidList_str.equals("null")){
-            Log.w(TAG," get RxConfigPrvider is null");
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e(TAG,"getApplicationInfoAsUser NOT FOUND,return getSystemContext");
+            return getSystemContext();
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
         }
-        String[] app_vec =   enableUidList_str.split("\\|");
-        for(String app :app_vec){
-            String[] appinfo_vec = app.split(":");
-            Log.e(TAG,appinfo_vec.toString());
-//                GetAppInfoNative(appinfo_vec)
+    }
+
+
+    private static ApplicationInfo GetAppInfobyUID(int uid) {
+        ApplicationInfo applicationInfo = null;
+        Context context = getSystemContext();
+        String pkgName = context.getPackageManager().getNameForUid(uid);
+        try {
+            applicationInfo = context.getPackageManager().getApplicationInfo(pkgName,0);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
         }
+        return applicationInfo;
+    }
+
+
+    //通过aidl完成进程通讯
+    //onServiceConnected 调用时机会延迟，这个方案不太好
+    private void callaidl() {
+        Intent intent = new Intent();
+        intent.setAction("hepta.rxposed.manager.aidl");
+        intent.setPackage("hepta.rxposed.manager");
+        bindService(intent,mConnection,Context.BIND_AUTO_CREATE);
+        Log.e("rzx","bindService before");
 
     }
+    IRxposedService iRxposedService;
+    private ServiceConnection mConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            iRxposedService = IRxposedService.Stub.asInterface(iBinder);
+            try {
+                String string = iRxposedService.getConfig("wrewrew");
+                Log.e("rzx","ffffffffffffffff"+string);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+
+        }
+    };
+
+
 }
 
 
