@@ -1,5 +1,6 @@
 package hepta.rxposed.rxposedloaderapp;
 
+import android.app.ActivityManager;
 import android.app.Application;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -21,6 +22,7 @@ import androidx.annotation.RequiresApi;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.List;
 
 //需要编译一次，会自动生成
 import hepta.rxposed.manager.IRxposedService;
@@ -31,14 +33,21 @@ public class LoaderApplication extends Application{
     private static final String TAG = "LoaderApplication";
     private static Context SystemContext = null;
     private static  int currentUid ;
-    private static  String currentName = "hepta.rxposed.rxposedloaderapp" ;
+    static  String currentName = "hepta.rxposed.rxposedloaderapp" ;
 
     @RequiresApi(api = Build.VERSION_CODES.Q)
     @Override
     public void onCreate() {
         super.onCreate();
+
         //aidl
-        callaidl();
+//        callaidl();
+
+        if(isIsolated()){
+            isIsolatedProcess();
+        }else {
+            ApplicationPorcess();
+        }
 
 
     }
@@ -68,14 +77,56 @@ public class LoaderApplication extends Application{
     static {
 //        Thread.dumpStack(); //测试代码位置
         System.loadLibrary(BuildConfig.SO_NAME);
-//        Context context = Java_getApplicationContext(currentName);
-//        Context context = getApplicationContext("android.process.media");
-        Context context = getApplicationContext("hepta.rxposed.manager");
-        if(GetConfigByProvider(context)){
 
+        if(isIsolated()){
+            isIsolatedProcessInit();
+        }else {
+            ApplicationPorcessInit();
         }
-//        NDK_ExceptionCheckTest();
 
+
+    }
+
+    private static void ApplicationPorcessInit() {
+        Log.e(TAG,"current process is application");
+        // Context context = getApplicationContext("android.process.media"); //这个会崩溃，获取不到 applicationInfo
+        // Context context = getApplicationContext("hepta.rxposed.manager"); //通过非当前应用的包名获取context 不能发起provider请求
+        Context context = getApplicationContext(currentName);
+        if(GetConfigByProvider(context)){
+        }
+        //        Context context = Java_getApplicationContext(currentName);
+//        Context context = getApplicationContext("android.process.media");
+
+//        NDK_ExceptionCheckTest();
+    }
+    private static void isIsolatedProcessInit() {
+        Log.e(TAG,"current process is isIsolated uid:"+android.os.Process.myUid());
+//            getSystemContext()
+    }
+
+    private  void ApplicationPorcess() {
+//        ActivityManager aM = (ActivityManager) getApplicationContext().getSystemService(android.content.Context.ACTIVITY_SERVICE);
+//
+//        List<ActivityManager.RunningAppProcessInfo> l = null;
+//
+//        try {
+//            l = aM.getRunningAppProcesses();
+//        } catch (RuntimeException e) {
+//            Log.w(TAG, "Isolated process not allowed allowed to call getRunningAppProcesses, cannot get number of running apps.");
+//        }
+
+    }
+
+    private  void isIsolatedProcess() {
+
+    }
+
+
+    public static boolean isIsolated() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+            return false;
+        }
+        return android.os.Process.isIsolated();
     }
 
     private static boolean GetConfigByProvider(Context context) {

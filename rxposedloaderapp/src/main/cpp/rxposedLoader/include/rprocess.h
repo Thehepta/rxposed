@@ -58,6 +58,7 @@ public:
     jobject getApplicationContext(JNIEnv *env,string pkgName);
     bool GetConfigByProvider(JNIEnv *env);
     bool is_providerHostProcess(JNIEnv *env, jstring pJstring);
+    bool is_isIsolatedProcess();
     void load_apk_And_exe_Class_Method(JNIEnv *pEnv, AppinfoNative *appinfo);
 
 

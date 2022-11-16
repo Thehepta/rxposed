@@ -34,7 +34,11 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
         LOGE("jni_replace JVM ERROR:GetEnv");
         return -1;
     }
-
+    if(rprocess::GetInstance()->is_isIsolatedProcess()){
+        LOGE("JNI_OnLoad current process is isIsolatedProcess");
+    } else{
+        LOGE("JNI_OnLoad current process is ApplicationProcess");
+    }
 //    rprocess->setRxposedContext(rprocess->getApplicationContext(pEnv));
 //    rprocess->setProcessName("hepta.rxposed.rxposedloaderapp");
 //    rprocess->setAUTHORITY("hepta.rxposed.manager:hepta.rxposed.manager.provider");

@@ -10,4 +10,7 @@ interface IsoatedService {
      */
     void basicTypes(int anInt, long aLong, boolean aBoolean, float aFloat,
             double aDouble, String aString);
+
+    String getConfig(String Name);
+
 }

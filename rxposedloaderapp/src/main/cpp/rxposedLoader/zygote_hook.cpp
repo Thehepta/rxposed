@@ -93,6 +93,12 @@ void (*android_os_Process_setArg_addr)(JNIEnv* env, jobject clazz, jstring name)
 void (*android_os_Process_setArg_org)(JNIEnv* env, jobject clazz, jstring name);
 void android_os_Process_setArg_call(JNIEnv* env, jobject clazz, jstring name){
     android_os_Process_setArg_org(env,clazz,name);
+    if(rprocess::GetInstance()->is_isIsolatedProcess()){
+        LOGD("isIsolatedProcess is recent not support hook uid = %d processName = %s",getuid(),env->GetStringUTFChars(name, nullptr));
+        DobbyDestroy((void *)android_os_Process_setArg_addr);
+        return;
+    }
+
     bool Destroy = false;
 //    LOGE("android_os_Process_setArg_call name %s ",env->GetStringUTFChars(name, nullptr));
     if(rprocess::GetInstance()->is_providerHostProcess(env, name)){

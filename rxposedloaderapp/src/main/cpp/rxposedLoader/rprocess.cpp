@@ -307,3 +307,8 @@ void rprocess::setProcessName(char *tmp) {
 void rprocess::setRxposedContext(jobject RxposedContext) {
 
 }
+
+bool rprocess::is_isIsolatedProcess() {
+    int uid = getuid();
+    return (uid >= 99000 && uid <= 99999)|| (uid >= 90000 && uid <= 98999);
+}

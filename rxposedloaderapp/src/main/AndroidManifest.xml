@@ -19,6 +19,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".RxposedTextService"
+            android:enabled="true"
+            android:isolatedProcess="true"
+            android:exported="true" />
     </application>
 
 </manifest>
