@@ -1,4 +1,4 @@
-package hepta.rxposed.manager.fragment.vpn;
+package hepta.rxposed.manager.fragment.apps;
 
 import androidx.annotation.Nullable;
 
@@ -10,9 +10,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 import java.util.List;
 
-public class NodeAdapter extends BaseNodeAdapter {
+public class AppsAdapter extends BaseNodeAdapter {
 
-    public NodeAdapter() {
+    public AppsAdapter() {
         super();
         // 注册Provider，总共有如下三种方式
 
@@ -21,7 +21,7 @@ public class NodeAdapter extends BaseNodeAdapter {
         // 普通的item provider
         addNodeProvider(new SecondNodeProvider());
         // 脚布局的 provider
-        addNodeProvider(new FirstNodeProvider());
+        addNodeProvider(new AppNodeProvider());
     }
 
     @Override
@@ -39,7 +39,7 @@ public class NodeAdapter extends BaseNodeAdapter {
             return 0;
         } else if (node instanceof SecondNode) {
             return 1;
-        } else if (node instanceof FirstNode) {
+        } else if (node instanceof AppInfo) {
             return 2;
         }
         return -1;

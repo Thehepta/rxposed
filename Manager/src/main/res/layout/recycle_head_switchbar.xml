@@ -1,24 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout android:layout_width="match_parent"
-    android:orientation="horizontal"
     android:layout_height="wrap_content"
-    android:background="#3F51B5"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:background="#3F51B5"
+        android:layout_height="wrap_content">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="3"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="module enable"
+            android:textColor="#ffffff"
+            android:textSize="30sp"/>
 
-    <TextView
-        android:layout_width="0dp"
-        android:layout_weight="3"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:text="module enable"
-        android:textColor="#ffffff"
-        android:textSize="30sp"/>
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switch_enable"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginRight="24dp"
+            android:layout_height="match_parent"/>
+    </LinearLayout>
 
-    <androidx.appcompat.widget.SwitchCompat
-        android:id="@+id/switch_enable"
-        android:layout_width="wrap_content"
-        android:layout_weight="1"
-        android:layout_marginRight="24dp"
-        android:layout_height="match_parent"/>
 </LinearLayout>

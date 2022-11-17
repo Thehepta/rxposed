@@ -78,41 +78,12 @@ class DeepLinkFragment : Fragment() {
             notificationManager.notify(0, builder.build())
         }
 
-        var nodeAdapter = NodeAdapter()
-        var rv_list = view.findViewById<RecyclerView>(R.id.rv_list)
-        rv_list.layoutManager = LinearLayoutManager(requireContext())
-        rv_list.adapter = nodeAdapter
-        nodeAdapter.setList(getEntity())
 
 
 
     }
 
 
-    private fun getEntity(): List<BaseNode>? {
-        //总的 list，里面放的是 FirstNode
-        val list: MutableList<BaseNode> = ArrayList()
-        for (i in 0..7) {
-
-            //SecondNode 的 list
-            val secondNodeList: MutableList<BaseNode> = ArrayList()
-            for (n in 0..5) {
-                val seNode = SecondNode("Second Node $n")
-                secondNodeList.add(seNode)
-            }
-            val entity = RootNode(secondNodeList, "Root Node $i")
-            list.add(entity)
-        }
-        val firstNodeList: MutableList<BaseNode> = ArrayList()
-
-        for (n in 0..5) {
-            val seNode = FirstNode("First Node $n")
-            firstNodeList.add(seNode)
-        }
-        val entityfirst = RootNode(firstNodeList, "Root Node $100")
-        list.add(entityfirst)
-        return list
-    }
 
 
 }

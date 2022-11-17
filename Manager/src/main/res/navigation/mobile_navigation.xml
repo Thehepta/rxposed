@@ -76,9 +76,14 @@
 
     <fragment
         android:id="@+id/modules_dest"
-        android:name="hepta.rxposed.manager.fragment.modules.ModulesFragment"
+        android:name="hepta.rxposed.manager.fragment.extend.ModulesFragment"
         android:label="@string/modules"
         tools:layout="@layout/fragment_modules" />
+    <fragment
+        android:id="@+id/frameworks_dest"
+        android:name="hepta.rxposed.manager.fragment.depends.FrameWorksFragment"
+        android:label="@string/frameworks"
+        tools:layout="@layout/fragment_frameworks" />
 
     <fragment
         android:id="@+id/apps_dest"
@@ -88,13 +93,13 @@
 
     <fragment
         android:id="@+id/vpn_dest"
-        android:name="hepta.rxposed.manager.fragment.VpnFragment"
+        android:name="hepta.rxposed.manager.fragment.vpn.VpnFragment"
         android:label="@string/vpn"
         tools:layout="@layout/fragment_vpn" />
 
     <fragment
         android:id="@+id/deeplink_dest"
-        android:name="hepta.rxposed.manager.fragment.DeepLinkFragment"
+        android:name="hepta.rxposed.manager.DeepLinkFragment"
         android:label="@string/deeplink"
         tools:layout="@layout/deeplink_fragment">
 

@@ -1,36 +1,74 @@
 package hepta.rxposed.manager.fragment.vpn;
 
+import android.util.Log;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.RadioButton;
+
+import androidx.annotation.NonNull;
 
 import com.chad.library.adapter.base.entity.node.BaseNode;
 import com.chad.library.adapter.base.provider.BaseNodeProvider;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 
-import org.jetbrains.annotations.NotNull;
+import java.util.List;
 
 import hepta.rxposed.manager.R;
 
-public class RootNodeProvider extends BaseNodeProvider {
+public class FirstNodeProvider extends BaseNodeProvider {
+
+    public CompoundButton CurrentCheckBox = null;
+    public FirstNode CurrentbaseNode = null;
 
     @Override
     public int getItemViewType() {
-        return 0;
+        return 2;
     }
 
     @Override
     public int getLayoutId() {
-        return R.layout.list_main_major_item;
+        return R.layout.item_radioframe;
     }
 
     @Override
-    public void convert(@NotNull BaseViewHolder baseViewHolder, @NotNull BaseNode baseNode) {
-        // 数据类型需要自己强转
-        RootNode entity = (RootNode) baseNode;
-        baseViewHolder.setText(R.id.tv_name, entity.getTitle());
-    }
+    public void convert(@NonNull BaseViewHolder baseViewHolder, BaseNode baseNode) {
+        FirstNode entity = (FirstNode) baseNode;
+        baseViewHolder.setText(R.id.app_name, entity.getTitle());
+        CheckBox checkBox = baseViewHolder.findView(R.id.radiobtn);
 
-    @Override
-    public void onClick(@NotNull BaseViewHolder helper, @NotNull View view, BaseNode data, int position) {
-        getAdapter().expandOrCollapse(position);
+        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Log.e("rzx","before status:"+buttonView.isChecked());
+                entity.setStatus(isChecked);
+                if(isChecked){
+                    if(CurrentCheckBox == null){
+                        CurrentCheckBox = buttonView;
+                        CurrentbaseNode = entity;
+                    }else if(CurrentCheckBox.equals(buttonView)){
+
+                    }else {
+                        CurrentCheckBox.setChecked(false);
+                        CurrentbaseNode.setStatus(false);
+                        CurrentCheckBox = buttonView;
+                        CurrentbaseNode = entity;
+                    }
+                }
+//                buttonView.isChecked();
+                Log.e("rzx","after status:"+buttonView.isChecked());
+
+            }
+        });
+
     }
 }
+
+
+//            @Override
+//            public void onClick(View v) {
+//                Log.e("rzx","current status:"+checkBox.isChecked());
+////                CheckBox radioButton1 = (CheckBox) v;
+////                Boolean checked = radioButton.isChecked();
+////                radioButton.setChecked(checked);
+//            }

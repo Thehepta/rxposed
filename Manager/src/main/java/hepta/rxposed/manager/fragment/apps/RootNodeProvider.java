@@ -1,4 +1,4 @@
-package hepta.rxposed.manager.fragment.vpn;
+package hepta.rxposed.manager.fragment.apps;
 
 import android.view.View;
 

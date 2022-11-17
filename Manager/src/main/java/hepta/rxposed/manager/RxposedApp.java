@@ -2,7 +2,7 @@ package hepta.rxposed.manager;
 
 
 import android.app.Application;
-import hepta.rxposed.manager.fragment.modules.ModuleInfoProvider;
+
 import hepta.rxposed.manager.util.InjectTool;
 
 
@@ -35,7 +35,8 @@ public class RxposedApp extends Application {
         new Thread(){
             @Override
             public void run() {
-                ModuleInfoProvider.getInstance();
+//                FrameWorkInfoProvider.getInstance();
+//                ModuleInfoProvider.getInstance();
                 InjectTool.su_path = getSharedPreferences("rxposed",MODE_PRIVATE).getString("supath","su");
             }
         }.start();

@@ -1,16 +1,19 @@
-package hepta.rxposed.manager.fragment.depends.apps;
+package hepta.rxposed.manager.fragment.apps;
 
 
 import android.content.pm.ApplicationInfo;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
+
 import com.chad.library.adapter.base.entity.MultiItemEntity;
+import com.chad.library.adapter.base.entity.node.BaseNode;
 
-import hepta.rxposed.manager.fragment.extend.ModuleInfoProvider;
+import java.util.List;
 
 
-public class AppInfo implements MultiItemEntity {
+public class AppInfo extends BaseNode {
     private String moduleName;
     private ApplicationInfo appInfo;
     private Drawable icon;
@@ -59,7 +62,7 @@ public class AppInfo implements MultiItemEntity {
     public void setEnable(boolean enable) {
         Log.e("Rzx","setHookStatus:"+enable+" appName:"+appName+" uid ="+getUID());
         this.enable = enable;
-        ModuleInfoProvider.getInstance().UpdateConfig();
+//        ModuleInfoProvider.getInstance().UpdateConfig();
     }
 
     public void setModuleName(String moduleName) {
@@ -78,8 +81,11 @@ public class AppInfo implements MultiItemEntity {
         this.appInfo = appInfo;
     }
 
+
+
+    @Nullable
     @Override
-    public int getItemType() {
-        return 0;
+    public List<BaseNode> getChildNode() {
+        return null;
     }
 }

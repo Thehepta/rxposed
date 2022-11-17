@@ -1,5 +1,7 @@
 package hepta.rxposed.manager.fragment.vpn;
 
+import android.util.Log;
+
 import androidx.annotation.Nullable;
 
 import com.chad.library.adapter.base.entity.node.BaseExpandNode;
@@ -12,13 +14,17 @@ public class FirstNode extends BaseExpandNode {
     private List<BaseNode> childNode;
     private String title;
 
-    public FirstNode(List<BaseNode> childNode, String title) {
-        this.childNode = childNode;
+    public FirstNode( String title) {
+
         this.title = title;
     }
 
     public String getTitle() {
         return title;
+    }
+
+    public void setStatus(boolean status){
+        Log.e("rzx",title+" setStatus:"+status);
     }
 
     /**
@@ -27,6 +33,6 @@ public class FirstNode extends BaseExpandNode {
     @Nullable
     @Override
     public List<BaseNode> getChildNode() {
-        return childNode;
+        return null;
     }
 }

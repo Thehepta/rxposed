@@ -1,4 +1,4 @@
-package hepta.rxposed.manager.fragment.depends.apps;
+package hepta.rxposed.manager.fragment.apps;
 
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -20,44 +20,9 @@ public class AppInfoDataProvider {
     private PackageManager packageManager;
     //获取一个包管理器
     public AppInfoDataProvider(){
-        packageManager = RxposedApp.getInstance().getPackageManager();
-        IninApps();
-    }
-    /**
-     *获取系统中所有应用信息，
-     *并将应用软件信息保存到list列表中。
-     **/
-    public void IninApps(){
-        List<AppInfo> list = new ArrayList<AppInfo>();
-        AppInfo myAppInfo;
-        List<PackageInfo> packageInfos = packageManager.getInstalledPackages(0);
-        for(PackageInfo info:packageInfos){
-            myAppInfo = new AppInfo();
-            //拿到包名
-            String packageName = info.packageName;
-            //拿到应用程序的信息
-            ApplicationInfo appInfo = info.applicationInfo;
-            //拿到应用程序的图标
-            Drawable icon = appInfo.loadIcon(packageManager);
-            //拿到应用程序的大小
-            //long codesize = packageStats.codeSize;
-            //Log.i("info", "-->"+codesize);
-            //拿到应用程序的程序名
-            String appName = appInfo.loadLabel(packageManager).toString();
-            myAppInfo.setPackageName(packageName);
-            myAppInfo.setAppName(appName);
-            myAppInfo.setIcon(icon);
-            myAppInfo.setAppInfo(appInfo);
 
-            if(filterApp(appInfo)){
-                myAppInfo.setSystemApp(false);
-                map_AppInfos.put(myAppInfo.getUID(),myAppInfo);
-                list.add(myAppInfo);
-            }else{
-                myAppInfo.setSystemApp(true);
-            }
-        }
     }
+   
 
     public List<AppInfo> getAllListApps(){
         List<AppInfo> result = new ArrayList(map_AppInfos.values());
@@ -65,7 +30,7 @@ public class AppInfoDataProvider {
     }
 
 
-    public Map<Integer, AppInfo> getAllMapApps_module(String module_packageName){
+    public Map<Integer, AppInfo> getAllMapApps_module(String module_packageName, PackageManager packageManager){
 
         Map<Integer, AppInfo> mapAppInfos = new HashMap<>();
         AppInfo myAppInfo;
@@ -100,39 +65,6 @@ public class AppInfoDataProvider {
         return mapAppInfos;
     }
 
-    public List<AppInfo> getSystemApps(){
-        List<AppInfo> list = new ArrayList<AppInfo>();
-        AppInfo myAppInfo;
-        List<PackageInfo> packageInfos = packageManager.getInstalledPackages(0);
-        for(PackageInfo info:packageInfos){
-            ApplicationInfo appInfo = info.applicationInfo;
-            if(!appInfo.enabled)
-                continue;
-            myAppInfo = new AppInfo();
-            //拿到包名
-            String packageName = info.packageName;
-            //拿到应用程序的图标
-            Drawable icon = appInfo.loadIcon(packageManager);
-            //拿到应用程序的大小
-            //long codesize = packageStats.codeSize;
-            //Log.i("info", "-->"+codesize);
-            //拿到应用程序的程序名
-            String appName = appInfo.loadLabel(packageManager).toString();
-            myAppInfo.setPackageName(packageName);
-            myAppInfo.setAppName(appName);
-            myAppInfo.setIcon(icon);
-            myAppInfo.setAppInfo(appInfo);
-
-            if(filterApp(appInfo)){
-                myAppInfo.setSystemApp(true);
-            }else{
-                myAppInfo.setSystemApp(false);
-            }
-            list.add(myAppInfo);
-        }
-        return list;
-    }
-
 
     /**
      *判断某一个应用程序是不是系统的应用程序，
@@ -149,18 +81,6 @@ public class AppInfoDataProvider {
     }
 
 
-    public  boolean isSystemApplication(String packageName) {
-        try {
-            final PackageInfo packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_CONFIGURATIONS);
-            if ((packageInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0) {
-                return true;
-            }
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
-        return false;
-
-    }
 
     public static AppInfoDataProvider getInstance() {
         if (_sInstance == null) {

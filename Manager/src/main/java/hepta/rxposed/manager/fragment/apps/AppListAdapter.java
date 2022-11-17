@@ -1,4 +1,4 @@
-package hepta.rxposed.manager.fragment.depends.apps;
+package hepta.rxposed.manager.fragment.apps;
 
 import android.widget.CompoundButton;
 
@@ -17,6 +17,9 @@ public class AppListAdapter extends BaseQuickAdapter<AppInfo, BaseViewHolder> im
     public AppListAdapter(int layoutResId) {
         super(layoutResId);
     }
+
+
+
 
 //    @Override
 //    protected void onItemViewHolderCreated(@NotNull BaseViewHolder viewHolder, int viewType) {
@@ -50,5 +53,7 @@ public class AppListAdapter extends BaseQuickAdapter<AppInfo, BaseViewHolder> im
         //这样绑定的好处是，不用手工写代码设置数据了，直接在xml文件中设置数据就可以了
 
     }
+
+
 
 }

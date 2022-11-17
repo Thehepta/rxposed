@@ -5,12 +5,13 @@ import androidx.annotation.NonNull;
 import com.chad.library.adapter.base.entity.node.BaseNode;
 import com.chad.library.adapter.base.provider.BaseNodeProvider;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
+
 import hepta.rxposed.manager.R;
 
-public class SecondNodeProvider extends BaseNodeProvider {
+public class AppNodeProvider extends BaseNodeProvider {
     @Override
     public int getItemViewType() {
-        return 1;
+        return 2;
     }
 
     @Override
@@ -21,7 +22,7 @@ public class SecondNodeProvider extends BaseNodeProvider {
 
     @Override
     public void convert(@NonNull BaseViewHolder baseViewHolder, BaseNode baseNode) {
-        SecondNode entity = (SecondNode) baseNode;
-        baseViewHolder.setText(R.id.tv_name, entity.getTitle());
+        AppInfo entity = (AppInfo) baseNode;
+        baseViewHolder.setText(R.id.tv_name, entity.getAppName());
     }
 }

@@ -1,14 +1,8 @@
-package hepta.rxposed.manager.fragment.extend;
+package hepta.rxposed.manager.fragment.base;
 
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-
-
-import hepta.rxposed.manager.RxposedApp;
-import hepta.rxposed.manager.fragment.apps.AppInfo;
-import hepta.rxposed.manager.fragment.apps.AppInfoDataProvider;
-import hepta.rxposed.manager.util.LogUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -27,58 +21,45 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import hepta.rxposed.manager.RxposedApp;
+import hepta.rxposed.manager.fragment.apps.AppInfo;
+import hepta.rxposed.manager.fragment.apps.AppInfoDataProvider;
+import hepta.rxposed.manager.fragment.extend.ModuleData;
+import hepta.rxposed.manager.util.LogUtil;
 
-public class ModuleInfoProvider {
 
-    private static ModuleInfoProvider _sInstance;
-    private PackageManager mPm;
-    private Map<Integer, ModuleInfo> map_modules = new HashMap<Integer, ModuleInfo>();
+public abstract class AppModuleInfoProvider<T extends AppModuleInfo> {
 
-    public static ModuleInfoProvider getInstance() {
-        if (_sInstance == null) {
-            _sInstance = new ModuleInfoProvider();
-        }
-        return _sInstance;
-    }
-    private ModuleInfoProvider(){
-        mPm = RxposedApp.getInstance().getPackageManager();
-        initModuelList();
+    private Map<Integer, T> map_modules ;
+    private String ConfigPath ;
+
+
+    public AppModuleInfoProvider(String ConfigPath){
+        this.ConfigPath = ConfigPath;
+        map_modules = initModuelList();
         readConfig();
     }
 
-    private void initModuelList() {
-        for (PackageInfo pkg : mPm.getInstalledPackages(PackageManager.GET_META_DATA)) {
-            ApplicationInfo app = pkg.applicationInfo;
-            if (!app.enabled)
-                continue;
-            if (app.metaData != null && app.metaData.containsKey("xposedmodule")) {
-                ModuleInfo installed = new ModuleInfo(pkg,mPm, AppInfoDataProvider.getInstance().getAllMapApps_module(pkg.packageName));
-                map_modules.put(installed.getUID(),installed);
-            }
-        }
-    }
+    public abstract Map<Integer, T>  initModuelList();
 
-    public List<ModuleInfo> getModuleList(){
-        List<ModuleInfo> result = new ArrayList(map_modules.values());
+    public List<T> getModuleList(){
+        List<T> result = new ArrayList(map_modules.values());
         return result;
     }
 
-    public ModuleInfo ByUidGetModuleInfo(int uid){
-
-        ModuleInfo moduleInfo =  map_modules.get(uid);
+    public T ByUidGetModuleInfo(int uid){
+        T moduleInfo =  map_modules.get(uid);
         return moduleInfo;
     }
 
-    private JSONObject rxposedModulejson = new JSONObject();
-    private static String ConfigPath = RxposedApp.getInstance().getFilesDir()+"/rxposed_modules";
 
     public void readConfig() {
         try {
             String json = readerJson();
             if(json !=null){
                 JSONObject parseobj = new JSONObject(json);
-                for (Map.Entry<Integer, ModuleInfo> entry : map_modules.entrySet()) {
-                    ModuleInfo moduleInfo = entry.getValue();
+                for (Map.Entry<Integer, T> entry : map_modules.entrySet()) {
+                    T moduleInfo = entry.getValue();
                     JSONObject json_moduleInfo = parseobj.getJSONObject(String.valueOf(moduleInfo.getUID()));
                     JSONArray enabelAppUidList =  json_moduleInfo.getJSONArray("EnableProcUid");
                     moduleInfo.enable = json_moduleInfo.getBoolean("enable");
@@ -97,7 +78,7 @@ public class ModuleInfoProvider {
 
     }
 
-    public static String readerJson() {
+    public String readerJson() {
         try {
             File file = getConfigFile();
             if (file.isFile() && file.exists()) {
@@ -119,38 +100,7 @@ public class ModuleInfoProvider {
     }
 
 
-
-    public void UpdateConfig() {
-        for (Map.Entry<Integer,ModuleInfo> entry : map_modules.entrySet()) {
-            ModuleInfo moduleInfo = entry.getValue();
-            JSONArray appList = addmodule(moduleInfo.getUID(),moduleInfo.getEnable());
-            for(AppInfo appInfo : moduleInfo.getAppInfoList()){
-                if(appInfo.getEnable()){
-                    appList.put(appInfo.getUID());
-                }
-            }
-        }
-        LogUtil.LogD(rxposedModulejson.toString());
-        File config = getConfigFile();
-        try {
-            FileWriter fw = new FileWriter(config);
-            fw.write("");
-            fw.flush();
-            fw.write(rxposedModulejson.toString());
-            fw.flush();
-            fw.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
-
-
-    }
-
-
-
-    public static File getConfigFile() {
+    public File getConfigFile() {
         File config = new File (ConfigPath);
         try {
             if (!config.exists()) { //用来测试此路径名表示的文件或目录是否存在
@@ -167,22 +117,5 @@ public class ModuleInfoProvider {
 
         return config;
     }
-
-    public JSONArray addmodule(int uid, boolean enable){
-
-        JSONArray appobject = new JSONArray();
-        try {
-            JSONObject moduleInfo = new JSONObject();
-            moduleInfo.put("enable",enable);
-            moduleInfo.put("EnableProcUid",appobject);
-            rxposedModulejson.put(String.valueOf(uid),moduleInfo);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return appobject;
-    }
-
-
-
 
 }

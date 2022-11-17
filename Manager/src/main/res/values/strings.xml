@@ -18,6 +18,7 @@
     <string name="shopping_cart">Shopping Cart</string>
     <string name="settings">Settings</string>
     <string name="modules">Modules</string>
+    <string name="frameworks">FrameWorks</string>
     <string name="home">Rxposed</string>
     <string name="deeplink">Deep Link</string>
 

@@ -1,11 +1,10 @@
-package hepta.rxposed.manager.fragment.vpn;
+package hepta.rxposed.manager.fragment.apps;
 
 import androidx.annotation.NonNull;
 
 import com.chad.library.adapter.base.entity.node.BaseNode;
 import com.chad.library.adapter.base.provider.BaseNodeProvider;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
-
 import hepta.rxposed.manager.R;
 
 public class SecondNodeProvider extends BaseNodeProvider {

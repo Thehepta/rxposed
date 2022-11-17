@@ -1,10 +1,9 @@
-package hepta.rxposed.manager.fragment.vpn;
+package hepta.rxposed.manager.fragment.apps;
 
 import androidx.annotation.Nullable;
 
 import com.chad.library.adapter.base.entity.node.BaseExpandNode;
 import com.chad.library.adapter.base.entity.node.BaseNode;
-import com.chad.library.adapter.base.entity.node.NodeFooterImp;
 
 import java.util.List;
 
@@ -16,7 +15,7 @@ public class RootNode extends BaseExpandNode {
 
     public RootNode(List<BaseNode> childNode, String title) {
         // 默认不展开
-        setExpanded(false);
+//        setExpanded(false);
         this.childNode = childNode;
         this.title = title;
     }

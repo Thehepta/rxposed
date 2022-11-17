@@ -1,17 +1,17 @@
-package hepta.rxposed.manager.fragment.extend;
+package hepta.rxposed.manager.fragment.base;
 
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 
-import hepta.rxposed.manager.fragment.apps.AppInfo;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class ModuleInfo {
+import hepta.rxposed.manager.fragment.apps.AppInfo;
+
+public class AppModuleInfo {
 
 
 
@@ -23,7 +23,7 @@ public class ModuleInfo {
     private final String appName;
     public boolean enable;
     private final Map<Integer,AppInfo> AppInfoMaps;
-    public ModuleInfo(PackageInfo pkg, PackageManager mPm, Map<Integer, AppInfo> appInfoMap){
+    public AppModuleInfo(PackageInfo pkg, PackageManager mPm, Map<Integer, AppInfo> appInfoMap){
         this.app = pkg.applicationInfo;
         this.packageName = pkg.packageName;
         this.versionName = pkg.versionName;
@@ -62,7 +62,7 @@ public class ModuleInfo {
 
     public void setEnable(boolean enable) {
         this.enable = enable;
-        ModuleInfoProvider.getInstance().UpdateConfig();
+//        ModuleInfoProvider.getInstance().UpdateConfig();
         return;
     }
     public List<AppInfo> getAppInfoList() {

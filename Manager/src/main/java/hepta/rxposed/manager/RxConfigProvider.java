@@ -13,9 +13,6 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import hepta.rxposed.manager.RxposedApp;
-import hepta.rxposed.manager.fragment.modules.ModuleInfoProvider;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+
+import hepta.rxposed.manager.fragment.depends.FrameData;
 
 public class RxConfigProvider extends ContentProvider {
 
@@ -82,7 +81,7 @@ public class RxConfigProvider extends ContentProvider {
     public Bundle call(@NonNull String method, @Nullable String ProcessName, @Nullable Bundle extras) {
         Bundle bundle = new Bundle();
         PackageManager pm =  RxposedApp.getInstance().getPackageManager();
-        String json = ModuleInfoProvider.readerJson();
+        String json = FrameData.getInstance().readerJson();
         List<Integer> uidlist = new ArrayList<>();
         try {
             ApplicationInfo info = pm.getApplicationInfo(ProcessName, PackageManager.GET_UNINSTALLED_PACKAGES);

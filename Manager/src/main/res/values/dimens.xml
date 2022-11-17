@@ -36,5 +36,11 @@
     <!-- Custom view example -->
     <dimen name="customTitle">14sp</dimen>
     <dimen name="customEntry">18sp</dimen>
+    <dimen name="dp_45">45dp</dimen>
+    <dimen name="dp_15">15dp</dimen>
+    <dimen name="dp_1">1dp</dimen>
+    <dimen name="dp_25">25dp</dimen>
+    <dimen name="sp_13">13sp</dimen>
+    <dimen name="dp_38">38dp</dimen>
 
 </resources>

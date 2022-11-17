@@ -77,11 +77,14 @@ class HomeFragment : Fragment() {
                 }
             }, Tips = R.string.RootShowTips, Ok = R.string.Edit)
 
-
-
-
             true
         }
+        val btn_framework = view?.findViewById<Button>(R.id.btn_framework)
+        btn_framework?.setOnClickListener {
+            findNavController().navigate(R.id.frameworks_dest, null)
+
+        }
+
 
     }
 

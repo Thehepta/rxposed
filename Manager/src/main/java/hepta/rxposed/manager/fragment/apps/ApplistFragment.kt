@@ -33,12 +33,11 @@ import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.bottomsheets.BottomSheet
 import com.afollestad.materialdialogs.input.input
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
+import com.chad.library.adapter.base.entity.node.BaseNode
 import hepta.rxposed.manager.MainActivity
 import hepta.rxposed.manager.R
 import hepta.rxposed.manager.databinding.FragmentApplistBinding
-import hepta.rxposed.manager.fragment.extend.ModuleInfo
-import hepta.rxposed.manager.fragment.extend.ModuleInfoProvider
-import hepta.rxposed.manager.fragment.extend.apps.AppListAdapter
+import hepta.rxposed.manager.fragment.extend.ModuleData
 import hepta.rxposed.manager.util.LogUtil
 
 
@@ -49,11 +48,12 @@ class ApplistFragment : Fragment() {
 
 
     private var applistAdapter: AppListAdapter? = null
+    private var appsAdapter: AppsAdapter? = null
     private var expandableListAdapter : ExpandableListAdapter? = null
 
     private val filterListApp: MutableList<AppInfo> = mutableListOf()
     private lateinit var binding: FragmentApplistBinding
-    var moduleInfo: ModuleInfo? = null
+    var moduleInfo: ModuleData.Modules? = null
 
 
     override fun onCreateView(
@@ -82,32 +82,38 @@ class ApplistFragment : Fragment() {
 
     @SuppressLint("CheckResult")
     private fun initUi() {
-        var moduleInfo = ModuleInfoProvider.getInstance().ByUidGetModuleInfo(arguments?.getInt("Key")!!)
+        moduleInfo = ModuleData.getInstance().ByUidGetModuleInfo(arguments?.getInt("Key")!!)
         val headerView: View = layoutInflater.inflate(R.layout.recycle_head_switchbar, null)
         headerView.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
 
 
         var switchCompat = headerView.findViewById<SwitchCompat>(R.id.switch_enable)
-        switchCompat.isChecked = moduleInfo.getEnable()
+        switchCompat.isChecked = moduleInfo!!.getEnable()
         switchCompat.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
             LogUtil.LogE("check:",isChecked)
-            moduleInfo.setEnable(isChecked)
+            moduleInfo?.setEnable(isChecked)
         })
 
-
-        applistAdapter = AppListAdapter(R.layout.item_application)
-        applistAdapter?.addHeaderView(headerView)
+        appsAdapter = AppsAdapter()
+        appsAdapter?.addHeaderView(headerView);
+//        applistAdapter = AppListAdapter(R.layout.item_application)
+//        applistAdapter?.addHeaderView(headerView)
 
 
         val layoutManager = LinearLayoutManager(requireContext())
         layoutManager.orientation = LinearLayoutManager.VERTICAL
         binding.recyclerView.setLayoutManager(layoutManager)
-        binding.recyclerView.setAdapter(applistAdapter)
-        applistAdapter!!.setOnItemClickListener { adapter, view, position ->
-            val appInfo = adapter.data[position] as AppInfo
-            LogUtil.LogD(appInfo.appName)
-        }
-        applistAdapter?.setList(moduleInfo.appInfoList)
+//        binding.recyclerView.setAdapter(applistAdapter)
+        binding.recyclerView.setAdapter(appsAdapter)
+
+//        applistAdapter!!.setOnItemClickListener { adapter, view, position ->
+//            val appInfo = adapter.data[position] as AppInfo
+//            LogUtil.LogD(appInfo.appName)
+//        }
+
+        appsAdapter?.setList(getEntity())
+//        applistAdapter?.setList(moduleInfo.appInfoList)
+
         binding.modInfo = moduleInfo
         binding.toolbar.setNavigationIcon(R.drawable.toolbar_back)
 
@@ -130,7 +136,7 @@ class ApplistFragment : Fragment() {
             dialog.negativeButton {
                 filterListApp.clear()
 
-                moduleInfo.getAppInfoList().forEach {
+                moduleInfo?.getAppInfoList()?.forEach {
 
                     if(current_index == 0){
                         filterListApp.add(it)
@@ -169,7 +175,7 @@ class ApplistFragment : Fragment() {
             }
             dialog.positiveButton {
                 filterListApp.clear()
-                moduleInfo.getAppInfoList().forEach {
+                moduleInfo?.getAppInfoList()?.forEach {
 
                     if (it.appName.contains(search.toString())||it.packageName.contains(search.toString())){
                         filterListApp.add(it)
@@ -185,5 +191,29 @@ class ApplistFragment : Fragment() {
         }
 
     }
+
+
+    private fun getEntity(): List<BaseNode>? {
+        //总的 list，里面放的是 FirstNode
+        val list: MutableList<BaseNode> = ArrayList()
+        val firstNodeList: MutableList<BaseNode> = ArrayList()
+        val fiNode = SecondNode("fiNode Node 1")
+        firstNodeList.add(fiNode)
+        val firstentity = RootNode(firstNodeList, "框架列表")
+
+        list.add(firstentity)
+        val appNodeList: MutableList<AppInfo> = ArrayList()
+//        for (i in 1..5) {
+//            var appin = moduleInfo?.appInfoList?.get(i)
+//            appin?.let { appNodeList.add(it) }
+//        }
+
+
+        val secondentity = RootNode(moduleInfo?.appInfoList as List<BaseNode>?, "应用列表")
+        list.add(secondentity)
+
+        return list
+    }
+
 
 }

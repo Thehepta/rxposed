@@ -13,7 +13,7 @@ import hepta.rxposed.manager.fragment.apps.AppInfoDataProvider;
 import hepta.rxposed.manager.fragment.base.AppModuleInfo;
 import hepta.rxposed.manager.fragment.base.AppModuleInfoProvider;
 
-public class FrameData extends AppModuleInfoProvider<FrameData.Modules> {
+public class FrameData extends AppModuleInfoProvider<FrameData.Frames> {
 
 
 
@@ -32,22 +32,22 @@ public class FrameData extends AppModuleInfoProvider<FrameData.Modules> {
         super( RxposedApp.getInstance().getFilesDir()+"/rxposed_modules");
     }
 
-    public class Modules extends AppModuleInfo {
-        public Modules(PackageInfo pkg, PackageManager mPm, Map<Integer, AppInfo> appInfoMap) {
+    public class Frames extends AppModuleInfo {
+        public Frames(PackageInfo pkg, PackageManager mPm, Map<Integer, AppInfo> appInfoMap) {
             super(pkg, mPm, appInfoMap);
         }
     }
 
     @Override
-    public Map<Integer, Modules>  initModuelList() {
-        Map<Integer, Modules> map_modules = new HashMap<Integer, Modules> ();
+    public Map<Integer, Frames>  initModuelList() {
+        Map<Integer, Frames> map_modules = new HashMap<Integer, Frames> ();
         for (PackageInfo pkg : RxposedApp.getInstance().getPackageManager().getInstalledPackages(PackageManager.GET_META_DATA)) {
             ApplicationInfo app = pkg.applicationInfo;
             if (!app.enabled)
                 continue;
             //xposedmodule
-            if (app.metaData != null && app.metaData.containsKey("")) {
-                Modules installed = new Modules(pkg,RxposedApp.getInstance().getPackageManager(), AppInfoDataProvider.getInstance().getAllMapApps_module(pkg.packageName,RxposedApp.getInstance().getPackageManager()));
+            if (app.metaData != null && app.metaData.containsKey("xposedmodule")) {
+                Frames installed = new Frames(pkg,RxposedApp.getInstance().getPackageManager(), AppInfoDataProvider.getInstance().getAllMapApps_module(pkg.packageName,RxposedApp.getInstance().getPackageManager()));
                 map_modules.put(installed.getUID(),installed);
             }
         }
