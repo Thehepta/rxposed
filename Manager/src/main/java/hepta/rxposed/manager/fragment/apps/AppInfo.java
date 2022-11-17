@@ -1,14 +1,16 @@
-package hepta.rxposed.manager.fragment.apps;
+package hepta.rxposed.manager.fragment.depends.apps;
 
 
 import android.content.pm.ApplicationInfo;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 
-import hepta.rxposed.manager.fragment.modules.ModuleInfoProvider;
+import com.chad.library.adapter.base.entity.MultiItemEntity;
+
+import hepta.rxposed.manager.fragment.extend.ModuleInfoProvider;
 
 
-public class AppInfo {
+public class AppInfo implements MultiItemEntity {
     private String moduleName;
     private ApplicationInfo appInfo;
     private Drawable icon;
@@ -74,5 +76,10 @@ public class AppInfo {
 
     public void setAppInfo(ApplicationInfo appInfo) {
         this.appInfo = appInfo;
+    }
+
+    @Override
+    public int getItemType() {
+        return 0;
     }
 }

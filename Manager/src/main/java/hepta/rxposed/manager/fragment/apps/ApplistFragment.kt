@@ -22,9 +22,8 @@ import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.CompoundButton
-import android.widget.EditText
+import android.widget.ExpandableListAdapter
 import androidx.appcompat.widget.SwitchCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -32,20 +31,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.afollestad.materialdialogs.LayoutMode
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.bottomsheets.BottomSheet
-import com.afollestad.materialdialogs.checkbox.checkBoxPrompt
-import com.afollestad.materialdialogs.customview.customView
-import com.afollestad.materialdialogs.customview.getCustomView
 import com.afollestad.materialdialogs.input.input
-import com.afollestad.materialdialogs.list.listItems
-import com.afollestad.materialdialogs.list.listItemsMultiChoice
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import hepta.rxposed.manager.MainActivity
 import hepta.rxposed.manager.R
 import hepta.rxposed.manager.databinding.FragmentApplistBinding
-import hepta.rxposed.manager.fragment.apps.AppInfo
-import hepta.rxposed.manager.fragment.apps.AppListAdapter
-import hepta.rxposed.manager.fragment.modules.ModuleInfo
-import hepta.rxposed.manager.fragment.modules.ModuleInfoProvider
+import hepta.rxposed.manager.fragment.extend.ModuleInfo
+import hepta.rxposed.manager.fragment.extend.ModuleInfoProvider
+import hepta.rxposed.manager.fragment.extend.apps.AppListAdapter
 import hepta.rxposed.manager.util.LogUtil
 
 
@@ -56,6 +49,8 @@ class ApplistFragment : Fragment() {
 
 
     private var applistAdapter: AppListAdapter? = null
+    private var expandableListAdapter : ExpandableListAdapter? = null
+
     private val filterListApp: MutableList<AppInfo> = mutableListOf()
     private lateinit var binding: FragmentApplistBinding
     var moduleInfo: ModuleInfo? = null
@@ -98,6 +93,8 @@ class ApplistFragment : Fragment() {
             LogUtil.LogE("check:",isChecked)
             moduleInfo.setEnable(isChecked)
         })
+
+
         applistAdapter = AppListAdapter(R.layout.item_application)
         applistAdapter?.addHeaderView(headerView)
 
@@ -117,6 +114,9 @@ class ApplistFragment : Fragment() {
         binding.toolbar.setNavigationOnClickListener {
             requireActivity().onBackPressed()
         }
+
+
+
         binding.toolbar.menu.findItem(R.id.id_toolbar_option).setOnMenuItemClickListener {
             var current_index: Int = 0
             val dialog = MaterialDialog(requireContext(), BottomSheet(LayoutMode.WRAP_CONTENT)).show {

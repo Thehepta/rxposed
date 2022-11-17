@@ -1,4 +1,4 @@
-package hepta.rxposed.manager.fragment.apps;
+package hepta.rxposed.manager.fragment.depends.apps;
 
 import android.widget.CompoundButton;
 

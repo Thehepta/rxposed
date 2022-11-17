@@ -1,11 +1,9 @@
-package hepta.rxposed.manager.fragment.apps;
+package hepta.rxposed.manager.fragment.depends.apps;
 
-import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
-
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,14 +12,14 @@ import java.util.Map;
 
 import hepta.rxposed.manager.RxposedApp;
 
-public class AppInfoProvider {
+public class AppInfoDataProvider {
 
-    private static AppInfoProvider _sInstance;
+    private static AppInfoDataProvider _sInstance;
 
     private Map<Integer, AppInfo> map_AppInfos = new HashMap<Integer, AppInfo>();
     private PackageManager packageManager;
     //获取一个包管理器
-    public AppInfoProvider(){
+    public AppInfoDataProvider(){
         packageManager = RxposedApp.getInstance().getPackageManager();
         IninApps();
     }
@@ -69,7 +67,7 @@ public class AppInfoProvider {
 
     public Map<Integer, AppInfo> getAllMapApps_module(String module_packageName){
 
-        Map<Integer,AppInfo> mapAppInfos = new HashMap<>();
+        Map<Integer, AppInfo> mapAppInfos = new HashMap<>();
         AppInfo myAppInfo;
         List<PackageInfo> packageInfos = packageManager.getInstalledPackages(0);
         for(PackageInfo info:packageInfos){
@@ -164,9 +162,9 @@ public class AppInfoProvider {
 
     }
 
-    public static AppInfoProvider getInstance() {
+    public static AppInfoDataProvider getInstance() {
         if (_sInstance == null) {
-            _sInstance = new AppInfoProvider();
+            _sInstance = new AppInfoDataProvider();
         }
         return _sInstance;
     }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package hepta.rxposed.manager.fragment
+package hepta.rxposed.manager.fragment.vpn
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View

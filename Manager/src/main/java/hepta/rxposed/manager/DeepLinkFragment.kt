@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package hepta.rxposed.manager.fragment
+package hepta.rxposed.manager
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -30,6 +29,9 @@ import android.widget.TextView
 import androidx.core.app.NotificationCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.chad.library.adapter.base.entity.node.BaseNode
 import hepta.rxposed.manager.R
 
 /**
@@ -75,5 +77,42 @@ class DeepLinkFragment : Fragment() {
                     .setAutoCancel(true)
             notificationManager.notify(0, builder.build())
         }
+
+        var nodeAdapter = NodeAdapter()
+        var rv_list = view.findViewById<RecyclerView>(R.id.rv_list)
+        rv_list.layoutManager = LinearLayoutManager(requireContext())
+        rv_list.adapter = nodeAdapter
+        nodeAdapter.setList(getEntity())
+
+
+
     }
+
+
+    private fun getEntity(): List<BaseNode>? {
+        //总的 list，里面放的是 FirstNode
+        val list: MutableList<BaseNode> = ArrayList()
+        for (i in 0..7) {
+
+            //SecondNode 的 list
+            val secondNodeList: MutableList<BaseNode> = ArrayList()
+            for (n in 0..5) {
+                val seNode = SecondNode("Second Node $n")
+                secondNodeList.add(seNode)
+            }
+            val entity = RootNode(secondNodeList, "Root Node $i")
+            list.add(entity)
+        }
+        val firstNodeList: MutableList<BaseNode> = ArrayList()
+
+        for (n in 0..5) {
+            val seNode = FirstNode("First Node $n")
+            firstNodeList.add(seNode)
+        }
+        val entityfirst = RootNode(firstNodeList, "Root Node $100")
+        list.add(entityfirst)
+        return list
+    }
+
+
 }
