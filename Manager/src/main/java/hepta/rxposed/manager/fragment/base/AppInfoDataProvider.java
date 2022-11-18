@@ -10,13 +10,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import hepta.rxposed.manager.RxposedApp;
-
 public class AppInfoDataProvider {
 
     private static AppInfoDataProvider _sInstance;
 
-    private Map<Integer, AppInfo> map_AppInfos = new HashMap<Integer, AppInfo>();
+    private Map<Integer, AppInfoNode> map_AppInfos = new HashMap<Integer, AppInfoNode>();
     private PackageManager packageManager;
     //获取一个包管理器
     public AppInfoDataProvider(){
@@ -24,19 +22,19 @@ public class AppInfoDataProvider {
     }
    
 
-    public List<AppInfo> getAllListApps(){
-        List<AppInfo> result = new ArrayList(map_AppInfos.values());
+    public List<AppInfoNode> getAllListApps(){
+        List<AppInfoNode> result = new ArrayList(map_AppInfos.values());
         return result;
     }
 
 
-    public Map<Integer, AppInfo> getAllMapApps_module(String module_packageName, PackageManager packageManager){
+    public Map<Integer, AppInfoNode> getAllMapApps_module(String module_packageName, PackageManager packageManager){
 
-        Map<Integer, AppInfo> mapAppInfos = new HashMap<>();
-        AppInfo myAppInfo;
+        Map<Integer, AppInfoNode> mapAppInfos = new HashMap<>();
+        AppInfoNode myAppInfo;
         List<PackageInfo> packageInfos = packageManager.getInstalledPackages(0);
         for(PackageInfo info:packageInfos){
-            myAppInfo = new AppInfo();
+            myAppInfo = new AppInfoNode();
             //拿到包名
             String packageName = info.packageName;
             //拿到应用程序的信息

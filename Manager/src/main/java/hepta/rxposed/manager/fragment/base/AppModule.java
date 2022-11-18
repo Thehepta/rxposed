@@ -5,13 +5,17 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 
+import androidx.annotation.Nullable;
+
+import com.chad.library.adapter.base.entity.node.BaseNode;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import hepta.rxposed.manager.fragment.apps.AppInfo;
+import hepta.rxposed.manager.fragment.apps.AppInfoNode;
 
-public class AppModuleInfo {
+public class AppModuleInfo extends BaseNode {
 
 
 
@@ -22,8 +26,8 @@ public class AppModuleInfo {
     private final int versionCode;
     private final String appName;
     public boolean enable;
-    private final Map<Integer,AppInfo> AppInfoMaps;
-    public AppModuleInfo(PackageInfo pkg, PackageManager mPm, Map<Integer, AppInfo> appInfoMap){
+    private final Map<Integer, AppInfoNode> AppInfoMaps;
+    public AppModuleInfo(PackageInfo pkg, PackageManager mPm, Map<Integer, AppInfoNode> appInfoMap){
         this.app = pkg.applicationInfo;
         this.packageName = pkg.packageName;
         this.versionName = pkg.versionName;
@@ -65,12 +69,19 @@ public class AppModuleInfo {
 //        ModuleInfoProvider.getInstance().UpdateConfig();
         return;
     }
-    public List<AppInfo> getAppInfoList() {
-        List<AppInfo> result = new ArrayList(AppInfoMaps.values());
+    public List<AppInfoNode> getAppInfoList() {
+        List<AppInfoNode> result = new ArrayList(AppInfoMaps.values());
         return result;
     }
 
-    public Map<Integer, AppInfo> getAppInfoMaps() {
+    public Map<Integer, AppInfoNode> getAppInfoMaps() {
         return AppInfoMaps;
+    }
+
+
+    @Nullable
+    @Override
+    public List<BaseNode> getChildNode() {
+        return null;
     }
 }

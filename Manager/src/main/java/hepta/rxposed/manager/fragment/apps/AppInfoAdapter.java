@@ -21,7 +21,7 @@ public class AppsAdapter extends BaseNodeAdapter {
         // 普通的item provider
         addNodeProvider(new SecondNodeProvider());
         // 脚布局的 provider
-        addNodeProvider(new AppNodeProvider());
+        addNodeProvider(new AppInfoNodeProvider());
     }
 
     @Override

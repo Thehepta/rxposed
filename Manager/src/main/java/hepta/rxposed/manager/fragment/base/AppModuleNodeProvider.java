@@ -1,4 +1,4 @@
-package hepta.rxposed.manager.fragment.apps;
+package hepta.rxposed.manager.fragment.base;
 
 import androidx.annotation.NonNull;
 
@@ -8,21 +8,22 @@ import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 
 import hepta.rxposed.manager.R;
 
-public class AppNodeProvider extends BaseNodeProvider {
+public class DependNodeProvider extends BaseNodeProvider {
+
+
     @Override
     public int getItemViewType() {
-        return 2;
+        return 1;
     }
 
     @Override
     public int getLayoutId() {
-        return R.layout.list_small_major_item;
-
+        return R.layout.item_application;
     }
 
     @Override
     public void convert(@NonNull BaseViewHolder baseViewHolder, BaseNode baseNode) {
-        AppInfo entity = (AppInfo) baseNode;
-        baseViewHolder.setText(R.id.tv_name, entity.getAppName());
+        AppModuleInfo entity = (AppModuleInfo) baseNode;
+        baseViewHolder.setText(R.id.app_name, entity.getAppName());
     }
 }
