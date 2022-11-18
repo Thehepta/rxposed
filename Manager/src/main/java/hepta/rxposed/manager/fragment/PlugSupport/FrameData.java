@@ -4,13 +4,18 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 
+import androidx.annotation.Nullable;
+
+import com.chad.library.adapter.base.entity.node.BaseNode;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import hepta.rxposed.manager.RxposedApp;
-import hepta.rxposed.manager.fragment.apps.AppInfo;
-import hepta.rxposed.manager.fragment.apps.AppInfoDataProvider;
-import hepta.rxposed.manager.fragment.base.AppModuleInfo;
+import hepta.rxposed.manager.fragment.apps.AppInfoNode;
+import hepta.rxposed.manager.fragment.base.AppInfoDataProvider;
+import hepta.rxposed.manager.fragment.base.AppModule;
 import hepta.rxposed.manager.fragment.base.AppModuleInfoProvider;
 
 public class FrameData extends AppModuleInfoProvider<FrameData.Frames> {
@@ -32,11 +37,20 @@ public class FrameData extends AppModuleInfoProvider<FrameData.Frames> {
         super( RxposedApp.getInstance().getFilesDir()+"/rxposed_modules");
     }
 
-    public class Frames extends AppModuleInfo {
-        public Frames(PackageInfo pkg, PackageManager mPm, Map<Integer, AppInfo> appInfoMap) {
+    public class Frames extends AppModule {
+        public Frames(PackageInfo pkg, PackageManager mPm, Map<Integer, AppInfoNode> appInfoMap) {
             super(pkg, mPm, appInfoMap);
         }
+
+
+        @Nullable
+        @Override
+        public List<BaseNode> getChildNode() {
+            return null;
+        }
     }
+
+
 
     @Override
     public Map<Integer, Frames>  initModuelList() {

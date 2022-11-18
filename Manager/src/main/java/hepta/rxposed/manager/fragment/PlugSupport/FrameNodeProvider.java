@@ -1,4 +1,4 @@
-package hepta.rxposed.manager.fragment.base;
+package hepta.rxposed.manager.fragment.depends;
 
 import android.widget.CompoundButton;
 
@@ -10,13 +10,17 @@ import com.chad.library.adapter.base.provider.BaseNodeProvider;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 
 import hepta.rxposed.manager.R;
+import hepta.rxposed.manager.fragment.base.AppModule;
+import hepta.rxposed.manager.fragment.extend.ModuleData;
 
-public class AppModuleNodeProvider extends BaseNodeProvider {
+
+//在applistFragment 使用，用于自定义部分recycleview显示的内容
+public class FrameNodeProvider extends BaseNodeProvider {
 
 
     @Override
     public int getItemViewType() {
-        return 1;
+        return 3;
     }
 
     @Override
@@ -26,7 +30,7 @@ public class AppModuleNodeProvider extends BaseNodeProvider {
 
     @Override
     public void convert(@NonNull BaseViewHolder baseViewHolder, BaseNode baseNode) {
-        AppModule item = (AppModule) baseNode;
+        FrameData.Frames item = (FrameData.Frames) baseNode;
         baseViewHolder.setText(R.id.app_name, item.getAppName());
         baseViewHolder.setText(R.id.description, item.getPackageName());
         baseViewHolder.setImageDrawable(R.id.app_icon,item.getIcon());
