@@ -4,6 +4,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -15,7 +16,7 @@ import java.util.Map;
 
 import hepta.rxposed.manager.fragment.apps.AppInfoNode;
 
-public class AppModuleInfo extends BaseNode {
+public class AppModule extends BaseNode {
 
 
 
@@ -27,7 +28,7 @@ public class AppModuleInfo extends BaseNode {
     private final String appName;
     public boolean enable;
     private final Map<Integer, AppInfoNode> AppInfoMaps;
-    public AppModuleInfo(PackageInfo pkg, PackageManager mPm, Map<Integer, AppInfoNode> appInfoMap){
+    public AppModule(PackageInfo pkg, PackageManager mPm, Map<Integer, AppInfoNode> appInfoMap){
         this.app = pkg.applicationInfo;
         this.packageName = pkg.packageName;
         this.versionName = pkg.versionName;
@@ -65,6 +66,7 @@ public class AppModuleInfo extends BaseNode {
     }
 
     public void setEnable(boolean enable) {
+        Log.e("Rzx","setEnable:"+enable+" appName:"+appName+" uid ="+getUID());
         this.enable = enable;
 //        ModuleInfoProvider.getInstance().UpdateConfig();
         return;

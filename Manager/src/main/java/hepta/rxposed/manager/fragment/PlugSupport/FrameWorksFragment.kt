@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package hepta.rxposed.manager.fragment.depends
+package hepta.rxposed.manager.fragment.PlugSupport
 
 import android.os.Bundle
 import android.view.*
@@ -26,7 +26,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import hepta.rxposed.manager.MainActivity
 import hepta.rxposed.manager.R
 import hepta.rxposed.manager.databinding.FragmentFrameworksBinding
-import hepta.rxposed.manager.databinding.FragmentModulesBinding
 import hepta.rxposed.manager.util.Consts
 
 

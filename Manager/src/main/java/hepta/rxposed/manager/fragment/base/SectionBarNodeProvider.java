@@ -15,7 +15,7 @@ import java.util.List;
 
 import hepta.rxposed.manager.R;
 
-public class SectionBarProvider<T extends SectionBarProvider.baseSectionNode> extends BaseNodeProvider {
+public class SectionBarNodeProvider<T extends SectionBarNodeProvider.baseSectionNode> extends BaseNodeProvider {
 
 
     public static class baseSectionNode extends BaseExpandNode {
@@ -53,7 +53,7 @@ public class SectionBarProvider<T extends SectionBarProvider.baseSectionNode> ex
 
     @Override
     public int getLayoutId() {
-        return R.layout.list_main_major_item;
+        return R.layout.item_section_bar;
     }
 
     @Override

@@ -107,7 +107,7 @@ class HomeFragment : Fragment() {
                 DialogUtil.DidalogSimple(requireContext(),R.string.activityMessage, {
                     InjectTool.zygote_patrace(context)
                     DialogUtil.DidalogSimple(requireContext(),R.string.rxrebootMessage, {
-                        InjectTool.zygote_reboot(requireContext())
+                        InjectTool.zygote_reboot()
                     })
                 })
             }
@@ -133,7 +133,7 @@ class HomeFragment : Fragment() {
                             InjectTool.zygote_reboot()
                         })
                         1 -> DialogUtil.DidalogSimple(requireContext(),R.string.rebootMessage, {
-                            InjectTool.zygote_reboot(requireContext())
+                            InjectTool.Application_reboot()
                         })
                     }
 

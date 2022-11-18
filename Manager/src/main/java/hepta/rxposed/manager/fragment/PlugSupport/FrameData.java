@@ -1,4 +1,4 @@
-package hepta.rxposed.manager.fragment.depends;
+package hepta.rxposed.manager.fragment.PlugSupport;
 
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -34,7 +34,7 @@ public class FrameData extends AppModuleInfoProvider<FrameData.Frames> {
 
 
     public FrameData() {
-        super( RxposedApp.getInstance().getFilesDir()+"/rxposed_modules");
+        super( RxposedApp.getInstance().getFilesDir()+"/rxposed_support");
     }
 
     public class Frames extends AppModule {
@@ -60,7 +60,7 @@ public class FrameData extends AppModuleInfoProvider<FrameData.Frames> {
             if (!app.enabled)
                 continue;
             //xposedmodule
-            if (app.metaData != null && app.metaData.containsKey("xposedmodule")) {
+            if (app.metaData != null && app.metaData.containsKey("rxposed_support")) {
                 Frames installed = new Frames(pkg,RxposedApp.getInstance().getPackageManager(), AppInfoDataProvider.getInstance().getAllMapApps_module(pkg.packageName,RxposedApp.getInstance().getPackageManager()));
                 map_modules.put(installed.getUID(),installed);
             }

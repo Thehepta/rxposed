@@ -1,4 +1,4 @@
-package hepta.rxposed.manager.fragment.extend;
+package hepta.rxposed.manager.fragment.PlugExtend;
 
 import androidx.annotation.NonNull;
 

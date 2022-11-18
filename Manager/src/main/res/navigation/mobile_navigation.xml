@@ -76,12 +76,12 @@
 
     <fragment
         android:id="@+id/modules_dest"
-        android:name="hepta.rxposed.manager.fragment.extend.ModulesFragment"
+        android:name="hepta.rxposed.manager.fragment.PlugExtend.ModulesFragment"
         android:label="@string/modules"
         tools:layout="@layout/fragment_modules" />
     <fragment
         android:id="@+id/frameworks_dest"
-        android:name="hepta.rxposed.manager.fragment.depends.FrameWorksFragment"
+        android:name="hepta.rxposed.manager.fragment.PlugSupport.FrameWorksFragment"
         android:label="@string/frameworks"
         tools:layout="@layout/fragment_frameworks" />
 

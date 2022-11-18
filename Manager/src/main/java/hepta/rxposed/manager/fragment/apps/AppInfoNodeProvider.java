@@ -10,11 +10,12 @@ import com.chad.library.adapter.base.provider.BaseNodeProvider;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 
 import hepta.rxposed.manager.R;
+import hepta.rxposed.manager.fragment.apps.AppInfoNode;
 
 public class AppInfoNodeProvider extends BaseNodeProvider {
     @Override
     public int getItemViewType() {
-        return 2;
+        return 1;
     }
 
     @Override

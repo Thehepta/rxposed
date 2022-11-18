@@ -1,5 +1,7 @@
 package hepta.rxposed.manager.util;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
@@ -14,6 +16,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 
 import hepta.rxposed.manager.BuildConfig;
+import hepta.rxposed.manager.RxposedApp;
 
 public  class InjectTool {
 
@@ -32,19 +35,25 @@ public  class InjectTool {
     public static String HostName = BuildConfig.APPLICATION_ID;
     public static String HostProviderName = BuildConfig.APPLICATION_ID+".Provider";
     public static String InjectArg = HostName+":"+HostProviderName;
+    public static Context context = null;
     public static void zygote_reboot() throws IOException {
         rootRun(su_path,"killall zygote");
     }
 
 
-    public static void zygote_reboot(Context context) throws IOException {
+    public static void init(){
+        context = RxposedApp.getInstance().getApplicationContext();
+        InjectTool.su_path = context.getSharedPreferences("rxposed",MODE_PRIVATE).getString("supath","su");
+    }
+
+
+    public static void Application_reboot() throws IOException {
         Intent intent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); //与正常页面跳转一样可传递序列化数据,在Launch页面内获得
         intent.putExtra("REBOOT", "reboot");
         context.startActivity(intent);
         android.os.Process.killProcess(android.os.Process.myPid());
     }
-
 
 
     public static boolean zygote_patrace(Context context) throws IOException {

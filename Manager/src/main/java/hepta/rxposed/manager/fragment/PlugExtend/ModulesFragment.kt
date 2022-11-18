@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package hepta.rxposed.manager.fragment.extend
+package hepta.rxposed.manager.fragment.PlugExtend
 
 import android.os.Bundle
 import android.view.*

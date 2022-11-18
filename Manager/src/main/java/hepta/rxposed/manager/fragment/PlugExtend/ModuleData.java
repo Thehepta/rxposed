@@ -1,4 +1,4 @@
-package hepta.rxposed.manager.fragment.extend;
+package hepta.rxposed.manager.fragment.PlugExtend;
 
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -38,6 +38,8 @@ public class ModuleData extends AppModuleInfoProvider<ModuleData.Modules> {
     }
 
     public class Modules extends AppModule {
+
+
         public Modules(PackageInfo pkg, PackageManager mPm, Map<Integer, AppInfoNode> appInfoMap) {
             super(pkg, mPm, appInfoMap);
         }

@@ -1,4 +1,4 @@
-package hepta.rxposed.manager.fragment.apps;
+package hepta.rxposed.manager.fragment.base;
 
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import hepta.rxposed.manager.fragment.apps.AppInfoNode;
+
 public class AppInfoDataProvider {
 
     private static AppInfoDataProvider _sInstance;
@@ -20,13 +22,11 @@ public class AppInfoDataProvider {
     public AppInfoDataProvider(){
 
     }
-   
 
     public List<AppInfoNode> getAllListApps(){
         List<AppInfoNode> result = new ArrayList(map_AppInfos.values());
         return result;
     }
-
 
     public Map<Integer, AppInfoNode> getAllMapApps_module(String module_packageName, PackageManager packageManager){
 

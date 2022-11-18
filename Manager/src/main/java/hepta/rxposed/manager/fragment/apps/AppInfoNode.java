@@ -13,7 +13,7 @@ import com.chad.library.adapter.base.entity.node.BaseNode;
 import java.util.List;
 
 
-public class AppInfo extends BaseNode {
+public class AppInfoNode extends BaseNode {
     private String moduleName;
     private ApplicationInfo appInfo;
     private Drawable icon;

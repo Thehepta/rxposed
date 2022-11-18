@@ -19,7 +19,7 @@ public class RootNodeProvider extends BaseNodeProvider {
 
     @Override
     public int getLayoutId() {
-        return R.layout.list_main_major_item;
+        return R.layout.item_section_bar;
     }
 
     @Override

@@ -23,7 +23,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CompoundButton
-import android.widget.ExpandableListAdapter
 import androidx.appcompat.widget.SwitchCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -37,7 +36,11 @@ import com.chad.library.adapter.base.entity.node.BaseNode
 import hepta.rxposed.manager.MainActivity
 import hepta.rxposed.manager.R
 import hepta.rxposed.manager.databinding.FragmentApplistBinding
-import hepta.rxposed.manager.fragment.extend.ModuleData
+import hepta.rxposed.manager.fragment.base.AppModule
+import hepta.rxposed.manager.fragment.base.SectionBarNode
+import hepta.rxposed.manager.fragment.PlugSupport.FrameData
+import hepta.rxposed.manager.fragment.PlugExtend.ModuleData
+import hepta.rxposed.manager.util.Consts
 import hepta.rxposed.manager.util.LogUtil
 
 
@@ -46,14 +49,11 @@ import hepta.rxposed.manager.util.LogUtil
  */
 class ApplistFragment : Fragment() {
 
-
-    private var applistAdapter: AppListAdapter? = null
-    private var appsAdapter: AppsAdapter? = null
-    private var expandableListAdapter : ExpandableListAdapter? = null
-
-    private val filterListApp: MutableList<AppInfo> = mutableListOf()
+    private var appsAdapter: AppInfoAdapter? = null
+    private val filterListApp: MutableList<AppInfoNode> = mutableListOf()
     private lateinit var binding: FragmentApplistBinding
-    var moduleInfo: ModuleData.Modules? = null
+    var moduleInfo: AppModule? = null
+    val Datalist: MutableList<BaseNode> = ArrayList()
 
 
     override fun onCreateView(
@@ -69,59 +69,79 @@ class ApplistFragment : Fragment() {
         return binding.root
     }
 
-
-//    fun ApplistFragment(moduleInfo: ModuleInfo) {
-//        moduleInfo = moduleInfo
-//    }
-
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initUi();
+
+        if (arguments?.getInt("type") == Consts.START_FRAGMENT_FRAMEWORK){
+            moduleInfo = FrameData.getInstance().ByUidGetModuleInfo(arguments?.getInt("Key")!!)
+
+            val firstSectionBar = SectionBarNode(ModuleData.getInstance().moduleList as List<BaseNode>?, "依赖应用")
+            Datalist.add(firstSectionBar)
+            val secondSectionBar =
+                SectionBarNode(
+                    moduleInfo?.appInfoList as List<BaseNode>?,
+                    "应用列表"
+                )
+            Datalist.add(secondSectionBar)
+
+
+        }else if (arguments?.getInt("type") == Consts.START_FRAGMENT_MODULE){
+            moduleInfo = ModuleData.getInstance().ByUidGetModuleInfo(arguments?.getInt("Key")!!)
+            val firstSectionBar =
+                SectionBarNode(
+                    FrameData.getInstance().moduleList as List<BaseNode>?,
+                    "框架列表"
+                )
+            Datalist.add(firstSectionBar)
+            val secondSectionBar =
+                SectionBarNode(
+                    moduleInfo?.appInfoList as List<BaseNode>?,
+                    "应用列表"
+                )
+            Datalist.add(secondSectionBar)
+        }
+        initRecycleView();
+        initSwitchBar()
+        initToolbar();
     }
 
-    @SuppressLint("CheckResult")
-    private fun initUi() {
-        moduleInfo = ModuleData.getInstance().ByUidGetModuleInfo(arguments?.getInt("Key")!!)
+    private fun initSwitchBar() {
+        // recycleview 添加toolbar
         val headerView: View = layoutInflater.inflate(R.layout.recycle_head_switchbar, null)
         headerView.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-
-
         var switchCompat = headerView.findViewById<SwitchCompat>(R.id.switch_enable)
         switchCompat.isChecked = moduleInfo!!.getEnable()
         switchCompat.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
             LogUtil.LogE("check:",isChecked)
             moduleInfo?.setEnable(isChecked)
         })
-
-        appsAdapter = AppsAdapter()
         appsAdapter?.addHeaderView(headerView);
-//        applistAdapter = AppListAdapter(R.layout.item_application)
-//        applistAdapter?.addHeaderView(headerView)
+    }
 
-
+    @SuppressLint("CheckResult")
+    private fun initRecycleView() {
+        appsAdapter = AppInfoAdapter()
         val layoutManager = LinearLayoutManager(requireContext())
         layoutManager.orientation = LinearLayoutManager.VERTICAL
         binding.recyclerView.setLayoutManager(layoutManager)
-//        binding.recyclerView.setAdapter(applistAdapter)
         binding.recyclerView.setAdapter(appsAdapter)
 
-//        applistAdapter!!.setOnItemClickListener { adapter, view, position ->
-//            val appInfo = adapter.data[position] as AppInfo
+//        appsAdapter!!.setOnItemClickListener { adapter, view, position ->
+//            val appInfo = adapter.data[position] as AppModuleInfo
 //            LogUtil.LogD(appInfo.appName)
 //        }
-
-        appsAdapter?.setList(getEntity())
-//        applistAdapter?.setList(moduleInfo.appInfoList)
-
+        appsAdapter?.setList(Datalist)
+        //绑定数据
         binding.modInfo = moduleInfo
+    }
+
+    @SuppressLint("CheckResult")
+    private fun initToolbar() {
         binding.toolbar.setNavigationIcon(R.drawable.toolbar_back)
 
         binding.toolbar.setNavigationOnClickListener {
             requireActivity().onBackPressed()
         }
-
-
 
         binding.toolbar.menu.findItem(R.id.id_toolbar_option).setOnMenuItemClickListener {
             var current_index: Int = 0
@@ -152,7 +172,7 @@ class ApplistFragment : Fragment() {
                         }
                     }
                 }
-                applistAdapter?.setList(filterListApp)
+//                applistAdapter?.setList(filterListApp)
             }
 
             dialog.positiveButton {
@@ -181,7 +201,7 @@ class ApplistFragment : Fragment() {
                         filterListApp.add(it)
                     }
                 }
-                applistAdapter?.setList(filterListApp)
+//                applistAdapter?.setList(filterListApp)
             }
             dialog.negativeButton {
 
@@ -189,31 +209,24 @@ class ApplistFragment : Fragment() {
 
             true
         }
-
     }
 
 
-    private fun getEntity(): List<BaseNode>? {
-        //总的 list，里面放的是 FirstNode
-        val list: MutableList<BaseNode> = ArrayList()
-        val firstNodeList: MutableList<BaseNode> = ArrayList()
-        val fiNode = SecondNode("fiNode Node 1")
-        firstNodeList.add(fiNode)
-        val firstentity = RootNode(firstNodeList, "框架列表")
 
-        list.add(firstentity)
-        val appNodeList: MutableList<AppInfo> = ArrayList()
-//        for (i in 1..5) {
-//            var appin = moduleInfo?.appInfoList?.get(i)
-//            appin?.let { appNodeList.add(it) }
-//        }
-
-
-        val secondentity = RootNode(moduleInfo?.appInfoList as List<BaseNode>?, "应用列表")
-        list.add(secondentity)
-
-        return list
-    }
+//    private fun getInitData(): List<BaseNode>? {
+//        //总的 list，里面放的是 FirstNode
+//        val list: MutableList<BaseNode> = ArrayList()
+//        val firstNodeList: MutableList<BaseNode> = ArrayList()
+//        val fiNode =
+//            DependNode("fiNode Node 1")
+//        firstNodeList.add(fiNode)
+//        val firstentity = RootNode(firstNodeList, "框架列表")
+//        list.add(firstentity)
+//        val secondentity = RootNode(moduleInfo?.appInfoList as List<BaseNode>?, "应用列表")
+//        list.add(secondentity)
+//
+//        return list
+//    }
 
 
 }

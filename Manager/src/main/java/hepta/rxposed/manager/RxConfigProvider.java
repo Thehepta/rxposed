@@ -24,7 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-import hepta.rxposed.manager.fragment.depends.FrameData;
+import hepta.rxposed.manager.fragment.PlugSupport.FrameData;
 
 public class RxConfigProvider extends ContentProvider {
 

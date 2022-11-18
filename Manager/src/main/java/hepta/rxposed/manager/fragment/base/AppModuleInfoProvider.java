@@ -1,9 +1,5 @@
 package hepta.rxposed.manager.fragment.base;
 
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -12,23 +8,17 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import hepta.rxposed.manager.RxposedApp;
-import hepta.rxposed.manager.fragment.apps.AppInfo;
-import hepta.rxposed.manager.fragment.apps.AppInfoDataProvider;
-import hepta.rxposed.manager.fragment.extend.ModuleData;
 import hepta.rxposed.manager.util.LogUtil;
 
 
-public abstract class AppModuleInfoProvider<T extends AppModuleInfo> {
+public abstract class AppModuleInfoProvider<T extends AppModule> {
 
     private Map<Integer, T> map_modules ;
     private String ConfigPath ;
