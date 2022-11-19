@@ -1,4 +1,4 @@
-package hepta.rxposed.manager.fragment.apps;
+package hepta.rxposed.manager.fragment.base;
 
 
 import android.content.pm.ApplicationInfo;
@@ -7,7 +7,6 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
-import com.chad.library.adapter.base.entity.MultiItemEntity;
 import com.chad.library.adapter.base.entity.node.BaseNode;
 
 import java.util.List;

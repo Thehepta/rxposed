@@ -24,7 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-import hepta.rxposed.manager.fragment.PlugSupport.FrameData;
+import hepta.rxposed.manager.fragment.PlugSupport.SupportData;
 
 public class RxConfigProvider extends ContentProvider {
 
@@ -81,7 +81,7 @@ public class RxConfigProvider extends ContentProvider {
     public Bundle call(@NonNull String method, @Nullable String ProcessName, @Nullable Bundle extras) {
         Bundle bundle = new Bundle();
         PackageManager pm =  RxposedApp.getInstance().getPackageManager();
-        String json = FrameData.getInstance().readerJson();
+        String json = SupportData.getInstance().readerJson();
         List<Integer> uidlist = new ArrayList<>();
         try {
             ApplicationInfo info = pm.getApplicationInfo(ProcessName, PackageManager.GET_UNINSTALLED_PACKAGES);

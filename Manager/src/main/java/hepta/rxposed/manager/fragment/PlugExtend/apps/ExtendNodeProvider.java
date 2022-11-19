@@ -1,25 +1,23 @@
-package hepta.rxposed.manager.fragment.PlugExtend;
+package hepta.rxposed.manager.fragment.PlugExtend.apps;
 
 import android.util.Log;
-import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.widget.SwitchCompat;
 
 import com.chad.library.adapter.base.entity.node.BaseNode;
 import com.chad.library.adapter.base.provider.BaseNodeProvider;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 
 import hepta.rxposed.manager.R;
-import hepta.rxposed.manager.fragment.PlugSupport.FrameData;
+import hepta.rxposed.manager.fragment.PlugSupport.SupportData;
 
 public class ExtendNodeProvider extends BaseNodeProvider {
 
 
     public CompoundButton CurrentCheckBox = null;
-    public FrameData.Frames CurrentbaseNode = null;
+    public SupportData.SupportInfo CurrentbaseNode = null;
 
     @Override
     public int getItemViewType() {
@@ -34,12 +32,12 @@ public class ExtendNodeProvider extends BaseNodeProvider {
 
     @Override
     public void convert(@NonNull BaseViewHolder baseViewHolder, BaseNode baseNode) {
-        FrameData.Frames item = (FrameData.Frames) baseNode;
+        SupportData.SupportInfo item = (SupportData.SupportInfo) baseNode;
         baseViewHolder.setText(R.id.app_name, item.getAppName());
         baseViewHolder.setText(R.id.description, item.getPackageName());
         baseViewHolder.setImageDrawable(R.id.app_icon,item.getIcon());
-        CheckBox checkBox = baseViewHolder.findView(R.id.radiobtn);
 
+        CheckBox checkBox = baseViewHolder.findView(R.id.radiobtn);
         checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {

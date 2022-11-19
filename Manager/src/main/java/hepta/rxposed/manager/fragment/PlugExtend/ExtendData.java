@@ -9,38 +9,38 @@ import androidx.annotation.Nullable;
 import com.chad.library.adapter.base.entity.node.BaseNode;
 
 import hepta.rxposed.manager.RxposedApp;
-import hepta.rxposed.manager.fragment.apps.AppInfoNode;
 import hepta.rxposed.manager.fragment.base.AppInfoDataProvider;
-import hepta.rxposed.manager.fragment.base.AppModule;
-import hepta.rxposed.manager.fragment.base.AppModuleInfoProvider;
+import hepta.rxposed.manager.fragment.base.AppInfoNode;
+import hepta.rxposed.manager.fragment.base.ModuleInfo;
+import hepta.rxposed.manager.fragment.base.ModuleInfoProvider;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ModuleData extends AppModuleInfoProvider<ModuleData.Modules> {
+public class ExtendData extends ModuleInfoProvider<ExtendData.ExtendInfo> {
 
 
 
-    private static ModuleData _sInstance;
+    private static ExtendData _sInstance;
 
 
-    public static ModuleData getInstance() {
+    public static ExtendData getInstance() {
         if (_sInstance == null) {
-            _sInstance = new ModuleData();
+            _sInstance = new ExtendData();
         }
         return _sInstance;
     }
 
 
-    public ModuleData() {
+    public ExtendData() {
         super( RxposedApp.getInstance().getFilesDir()+"/rxposed_modules");
     }
 
-    public class Modules extends AppModule {
+    public class ExtendInfo extends ModuleInfo {
 
 
-        public Modules(PackageInfo pkg, PackageManager mPm, Map<Integer, AppInfoNode> appInfoMap) {
+        public ExtendInfo(PackageInfo pkg, PackageManager mPm, Map<Integer, AppInfoNode> appInfoMap) {
             super(pkg, mPm, appInfoMap);
         }
 
@@ -53,15 +53,15 @@ public class ModuleData extends AppModuleInfoProvider<ModuleData.Modules> {
     }
 
     @Override
-    public Map<Integer, Modules>  initModuelList() {
-        Map<Integer, Modules> map_modules = new HashMap<Integer, Modules> ();
+    public Map<Integer, ExtendInfo>  initModuelList() {
+        Map<Integer, ExtendInfo> map_modules = new HashMap<Integer, ExtendInfo> ();
         for (PackageInfo pkg : RxposedApp.getInstance().getPackageManager().getInstalledPackages(PackageManager.GET_META_DATA)) {
             ApplicationInfo app = pkg.applicationInfo;
             if (!app.enabled)
                 continue;
             //xposedmodule
             if (app.metaData != null && app.metaData.containsKey("xposedmodule")) {
-                Modules installed = new Modules(pkg,RxposedApp.getInstance().getPackageManager(), AppInfoDataProvider.getInstance().getAllMapApps_module(pkg.packageName,RxposedApp.getInstance().getPackageManager()));
+                ExtendInfo installed = new ExtendInfo(pkg,RxposedApp.getInstance().getPackageManager(), AppInfoDataProvider.getInstance().getAllMapApps_module(pkg.packageName,RxposedApp.getInstance().getPackageManager()));
                 map_modules.put(installed.getUID(),installed);
             }
         }

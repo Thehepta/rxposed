@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package hepta.rxposed.manager.fragment.PlugSupport
+package hepta.rxposed.manager.fragment.PlugExtend
 
 import android.os.Bundle
 import android.view.*
@@ -25,19 +25,19 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import hepta.rxposed.manager.MainActivity
 import hepta.rxposed.manager.R
-import hepta.rxposed.manager.databinding.FragmentFrameworksBinding
-import hepta.rxposed.manager.util.Consts
+import hepta.rxposed.manager.databinding.FragmentModulesBinding
+import hepta.rxposed.manager.util.Consts.START_FRAGMENT_MODULE
 
 
 /**
  * A simple [Fragment] subclass.
  */
-class FrameWorksFragment : Fragment() {
+class ExtendFragment : Fragment() {
 
 
-    private var moduleListAdapter: FrameWorkListAdapter? = null
-    private val filterModuleInfo: List<FrameData.Frames> = ArrayList()
-    private lateinit var binding: FragmentFrameworksBinding
+    private var moduleListAdapter: ExtendListAdapter? = null
+    private val filterModuleInfo: List<ExtendData> = ArrayList()
+    private lateinit var binding: FragmentModulesBinding
 
 
     override fun onCreateView(
@@ -45,7 +45,7 @@ class FrameWorksFragment : Fragment() {
             container: ViewGroup?,
             savedInstanceState: Bundle?
     ): View? {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_frameworks, container, false)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_modules, container, false)
         setHasOptionsMenu(true)
         var mainActivity = requireActivity() as MainActivity
         mainActivity.EnableToolBar()
@@ -64,13 +64,13 @@ class FrameWorksFragment : Fragment() {
 
     private fun initRecycleView() {
         moduleListAdapter =
-            FrameWorkListAdapter(R.layout.item_module)
+            ExtendListAdapter(R.layout.item_module)
         val layoutManager = LinearLayoutManager(requireContext())
         layoutManager.orientation = LinearLayoutManager.VERTICAL
         binding.recyclerView.setLayoutManager(layoutManager)
         binding.recyclerView.setAdapter(moduleListAdapter)
         moduleListAdapter!!.setOnItemClickListener { adapter, view, position ->
-            val moduleInfo = adapter.data[position] as FrameData.Frames
+            val moduleInfo = adapter.data[position] as ExtendData.ExtendInfo
 
 //            val controller: NavController =
 //                Navigation.findNavController()
@@ -78,14 +78,13 @@ class FrameWorksFragment : Fragment() {
             val controller: NavController = findNavController()
             val bundle1:Bundle  =  Bundle();
             bundle1.putInt("Key",moduleInfo.uid);
-            bundle1.putInt("type", Consts.START_FRAGMENT_FRAMEWORK);
-
+            bundle1.putInt("type", START_FRAGMENT_MODULE);
             // 把Persion数据放入到bundle中
-            controller.navigate(R.id.apps_dest, bundle1)
+            controller.navigate(R.id.extend_apps_dest, bundle1)
 
         }
 
-        moduleListAdapter!!.setList(FrameData.getInstance().moduleList)
+        moduleListAdapter!!.setList(ExtendData.getInstance().moduleList)
 
     }
 

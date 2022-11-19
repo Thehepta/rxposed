@@ -9,10 +9,10 @@ import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 import hepta.rxposed.manager.R;
 
 
-public class ModuleListAdapter extends BaseQuickAdapter<ModuleData.Modules, BaseViewHolder> implements LoadMoreModule {
+public class ExtendListAdapter extends BaseQuickAdapter<ExtendData.ExtendInfo, BaseViewHolder> implements LoadMoreModule {
 
 
-    public ModuleListAdapter(int layoutResId) {
+    public ExtendListAdapter(int layoutResId) {
         super(layoutResId);
     }
 
@@ -24,7 +24,7 @@ public class ModuleListAdapter extends BaseQuickAdapter<ModuleData.Modules, Base
 
 
     @Override
-    protected void convert(@NonNull BaseViewHolder baseViewHolder, ModuleData.Modules item) {
+    protected void convert(@NonNull BaseViewHolder baseViewHolder, ExtendData.ExtendInfo item) {
         if (item == null) {
             return;
         }

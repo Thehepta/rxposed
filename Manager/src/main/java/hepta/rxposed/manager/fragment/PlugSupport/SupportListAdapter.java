@@ -9,10 +9,10 @@ import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 import hepta.rxposed.manager.R;
 
 
-public class FrameWorkListAdapter extends BaseQuickAdapter<FrameData.Frames, BaseViewHolder> implements LoadMoreModule {
+public class SupportListAdapter extends BaseQuickAdapter<SupportData.SupportInfo, BaseViewHolder> implements LoadMoreModule {
 
 
-    public FrameWorkListAdapter(int layoutResId) {
+    public SupportListAdapter(int layoutResId) {
         super(layoutResId);
     }
 
@@ -24,7 +24,7 @@ public class FrameWorkListAdapter extends BaseQuickAdapter<FrameData.Frames, Bas
 
 
     @Override
-    protected void convert(@NonNull BaseViewHolder baseViewHolder, FrameData.Frames item) {
+    protected void convert(@NonNull BaseViewHolder baseViewHolder, SupportData.SupportInfo item) {
         if (item == null) {
             return;
         }

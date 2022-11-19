@@ -10,8 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import hepta.rxposed.manager.fragment.apps.AppInfoNode;
-
 public class AppInfoDataProvider {
 
     private static AppInfoDataProvider _sInstance;

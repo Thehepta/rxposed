@@ -18,13 +18,13 @@ import java.util.Map;
 import hepta.rxposed.manager.util.LogUtil;
 
 
-public abstract class AppModuleInfoProvider<T extends AppModule> {
+public abstract class ModuleInfoProvider<T extends ModuleInfo> {
 
     private Map<Integer, T> map_modules ;
     private String ConfigPath ;
 
 
-    public AppModuleInfoProvider(String ConfigPath){
+    public ModuleInfoProvider(String ConfigPath){
         this.ConfigPath = ConfigPath;
         map_modules = initModuelList();
         readConfig();

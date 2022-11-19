@@ -76,18 +76,24 @@
 
     <fragment
         android:id="@+id/modules_dest"
-        android:name="hepta.rxposed.manager.fragment.PlugExtend.ModulesFragment"
+        android:name="hepta.rxposed.manager.fragment.PlugExtend.ExtendFragment"
         android:label="@string/modules"
         tools:layout="@layout/fragment_modules" />
     <fragment
         android:id="@+id/frameworks_dest"
-        android:name="hepta.rxposed.manager.fragment.PlugSupport.FrameWorksFragment"
+        android:name="hepta.rxposed.manager.fragment.PlugSupport.SupportFragment"
         android:label="@string/frameworks"
         tools:layout="@layout/fragment_frameworks" />
 
     <fragment
-        android:id="@+id/apps_dest"
-        android:name="hepta.rxposed.manager.fragment.apps.ApplistFragment"
+        android:id="@+id/support_apps_dest"
+        android:name="hepta.rxposed.manager.fragment.PlugSupport.apps.ApplistFragment"
+        android:label="@string/apps"
+        tools:layout="@layout/fragment_applist" />
+
+    <fragment
+        android:id="@+id/extend_apps_dest"
+        android:name="hepta.rxposed.manager.fragment.PlugExtend.apps.ApplistFragment"
         android:label="@string/apps"
         tools:layout="@layout/fragment_applist" />
 

@@ -1,8 +1,5 @@
-package hepta.rxposed.manager.fragment.PlugSupport;
+package hepta.rxposed.manager.fragment.base;
 
-import android.util.Log;
-import android.view.View;
-import android.widget.CheckBox;
 import android.widget.CompoundButton;
 
 import androidx.annotation.NonNull;
@@ -13,38 +10,33 @@ import com.chad.library.adapter.base.provider.BaseNodeProvider;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 
 import hepta.rxposed.manager.R;
-import hepta.rxposed.manager.fragment.PlugExtend.ModuleData;
 
-
-//在applistFragment 使用，用于自定义部分recycleview显示的内容
-public class FrameNodeProvider extends BaseNodeProvider {
-
-
+public class ModuleNodeProvider extends BaseNodeProvider {
 
 
     @Override
     public int getItemViewType() {
-        return 2;
+        return 1;
     }
-
-
 
     @Override
     public int getLayoutId() {
         return R.layout.item_application;
     }
 
-
     @Override
     public void convert(@NonNull BaseViewHolder baseViewHolder, BaseNode baseNode) {
-        ModuleData.Modules item = (ModuleData.Modules) baseNode;
+        ModuleInfo item = (ModuleInfo) baseNode;
         baseViewHolder.setText(R.id.app_name, item.getAppName());
         baseViewHolder.setText(R.id.description, item.getPackageName());
         baseViewHolder.setImageDrawable(R.id.app_icon,item.getIcon());
         SwitchCompat switchCompat = baseViewHolder.findView(R.id.switcher);
-        switchCompat.setVisibility(View.INVISIBLE);
+        switchCompat.setChecked(item.getEnable());
+        switchCompat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                item.setEnable(isChecked);
+            }
+        });
     }
-
-
-
 }

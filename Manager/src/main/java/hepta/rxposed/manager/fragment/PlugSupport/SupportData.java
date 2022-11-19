@@ -13,32 +13,32 @@ import java.util.List;
 import java.util.Map;
 
 import hepta.rxposed.manager.RxposedApp;
-import hepta.rxposed.manager.fragment.apps.AppInfoNode;
 import hepta.rxposed.manager.fragment.base.AppInfoDataProvider;
-import hepta.rxposed.manager.fragment.base.AppModule;
-import hepta.rxposed.manager.fragment.base.AppModuleInfoProvider;
+import hepta.rxposed.manager.fragment.base.AppInfoNode;
+import hepta.rxposed.manager.fragment.base.ModuleInfo;
+import hepta.rxposed.manager.fragment.base.ModuleInfoProvider;
 
-public class FrameData extends AppModuleInfoProvider<FrameData.Frames> {
-
-
-
-    private static FrameData _sInstance;
+public class SupportData extends ModuleInfoProvider<SupportData.SupportInfo> {
 
 
-    public static FrameData getInstance() {
+
+    private static SupportData _sInstance;
+
+
+    public static SupportData getInstance() {
         if (_sInstance == null) {
-            _sInstance = new FrameData();
+            _sInstance = new SupportData();
         }
         return _sInstance;
     }
 
 
-    public FrameData() {
+    public SupportData() {
         super( RxposedApp.getInstance().getFilesDir()+"/rxposed_support");
     }
 
-    public class Frames extends AppModule {
-        public Frames(PackageInfo pkg, PackageManager mPm, Map<Integer, AppInfoNode> appInfoMap) {
+    public class SupportInfo extends ModuleInfo {
+        public SupportInfo(PackageInfo pkg, PackageManager mPm, Map<Integer, AppInfoNode> appInfoMap) {
             super(pkg, mPm, appInfoMap);
         }
 
@@ -53,15 +53,15 @@ public class FrameData extends AppModuleInfoProvider<FrameData.Frames> {
 
 
     @Override
-    public Map<Integer, Frames>  initModuelList() {
-        Map<Integer, Frames> map_modules = new HashMap<Integer, Frames> ();
+    public Map<Integer, SupportInfo>  initModuelList() {
+        Map<Integer, SupportInfo> map_modules = new HashMap<Integer, SupportInfo> ();
         for (PackageInfo pkg : RxposedApp.getInstance().getPackageManager().getInstalledPackages(PackageManager.GET_META_DATA)) {
             ApplicationInfo app = pkg.applicationInfo;
             if (!app.enabled)
                 continue;
             //xposedmodule
             if (app.metaData != null && app.metaData.containsKey("rxposed_support")) {
-                Frames installed = new Frames(pkg,RxposedApp.getInstance().getPackageManager(), AppInfoDataProvider.getInstance().getAllMapApps_module(pkg.packageName,RxposedApp.getInstance().getPackageManager()));
+                SupportInfo installed = new SupportInfo(pkg,RxposedApp.getInstance().getPackageManager(), AppInfoDataProvider.getInstance().getAllMapApps_module(pkg.packageName,RxposedApp.getInstance().getPackageManager()));
                 map_modules.put(installed.getUID(),installed);
             }
         }

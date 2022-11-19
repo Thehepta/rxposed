@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-package hepta.rxposed.manager.fragment.apps
+package hepta.rxposed.manager.fragment.PlugExtend.apps
 
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.InputType
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CompoundButton
 import androidx.appcompat.widget.SwitchCompat
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.afollestad.materialdialogs.LayoutMode
@@ -33,73 +31,38 @@ import com.afollestad.materialdialogs.bottomsheets.BottomSheet
 import com.afollestad.materialdialogs.input.input
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import com.chad.library.adapter.base.entity.node.BaseNode
-import hepta.rxposed.manager.MainActivity
 import hepta.rxposed.manager.R
-import hepta.rxposed.manager.databinding.FragmentApplistBinding
-import hepta.rxposed.manager.fragment.base.AppModule
+import hepta.rxposed.manager.fragment.PlugExtend.ExtendData
+import hepta.rxposed.manager.fragment.PlugSupport.SupportData
+import hepta.rxposed.manager.fragment.base.AppInfoNode
+import hepta.rxposed.manager.fragment.base.ModuleInfo
 import hepta.rxposed.manager.fragment.base.SectionBarNode
-import hepta.rxposed.manager.fragment.PlugSupport.FrameData
-import hepta.rxposed.manager.fragment.PlugExtend.ModuleData
-import hepta.rxposed.manager.util.Consts
+import hepta.rxposed.manager.fragment.base.baseCollToolbarFragment
 import hepta.rxposed.manager.util.LogUtil
 
 
 /**
  * A simple [Fragment] subclass.
  */
-class ApplistFragment : Fragment() {
+class ApplistFragment : baseCollToolbarFragment() {
 
     private var appsAdapter: AppInfoAdapter? = null
     private val filterListApp: MutableList<AppInfoNode> = mutableListOf()
-    private lateinit var binding: FragmentApplistBinding
-    var moduleInfo: AppModule? = null
     val Datalist: MutableList<BaseNode> = ArrayList()
 
 
-    override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
-    ): View? {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_applist, container, false)
-        setHasOptionsMenu(true)
-        var mainActivity = requireActivity() as MainActivity
-        mainActivity.DisableToolBar();
-        // Inflate the layout for this fragment
-        return binding.root
+    override fun getModuleInfo(): ModuleInfo {
+        return ExtendData.getInstance().ByUidGetModuleInfo(arguments?.getInt("Key")!!)
     }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if (arguments?.getInt("type") == Consts.START_FRAGMENT_FRAMEWORK){
-            moduleInfo = FrameData.getInstance().ByUidGetModuleInfo(arguments?.getInt("Key")!!)
-
-            val firstSectionBar = SectionBarNode(ModuleData.getInstance().moduleList as List<BaseNode>?, "依赖应用")
-            Datalist.add(firstSectionBar)
-            val secondSectionBar =
-                SectionBarNode(
-                    moduleInfo?.appInfoList as List<BaseNode>?,
-                    "应用列表"
-                )
-            Datalist.add(secondSectionBar)
-
-
-        }else if (arguments?.getInt("type") == Consts.START_FRAGMENT_MODULE){
-            moduleInfo = ModuleData.getInstance().ByUidGetModuleInfo(arguments?.getInt("Key")!!)
-            val firstSectionBar =
-                SectionBarNode(
-                    FrameData.getInstance().moduleList as List<BaseNode>?,
-                    "框架列表"
-                )
-            Datalist.add(firstSectionBar)
-            val secondSectionBar =
-                SectionBarNode(
-                    moduleInfo?.appInfoList as List<BaseNode>?,
-                    "应用列表"
-                )
-            Datalist.add(secondSectionBar)
-        }
+        val firstSectionBar = SectionBarNode(SupportData.getInstance().moduleList as List<BaseNode>?, "框架列表")
+        Datalist.add(firstSectionBar)
+        val secondSectionBar = SectionBarNode(moduleInfo?.appInfoList as List<BaseNode>?, "应用列表")
+        Datalist.add(secondSectionBar)
         initRecycleView();
         initSwitchBar()
         initToolbar();

@@ -14,9 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import hepta.rxposed.manager.fragment.apps.AppInfoNode;
-
-public class AppModule extends BaseNode {
+public class ModuleInfo extends BaseNode {
 
 
 
@@ -28,7 +26,7 @@ public class AppModule extends BaseNode {
     private final String appName;
     public boolean enable;
     private final Map<Integer, AppInfoNode> AppInfoMaps;
-    public AppModule(PackageInfo pkg, PackageManager mPm, Map<Integer, AppInfoNode> appInfoMap){
+    public ModuleInfo(PackageInfo pkg, PackageManager mPm, Map<Integer, AppInfoNode> appInfoMap){
         this.app = pkg.applicationInfo;
         this.packageName = pkg.packageName;
         this.versionName = pkg.versionName;

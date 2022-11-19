@@ -1,4 +1,4 @@
-package hepta.rxposed.manager.fragment.apps;
+package hepta.rxposed.manager.fragment.PlugSupport.apps;
 
 import androidx.annotation.Nullable;
 
@@ -10,15 +10,13 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 import java.util.List;
 
-
-import hepta.rxposed.manager.fragment.base.AppModule;
+import hepta.rxposed.manager.fragment.PlugExtend.apps.ExtendNodeProvider;
+import hepta.rxposed.manager.fragment.PlugExtend.ExtendData;
+import hepta.rxposed.manager.fragment.PlugSupport.SupportData;
+import hepta.rxposed.manager.fragment.base.AppInfoNode;
+import hepta.rxposed.manager.fragment.base.ModuleInfo;
 import hepta.rxposed.manager.fragment.base.SectionBarNode;
 import hepta.rxposed.manager.fragment.base.SectionBarNodeProvider;
-import hepta.rxposed.manager.fragment.PlugSupport.FrameData;
-
-import hepta.rxposed.manager.fragment.PlugSupport.FrameNodeProvider;
-import hepta.rxposed.manager.fragment.PlugExtend.ExtendNodeProvider;
-import hepta.rxposed.manager.fragment.PlugExtend.ModuleData;
 
 public class AppInfoAdapter extends BaseNodeAdapter {
 
@@ -34,7 +32,7 @@ public class AppInfoAdapter extends BaseNodeAdapter {
 
     }
 
-    public AppInfoAdapter(AppModule appModule) {
+    public AppInfoAdapter(ModuleInfo appModule) {
         this();
     }
 
@@ -53,9 +51,9 @@ public class AppInfoAdapter extends BaseNodeAdapter {
             return 0;
         } else if (node instanceof AppInfoNode) {
             return 1;
-        }else if (node instanceof ModuleData.Modules) {
+        }else if (node instanceof ExtendData.ExtendInfo) {
             return 2;
-        }else if (node instanceof FrameData.Frames) {
+        }else if (node instanceof SupportData.SupportInfo) {
             return 3;
         }
         return -1;
