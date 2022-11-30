@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import hepta.rxposed.manager.RxposedApp;
+
 public class AppInfoDataProvider {
 
     private static AppInfoDataProvider _sInstance;
@@ -21,10 +23,12 @@ public class AppInfoDataProvider {
 
     }
 
+
     public List<AppInfoNode> getAllListApps(){
         List<AppInfoNode> result = new ArrayList(map_AppInfos.values());
         return result;
     }
+
 
     public Map<Integer, AppInfoNode> getAllMapApps_module(String module_packageName, PackageManager packageManager){
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package hepta.rxposed.manager.fragment.PlugExtend.apps
+package hepta.rxposed.manager.fragment.PlugExten.apps
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -31,20 +31,18 @@ import com.afollestad.materialdialogs.bottomsheets.BottomSheet
 import com.afollestad.materialdialogs.input.input
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import com.chad.library.adapter.base.entity.node.BaseNode
+import hepta.rxposed.manager.MainActivity
 import hepta.rxposed.manager.R
-import hepta.rxposed.manager.fragment.PlugExtend.ExtendData
-import hepta.rxposed.manager.fragment.PlugSupport.SupportData
+import hepta.rxposed.manager.fragment.PlugExten.ExtenDataProvider
 import hepta.rxposed.manager.fragment.base.AppInfoNode
 import hepta.rxposed.manager.fragment.base.ModuleInfo
-import hepta.rxposed.manager.fragment.base.SectionBarNode
 import hepta.rxposed.manager.fragment.base.baseCollToolbarFragment
-import hepta.rxposed.manager.util.LogUtil
 
 
 /**
  * A simple [Fragment] subclass.
  */
-class ExtebdAppFragment : baseCollToolbarFragment() {
+class ExtenAppFragment : baseCollToolbarFragment() {
 
     private var appsAdapter: AppInfoAdapter? = null
     private val filterListApp: MutableList<AppInfoNode> = mutableListOf()
@@ -52,25 +50,24 @@ class ExtebdAppFragment : baseCollToolbarFragment() {
 
 
     override fun getModuleInfo(): ModuleInfo {
-        return ExtendData.getInstance().ByUidGetModuleInfo(arguments?.getInt("Key")!!)
+        return ExtenDataProvider.getInstance().ByUidGetModuleInfo(arguments?.getInt("Key")!!)
     }
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        var supportList = SupportData.getInstance().moduleList
-        for (suport in supportList){
-            if(suport.depondsList.get(moduleInfo?.uid)!=null){
-                (moduleInfo as ExtendData.ExtendInfo).Dependuid = suport.uid
-            }
-        }
-        val firstSectionBar = SectionBarNode(SupportData.getInstance().moduleList as List<BaseNode>?, "框架列表")
-        Datalist.add(firstSectionBar)
-        val secondSectionBar = SectionBarNode(moduleInfo?.appInfoList as List<BaseNode>?, "应用列表")
-        Datalist.add(secondSectionBar)
+        initData();
         initRecycleView();
         initSwitchBar()
         initToolbar();
+    }
+
+
+//初始化多级列表数据
+    private fun initData() {
+//        val secondSectionBar = SectionBarNode(moduleInfo?.appInfoList as List<BaseNode>?, "应用列表")
+//        Datalist.add(secondSectionBar)
+
     }
 
     private fun initSwitchBar() {
@@ -80,7 +77,6 @@ class ExtebdAppFragment : baseCollToolbarFragment() {
         var switchCompat = headerView.findViewById<SwitchCompat>(R.id.switch_enable)
         switchCompat.isChecked = moduleInfo!!.getEnable()
         switchCompat.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
-            LogUtil.LogE("check:",isChecked)
             moduleInfo?.setEnable(isChecked)
         })
         appsAdapter?.addHeaderView(headerView);
@@ -98,15 +94,16 @@ class ExtebdAppFragment : baseCollToolbarFragment() {
 //            val appInfo = adapter.data[position] as AppModuleInfo
 //            LogUtil.LogD(appInfo.appName)
 //        }
-        appsAdapter?.setList(Datalist)
+//        appsAdapter?.setList(Datalist)
+        appsAdapter?.setList(moduleInfo?.appInfoList)
         //绑定数据
         binding.modInfo = moduleInfo
     }
 
     @SuppressLint("CheckResult")
     private fun initToolbar() {
-        binding.toolbar.setNavigationIcon(R.drawable.toolbar_back)
-
+        binding.toolbar.setNavigationIcon(R.drawable.toolbar_back)  //添加返回键
+        //返回键调动函数
         binding.toolbar.setNavigationOnClickListener {
             requireActivity().onBackPressed()
         }
@@ -119,7 +116,6 @@ class ExtebdAppFragment : baseCollToolbarFragment() {
                 }
                 negativeButton(android.R.string.ok)
                 positiveButton(android.R.string.cancel)
-
             }
             dialog.negativeButton {
                 filterListApp.clear()
@@ -140,7 +136,7 @@ class ExtebdAppFragment : baseCollToolbarFragment() {
                         }
                     }
                 }
-//                applistAdapter?.setList(filterListApp)
+                appsAdapter?.setList(filterListApp)
             }
 
             dialog.positiveButton {
@@ -169,7 +165,7 @@ class ExtebdAppFragment : baseCollToolbarFragment() {
                         filterListApp.add(it)
                     }
                 }
-//                applistAdapter?.setList(filterListApp)
+                appsAdapter?.setList(filterListApp)
             }
             dialog.negativeButton {
 
@@ -179,22 +175,10 @@ class ExtebdAppFragment : baseCollToolbarFragment() {
         }
     }
 
-
-
-//    private fun getInitData(): List<BaseNode>? {
-//        //总的 list，里面放的是 FirstNode
-//        val list: MutableList<BaseNode> = ArrayList()
-//        val firstNodeList: MutableList<BaseNode> = ArrayList()
-//        val fiNode =
-//            DependNode("fiNode Node 1")
-//        firstNodeList.add(fiNode)
-//        val firstentity = RootNode(firstNodeList, "框架列表")
-//        list.add(firstentity)
-//        val secondentity = RootNode(moduleInfo?.appInfoList as List<BaseNode>?, "应用列表")
-//        list.add(secondentity)
-//
-//        return list
-//    }
-
+    override fun onDestroy() {
+        super.onDestroy()
+        var mainActivity = requireActivity() as MainActivity
+        mainActivity.EnableToolBar()
+    }
 
 }

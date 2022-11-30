@@ -13,67 +13,57 @@ import java.util.Map;
 import hepta.rxposed.manager.RxposedApp;
 import hepta.rxposed.manager.fragment.base.AppInfoNode;
 
-public class AppInfoDataProvider {
+public class AppInfoSingleProvider {
 
-    private static AppInfoDataProvider _sInstance;
+    private static AppInfoSingleProvider _sInstance;
 
-    private Map<Integer, AppInfoNode> map_AppInfos = new HashMap<Integer, AppInfoNode>();
+    private Map<Integer, PackageInfo> map_user_AppInfos = new HashMap<Integer, PackageInfo>();
+    private Map<Integer, PackageInfo> map_System_AppInfos = new HashMap<Integer, PackageInfo>();
     private PackageManager packageManager;
     //获取一个包管理器
-    public AppInfoDataProvider(){
+    public AppInfoSingleProvider(){
         initAppList(RxposedApp.getInstance().getPackageManager());
     }
 
     private void initAppList(PackageManager packageManager) {
         List<PackageInfo> packageInfos = packageManager.getInstalledPackages(0);
         for(PackageInfo info:packageInfos) {
-            
-        }
+            if(filterApp(info.applicationInfo)){
+                map_user_AppInfos.put(info.applicationInfo.uid,info);
 
+            }else{
+                map_System_AppInfos.put(info.applicationInfo.uid,info);
+            }
+        }
     }
 
-    public List<AppInfoNode> getAllListApps(){
-        List<AppInfoNode> result = new ArrayList(map_AppInfos.values());
+    public List<PackageInfo> getAllListApps(){
+        List<PackageInfo> result = new ArrayList(map_user_AppInfos.values());
+        result.addAll(map_System_AppInfos.values());
         return result;
     }
 
+    public List<PackageInfo> getSystemApps(){
+        List<PackageInfo> result = new ArrayList(map_System_AppInfos.values());
+        return result;
+    }
+    public List<PackageInfo> getUsertApps(){
+        List<PackageInfo> result = new ArrayList(map_user_AppInfos.values());
+        return result;
+    }
 
-
-
-
-    public Map<Integer, AppInfoNode> getAllMapApps_module(String module_packageName, PackageManager packageManager){
-
-        Map<Integer, AppInfoNode> mapAppInfos = new HashMap<>();
-        AppInfoNode myAppInfo;
+    public void UpdateAppList(PackageManager packageManager) {
+        map_user_AppInfos.clear();
+        map_System_AppInfos.clear();
         List<PackageInfo> packageInfos = packageManager.getInstalledPackages(0);
-        for(PackageInfo info:packageInfos){
-            myAppInfo = new AppInfoNode();
-            //拿到包名
-            String packageName = info.packageName;
-            //拿到应用程序的信息
-            ApplicationInfo appInfo = info.applicationInfo;
-            //拿到应用程序的图标
-            Drawable icon = appInfo.loadIcon(packageManager);
-            //拿到应用程序的大小
-            //long codesize = packageStats.codeSize;
-            //Log.i("info", "-->"+codesize);
-            //拿到应用程序的程序名
-            String appName = appInfo.loadLabel(packageManager).toString();
-            myAppInfo.setPackageName(packageName);
-            myAppInfo.setAppName(appName);
-            myAppInfo.setIcon(icon);
-            myAppInfo.setAppInfo(appInfo);
-            myAppInfo.setModuleName(module_packageName);
-            if(filterApp(appInfo)){
-                myAppInfo.setSystemApp(false);
+        for(PackageInfo info:packageInfos) {
+            if(filterApp(info.applicationInfo)){
+                map_user_AppInfos.put(info.applicationInfo.uid,info);
 
             }else{
-                myAppInfo.setSystemApp(true);
+                map_System_AppInfos.put(info.applicationInfo.uid,info);
             }
-            mapAppInfos.put(myAppInfo.getUID(),myAppInfo);
         }
-
-        return mapAppInfos;
     }
 
 
@@ -93,9 +83,9 @@ public class AppInfoDataProvider {
 
 
 
-    public static AppInfoDataProvider getInstance() {
+    public static AppInfoSingleProvider getInstance() {
         if (_sInstance == null) {
-            _sInstance = new AppInfoDataProvider();
+            _sInstance = new AppInfoSingleProvider();
         }
         return _sInstance;
     }

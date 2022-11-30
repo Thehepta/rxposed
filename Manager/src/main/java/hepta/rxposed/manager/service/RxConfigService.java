@@ -1,4 +1,4 @@
-package hepta.rxposed.manager;
+package hepta.rxposed.manager.service;
 
 
 import android.app.Service;
@@ -7,6 +7,8 @@ import android.os.IBinder;
 import android.os.RemoteException;
 
 import androidx.annotation.Nullable;
+
+import hepta.rxposed.manager.IRxposedService;
 
 //aidl服务，进行进程通讯，目前弃用，android service启动时机不可控，不是立即启动
 public class RxConfigService extends Service {

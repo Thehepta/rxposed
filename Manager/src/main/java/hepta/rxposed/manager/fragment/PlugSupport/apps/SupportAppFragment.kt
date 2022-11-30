@@ -31,19 +31,20 @@ import com.afollestad.materialdialogs.bottomsheets.BottomSheet
 import com.afollestad.materialdialogs.input.input
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import com.chad.library.adapter.base.entity.node.BaseNode
+import hepta.rxposed.manager.MainActivity
 import hepta.rxposed.manager.R
 import hepta.rxposed.manager.fragment.PlugSupport.SupportData
 import hepta.rxposed.manager.fragment.base.AppInfoNode
 import hepta.rxposed.manager.fragment.base.ModuleInfo
 import hepta.rxposed.manager.fragment.base.SectionBarNode
 import hepta.rxposed.manager.fragment.base.baseCollToolbarFragment
-import hepta.rxposed.manager.util.LogUtil
+import hepta.rxposed.manager.util.Util
 
 
 /**
  * A simple [Fragment] subclass.
  */
-class ApplistFragment : baseCollToolbarFragment() {
+class SupportAppFragment : baseCollToolbarFragment() {
 
     private var appsAdapter: AppInfoAdapter? = null
     private val filterListApp: MutableList<AppInfoNode> = mutableListOf()
@@ -79,7 +80,7 @@ class ApplistFragment : baseCollToolbarFragment() {
         var switchCompat = headerView.findViewById<SwitchCompat>(R.id.switch_enable)
         switchCompat.isChecked = moduleInfo!!.getEnable()
         switchCompat.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
-            LogUtil.LogE("check:",isChecked)
+            Util.LogE("check:",isChecked)
             moduleInfo?.setEnable(isChecked)
         })
         appsAdapter?.addHeaderView(headerView);
@@ -180,12 +181,8 @@ class ApplistFragment : baseCollToolbarFragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        LogUtil.LogE("onDestroy")
+        var mainActivity = requireActivity() as MainActivity
+        mainActivity.EnableToolBar()
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        LogUtil.LogE("onDestroyView")
-
-    }
 }

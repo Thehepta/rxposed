@@ -3,4 +3,6 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
+    <string name="applist_searchTips">应用搜索</string>
+    <string name="shopping_cart">Shopping Cart</string>
 </resources>

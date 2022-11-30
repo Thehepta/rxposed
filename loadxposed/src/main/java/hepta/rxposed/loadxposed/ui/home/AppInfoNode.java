@@ -1,14 +1,11 @@
-package hepta.rxposed.manager.fragment.base;
+package hepta.rxposed.loadxposed.ui.home;
 
 
 import android.content.pm.ApplicationInfo;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
-
 import com.chad.library.adapter.base.entity.node.BaseNode;
-
 import java.util.List;
 
 

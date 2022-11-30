@@ -1,4 +1,4 @@
-package hepta.rxposed.manager;
+package hepta.rxposed.manager.service;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
@@ -24,6 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
+import hepta.rxposed.manager.RxposedApp;
+import hepta.rxposed.manager.fragment.PlugExten.ExtenDataProvider;
 import hepta.rxposed.manager.fragment.PlugSupport.SupportData;
 
 public class RxConfigProvider extends ContentProvider {
@@ -32,11 +34,9 @@ public class RxConfigProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        Log.e("com.rxposed.android", "RxConfigProvider : onCreate");
+        Log.e("hepta.rxposed.manager", "RxConfigProvider : onCreate");
         return true;
     }
-
-
 
 
     @Nullable
@@ -79,62 +79,13 @@ public class RxConfigProvider extends ContentProvider {
     @Nullable
     @Override
     public Bundle call(@NonNull String method, @Nullable String ProcessName, @Nullable Bundle extras) {
+
+        String callName = getCallingPackage();
+
         Bundle bundle = new Bundle();
-        PackageManager pm =  RxposedApp.getInstance().getPackageManager();
-        String json = SupportData.getInstance().readerJson();
-        List<Integer> uidlist = new ArrayList<>();
-        try {
-            ApplicationInfo info = pm.getApplicationInfo(ProcessName, PackageManager.GET_UNINSTALLED_PACKAGES);
-            if(json !=null) {
-                try {
-                    JSONObject parseobj = new JSONObject(json);
-                    Iterator<String> iterator = parseobj.keys();
-                    while(iterator.hasNext()){
-                        String key =  iterator.next();
-                        JSONObject value = parseobj.getJSONObject(key);
-                        boolean enable = value.getBoolean("enable");
-                        if(!enable){
-                            continue;
-                        }
-                        JSONArray EnableProcUidList = value.getJSONArray("EnableProcUid");
-                        for(int i = 0; i < EnableProcUidList.length(); i ++) {
-                            int enableAppUid= EnableProcUidList.getInt(i);
-                            if (enableAppUid == info.uid){
-                                uidlist.add(Integer.valueOf(key));
-                            }
-                        }
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
-        ListIterator<Integer> it = uidlist.listIterator();
-        StringBuilder retString = new StringBuilder();
-
-        while(it.hasNext()) {
-            String pkgName = pm.getNameForUid(it.next());
-            try {
-                ApplicationInfo applicationInfo = pm.getApplicationInfo(pkgName,PackageManager.GET_UNINSTALLED_PACKAGES|PackageManager.GET_META_DATA);
-                String entry_class  = applicationInfo.metaData.getString("rxposed_clsentry");
-                String entry_method = applicationInfo.metaData.getString("rxposed_mtdentry");
-                retString.append(applicationInfo.packageName+":"+entry_class+":"+entry_method);
-                if(it.hasNext()){
-                    retString.append("|");
-                }
-            } catch (PackageManager.NameNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
-        if(retString.toString()==""){
-            bundle.putString("enableUidList", "null");
-        }else {
-            bundle.putString("enableUidList", retString.toString());
-        }
-
-        Log.e("getRxConfig", "pkgName: "+ProcessName);
+        String reString = ExtenDataProvider.getInstance().getConfigToString(ProcessName);
+        bundle.putString("enableUidList", reString);
+        Log.e("getRxConfig", "pkgName: "+ProcessName+" callName:"+callName);
         Log.e("getRxConfig", "return: " + bundle.getString("enableUidList"));
         return bundle;
     }

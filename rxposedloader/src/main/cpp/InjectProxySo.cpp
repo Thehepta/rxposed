@@ -19,8 +19,17 @@ using namespace std;
 using namespace std;
 
 
+
+#if RXDEBUG
+// 调用 debug 版本方法
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__)
+#else
+#define LOGE(...)
+#define LOGD(...)
+#endif
+
+
 
 
 //注册函数映射
@@ -38,11 +47,15 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
         LOGE("JNI_OnLoad current process is isIsolatedProcess");
     } else{
         LOGE("JNI_OnLoad current process is ApplicationProcess");
+        rprocess::GetInstance()->setRxposedContext(rprocess::GetInstance()->getApplicationContext(pEnv,"hepta.rxposed.rxposedloaderapp"));
+        rprocess::GetInstance()->setProcessName("hepta.rxposed.rxposedloaderapp");
+        rprocess::GetInstance()->setAUTHORITY("hepta.rxposed.manager:hepta.rxposed.manager.Provider");
+        rprocess::GetInstance()->GetConfigByProvider(pEnv);
+        rprocess::AppinfoNative * appinfoNative =  rprocess::GetInstance()->GetAppInfoNative(pEnv,"hepta.rxposed.loadxposed","hepta.rxposed.loadxposed.XposedEntry","Entry");
+        rprocess::GetInstance()->load_apk_And_exe_Class_Method(pEnv,appinfoNative);
+
     }
-//    rprocess->setRxposedContext(rprocess->getApplicationContext(pEnv));
-//    rprocess->setProcessName("hepta.rxposed.rxposedloaderapp");
-//    rprocess->setAUTHORITY("hepta.rxposed.manager:hepta.rxposed.manager.provider");
-//    rprocess->GetConfigByProvider(pEnv);
+
 
     //返回java版本
     return JNI_VERSION_1_6;

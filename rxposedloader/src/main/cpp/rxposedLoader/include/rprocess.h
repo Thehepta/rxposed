@@ -17,6 +17,7 @@ using namespace std;
 
 class rprocess {
     //全局访问接口
+public:
 
     class AppinfoNative{
     public:
@@ -35,7 +36,7 @@ class rprocess {
         }
     };
 
-public:
+
 
     static rprocess *GetInstance()
     {

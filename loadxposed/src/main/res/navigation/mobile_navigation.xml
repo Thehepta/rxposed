@@ -22,4 +22,11 @@
         android:name="hepta.rxposed.loadxposed.ui.notifications.NotificationsFragment"
         android:label="@string/title_notifications"
         tools:layout="@layout/fragment_notifications" />
+
+    <fragment
+        android:id="@+id/extend_apps_dest"
+        android:name="hepta.rxposed.loadxposed.ui.home.ExtenAppFragment"
+        tools:layout="@layout/fragment_applist" />
+
+
 </navigation>

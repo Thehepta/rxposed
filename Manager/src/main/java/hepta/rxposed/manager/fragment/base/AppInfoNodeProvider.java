@@ -1,4 +1,4 @@
-package hepta.rxposed.manager.fragment.PlugSupport.apps;
+package hepta.rxposed.manager.fragment.base;
 
 import android.widget.CompoundButton;
 
@@ -10,9 +10,17 @@ import com.chad.library.adapter.base.provider.BaseNodeProvider;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 
 import hepta.rxposed.manager.R;
+import hepta.rxposed.manager.fragment.PlugSupport.SupportData;
 import hepta.rxposed.manager.fragment.base.AppInfoNode;
 
-public class AppInfoNodeProvider extends BaseNodeProvider {
+public class AppInfoNodeProvider extends BaseNodeProvider
+{
+    ModuleInfoProvider instance;
+
+    public AppInfoNodeProvider(ModuleInfoProvider instance) {
+        this.instance = instance;
+    }
+
     @Override
     public int getItemViewType() {
         return 1;
@@ -36,6 +44,7 @@ public class AppInfoNodeProvider extends BaseNodeProvider {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 item.setEnable(isChecked);
+                instance.UpdateConfig();
             }
         });
     }

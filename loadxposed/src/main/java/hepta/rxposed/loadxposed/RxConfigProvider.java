@@ -1,9 +1,7 @@
-package hepta.rxposed.manager.service;
+package hepta.rxposed.loadxposed;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -13,20 +11,11 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
+import java.lang.reflect.Method;
 
-import hepta.rxposed.manager.RxposedApp;
-import hepta.rxposed.manager.fragment.PlugExten.ExtenDataProvider;
-import hepta.rxposed.manager.fragment.PlugSupport.SupportData;
+import hepta.rxposed.loadxposed.ui.home.ExtenDataProvider;
 
 public class RxConfigProvider extends ContentProvider {
 
@@ -81,6 +70,8 @@ public class RxConfigProvider extends ContentProvider {
     public Bundle call(@NonNull String method, @Nullable String ProcessName, @Nullable Bundle extras) {
 
         String callName = getCallingPackage();
+
+
 
         Bundle bundle = new Bundle();
         String reString = ExtenDataProvider.getInstance().getConfigToString(ProcessName);

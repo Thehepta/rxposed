@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package hepta.rxposed.manager.fragment.PlugExtend
+package hepta.rxposed.manager.fragment.PlugExten
 
 import android.os.Bundle
 import android.view.*
@@ -26,17 +26,16 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import hepta.rxposed.manager.MainActivity
 import hepta.rxposed.manager.R
 import hepta.rxposed.manager.databinding.FragmentModulesBinding
-import hepta.rxposed.manager.util.Consts.START_FRAGMENT_MODULE
 
 
 /**
  * A simple [Fragment] subclass.
  */
-class ExtendFragment : Fragment() {
+class ExtenFragment : Fragment() {
 
 
-    private var moduleListAdapter: ExtendListAdapter? = null
-    private val filterModuleInfo: List<ExtendData> = ArrayList()
+    private var moduleListAdapter: ExtenListAdapter? = null
+    private val filterModuleInfo: List<ExtenDataProvider> = ArrayList()
     private lateinit var binding: FragmentModulesBinding
 
 
@@ -47,8 +46,7 @@ class ExtendFragment : Fragment() {
     ): View? {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_modules, container, false)
         setHasOptionsMenu(true)
-        var mainActivity = requireActivity() as MainActivity
-        mainActivity.EnableToolBar()
+
         // Inflate the layout for this fragment
         return binding.root
     }
@@ -63,28 +61,22 @@ class ExtendFragment : Fragment() {
     }
 
     private fun initRecycleView() {
-        moduleListAdapter =
-            ExtendListAdapter(R.layout.item_module)
+        moduleListAdapter = ExtenListAdapter(R.layout.item_module)
         val layoutManager = LinearLayoutManager(requireContext())
         layoutManager.orientation = LinearLayoutManager.VERTICAL
         binding.recyclerView.setLayoutManager(layoutManager)
         binding.recyclerView.setAdapter(moduleListAdapter)
         moduleListAdapter!!.setOnItemClickListener { adapter, view, position ->
-            val moduleInfo = adapter.data[position] as ExtendData.ExtendInfo
-
-//            val controller: NavController =
-//                Navigation.findNavController()
-//            controller.navigate(R.id.apps_dest)
+            val moduleInfo = adapter.data[position] as ExtenDataProvider.ExtendInfo
             val controller: NavController = findNavController()
             val bundle1:Bundle  =  Bundle();
             bundle1.putInt("Key",moduleInfo.uid);
-            bundle1.putInt("type", START_FRAGMENT_MODULE);
+//            bundle1.putInt("type", START_FRAGMENT_MODULE);
             // 把Persion数据放入到bundle中
             controller.navigate(R.id.extend_apps_dest, bundle1)
-
         }
 
-        moduleListAdapter!!.setList(ExtendData.getInstance().moduleList)
+        moduleListAdapter!!.setList(ExtenDataProvider.getInstance().moduleList)
 
     }
 

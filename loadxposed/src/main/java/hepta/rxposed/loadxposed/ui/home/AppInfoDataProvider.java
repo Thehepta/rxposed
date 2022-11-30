@@ -1,4 +1,4 @@
-package hepta.rxposed.manager.fragment.base;
+package hepta.rxposed.loadxposed.ui.home;
 
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import hepta.rxposed.manager.RxposedApp;
 
 public class AppInfoDataProvider {
 

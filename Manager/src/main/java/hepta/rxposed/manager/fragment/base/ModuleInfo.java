@@ -64,9 +64,7 @@ public class ModuleInfo extends BaseNode {
     }
 
     public void setEnable(boolean enable) {
-        Log.e("Rzx","setEnable:"+enable+" appName:"+appName+" uid ="+getUID());
         this.enable = enable;
-//        ModuleInfoProvider.getInstance().UpdateConfig();
         return;
     }
     public List<AppInfoNode> getAppInfoList() {

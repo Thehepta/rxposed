@@ -39,7 +39,6 @@ public class LoaderApplication extends Application{
     @Override
     public void onCreate() {
         super.onCreate();
-
         //aidl
 //        callaidl();
 
@@ -91,13 +90,11 @@ public class LoaderApplication extends Application{
         Log.e(TAG,"current process is application");
         // Context context = getApplicationContext("android.process.media"); //这个会崩溃，获取不到 applicationInfo
         // Context context = getApplicationContext("hepta.rxposed.manager"); //通过非当前应用的包名获取context 不能发起provider请求
-        Context context = getApplicationContext(currentName);
-        if(GetConfigByProvider(context)){
-        }
-        //        Context context = Java_getApplicationContext(currentName);
-//        Context context = getApplicationContext("android.process.media");
+//        Context context = getApplicationContext(currentName);
+//        if(GetConfigByProvider(context)){
+//
+//        }
 
-//        NDK_ExceptionCheckTest();
     }
     private static void isIsolatedProcessInit() {
         Log.e(TAG,"current process is isIsolated uid:"+android.os.Process.myUid());

@@ -9,14 +9,14 @@ import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
-public class HookMain implements IXposedHookLoadPackage {
+public class SdkPrivacy implements IXposedHookLoadPackage {
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
         Log.e("XposedCompat", "handleLoadPackage:");
 
         XposedHelpers.findAndHookMethod(Activity.class, "onCreate", Bundle.class,new XC_MethodHook() {
             @Override
-            protected void beforeHookedMethod(XC_MethodHook.MethodHookParam param) throws Throwable {
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 super.beforeHookedMethod(param);
                 Log.e("XposedCompat", "beforeHookedMethod: " + param.method.getName());
             }
@@ -27,5 +27,6 @@ public class HookMain implements IXposedHookLoadPackage {
                 Log.e("XposedCompat", "afterHookedMethod: " + param.method.getName());
             }
         });
+        
     }
 }

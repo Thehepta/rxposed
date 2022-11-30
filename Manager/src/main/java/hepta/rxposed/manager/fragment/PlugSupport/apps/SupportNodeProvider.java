@@ -10,10 +10,10 @@ import com.chad.library.adapter.base.provider.BaseNodeProvider;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 
 import hepta.rxposed.manager.R;
-import hepta.rxposed.manager.fragment.PlugExtend.ExtendData;
+import hepta.rxposed.manager.fragment.PlugExten.ExtenDataProvider;
 
 
-public class FrameNodeProvider extends BaseNodeProvider {
+public class SupportNodeProvider extends BaseNodeProvider {
 
     @Override
     public int getItemViewType() {
@@ -30,12 +30,14 @@ public class FrameNodeProvider extends BaseNodeProvider {
 
     @Override
     public void convert(@NonNull BaseViewHolder baseViewHolder, BaseNode baseNode) {
-        ExtendData.ExtendInfo item = (ExtendData.ExtendInfo) baseNode;
+        ExtenDataProvider.ExtendInfo item = (ExtenDataProvider.ExtendInfo) baseNode;
         baseViewHolder.setText(R.id.app_name, item.getAppName());
         baseViewHolder.setText(R.id.description, item.getPackageName());
         baseViewHolder.setImageDrawable(R.id.app_icon,item.getIcon());
         SwitchCompat switchCompat = baseViewHolder.findView(R.id.switcher);
         switchCompat.setVisibility(View.INVISIBLE);
+//        Log.e("rzx","after getAppName:"+ApplistFragment.Companion.getModuleInfo().getAppName());
+
     }
 
 

@@ -3,6 +3,7 @@ package hepta.rxposed.manager.fragment.PlugSupport;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.util.ArrayMap;
 
 import androidx.annotation.Nullable;
 
@@ -38,8 +39,20 @@ public class SupportData extends ModuleInfoProvider<SupportData.SupportInfo> {
     }
 
     public class SupportInfo extends ModuleInfo {
+
+        public Map<Integer, ModuleInfo> depondsList = new ArrayMap<Integer, ModuleInfo>();
+
         public SupportInfo(PackageInfo pkg, PackageManager mPm, Map<Integer, AppInfoNode> appInfoMap) {
             super(pkg, mPm, appInfoMap);
+        }
+
+        public void setAppDepend(boolean enable, int uid, ModuleInfo moduleInfo) {
+            if(enable){
+                depondsList.put(uid,moduleInfo);
+            }else {
+                depondsList.remove(uid);
+            }
+            _sInstance.UpdateConfig();
         }
 
 

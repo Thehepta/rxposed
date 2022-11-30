@@ -1,4 +1,4 @@
-package hepta.rxposed.manager.fragment.base;
+package hepta.rxposed.loadxposed.ui.home;
 
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
-import hepta.rxposed.manager.RxposedApp;
-import hepta.rxposed.manager.util.Util;
+import hepta.rxposed.loadxposed.MyApp;
+import hepta.rxposed.loadxposed.Util;
 
 
 public abstract class ModuleInfoProvider<T extends ModuleInfo> {
@@ -156,8 +156,7 @@ public abstract class ModuleInfoProvider<T extends ModuleInfo> {
     }
 
     public String  getConfigToString(String ProcessName){
-        PackageManager pm =  RxposedApp.getInstance().getPackageManager();
-
+        PackageManager pm =  MyApp.getInstance().getPackageManager();
         String json = readerJson();
         List<Integer> uidlist = new ArrayList<>();
         try {
@@ -195,9 +194,7 @@ public abstract class ModuleInfoProvider<T extends ModuleInfo> {
             String pkgName = pm.getNameForUid(it.next());
             try {
                 ApplicationInfo applicationInfo = pm.getApplicationInfo(pkgName,PackageManager.GET_UNINSTALLED_PACKAGES|PackageManager.GET_META_DATA);
-                String entry_class  = applicationInfo.metaData.getString("rxposed_clsentry");
-                String entry_method = applicationInfo.metaData.getString("rxposed_mtdentry");
-                retString.append(applicationInfo.packageName+":"+entry_class+":"+entry_method);
+                retString.append(applicationInfo.packageName);
                 if(it.hasNext()){
                     retString.append("|");
                 }

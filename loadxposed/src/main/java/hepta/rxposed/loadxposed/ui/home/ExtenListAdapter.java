@@ -1,9 +1,5 @@
-package hepta.rxposed.manager.fragment.PlugExten;
+package hepta.rxposed.loadxposed.ui.home;
 
-import  hepta.rxposed.manager.util.Util;
-
-import android.content.ComponentName;
-import android.content.Intent;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -12,8 +8,8 @@ import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.module.LoadMoreModule;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 
-import hepta.rxposed.manager.R;
-import hepta.rxposed.manager.RxposedApp;
+import hepta.rxposed.loadxposed.R;
+import hepta.rxposed.loadxposed.Util;
 
 
 public class ExtenListAdapter extends BaseQuickAdapter<ExtenDataProvider.ExtendInfo, BaseViewHolder> implements LoadMoreModule {
@@ -35,14 +31,13 @@ public class ExtenListAdapter extends BaseQuickAdapter<ExtenDataProvider.ExtendI
         if (item == null) {
             return;
         }
-
         baseViewHolder.setText(R.id.app_name, item.getAppName());
         baseViewHolder.setText(R.id.description, item.getPackageName());
         baseViewHolder.setImageDrawable(R.id.app_icon,item.getIcon());
         baseViewHolder.findView(R.id.btn_open_app).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Util.StartRxmoduleApplication(item.getPackageName());
+//                Util.StartRxmoduleApplication(item.getPackageName());
             }
         });
 //        ListItemRxmoduleBinding binding = DataBindingUtil.getBinding(baseViewHolder.itemView);

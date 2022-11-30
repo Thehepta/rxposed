@@ -58,7 +58,10 @@ vector<string> string_split(string str,string pattern)
 
 
 bool rprocess::GetConfigByProvider(JNIEnv *env) {
+    LOGD("CALL rprocess GetConfigByProvider");
     string err_message="";
+    DEBUG("")
+
     jclass Context_cls = env->FindClass("android/content/Context");
     jclass Uri_cls = env->FindClass("android/net/Uri");
     jclass ContentResolver_cls = env->FindClass("android/content/ContentResolver");
@@ -74,20 +77,25 @@ bool rprocess::GetConfigByProvider(JNIEnv *env) {
     jmethodID Bundle_getString_method = env->GetMethodID(Bundle_cls, "getString",
                                                          "(Ljava/lang/String;)Ljava/lang/String;");
     jobject extras = nullptr;
-
+    DEBUG("")
     jstring method = env->NewStringUTF("getConfig");
     jstring method_arg = env->NewStringUTF(processName.c_str());
     jobject URI = env->CallStaticObjectMethod(Uri_cls, Uri_parse_method,env->NewStringUTF(AUTHORITY.c_str()));
+    DEBUG("")
 
     jobject ContentResolver_obj = env->CallObjectMethod(RxposedContext,context_getContentResolver_method);
+    DEBUG("")
 
     jobject bundle_obj = env->CallObjectMethod(ContentResolver_obj, ContentResolver_call_method,
                                                URI, method, method_arg, extras);
+    DEBUG("")
 
     err_message = "processName:"+processName+"get config privider failed AUTHORITY:"+ AUTHORITY;
     if(NDK_ExceptionCheck(env,(char *)err_message.c_str())){
         return false;
     }
+    DEBUG("")
+
     jstring key = env->NewStringUTF("enableUidList");
     jstring config = static_cast<jstring>(env->CallObjectMethod(bundle_obj, Bundle_getString_method,key));
     string enableUidList_str = env->GetStringUTFChars(config, nullptr);
@@ -197,8 +205,8 @@ void rprocess::load_apk_And_exe_Class_Method(JNIEnv *pEnv, AppinfoNative *appinf
     jstring dexOutput = nullptr;
     jstring nativelib = pEnv->NewStringUTF(appinfoNativeVec->NativelibPath.c_str());
     jstring class_name = pEnv->NewStringUTF(appinfoNativeVec->Entry_class.c_str());
-    jstring method_name = pEnv->NewStringUTF(appinfoNativeVec->Entry_method.c_str());
-    jobjectArray JAAR = nullptr;
+//    jstring method_name = pEnv->NewStringUTF(appinfoNativeVec->Entry_method.c_str());
+//    jobjectArray JAAR = nullptr;
     jclass DexClassLoader_cls = pEnv->FindClass("dalvik/system/DexClassLoader");
     jmethodID init = pEnv->GetMethodID(DexClassLoader_cls, "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/ClassLoader;)V");
     jclass ClassLoader_cls = pEnv->FindClass("java/lang/ClassLoader");
@@ -207,38 +215,46 @@ void rprocess::load_apk_And_exe_Class_Method(JNIEnv *pEnv, AppinfoNative *appinf
     jclass Class_cls = pEnv->FindClass("java/lang/Class");
     jclass Method_cls = pEnv->FindClass("java/lang/reflect/Method");
     jmethodID invoke_met =  pEnv->GetMethodID(Method_cls,"invoke","(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;");
-    jmethodID clsmethod_method = pEnv->GetMethodID(Class_cls,"getMethod","(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;");
+    jmethodID getmethod_method = pEnv->GetMethodID(Class_cls, "getMethod", "(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;");
     LOGE("new classload ");
     jobject entryMethod_obj = nullptr;
     jobject entryClass_obj = nullptr;
 
-    if(LoadModuleClassLoader == nullptr) {
-        jobject classload = pEnv->CallStaticObjectMethod(ClassLoader_cls,
-                                                             ClassLoader_getSystemClassLoader_cls);
-        LoadModuleClassLoader = pEnv->NewGlobalRef(classload);
-    }
-    jobject dexClassLoader = pEnv->NewObject(DexClassLoader_cls,init,apk,dexOutput,nativelib,LoadModuleClassLoader);
-    pEnv->DeleteGlobalRef(LoadModuleClassLoader);
-    LoadModuleClassLoader = pEnv->NewGlobalRef(dexClassLoader);
-//    LoadModuleClassLoader = pEnv->NewGlobalRef(dexClassLoader);
+    //---------------------------------------------------------------------------------------------------------------------
+    //全局 LoadModuleClassLoader，使用上一次加载函数的classLoader,生成本次加载apk的classLoader,需要先释放，在次赋值
+//    if(LoadModuleClassLoader == nullptr) {
+//        jobject classload = pEnv->CallStaticObjectMethod(ClassLoader_cls,ClassLoader_getSystemClassLoader_cls);
+//        LoadModuleClassLoader = pEnv->NewGlobalRef(classload);
+//    }
+//    jobject ApkClassLoader = pEnv->NewObject(DexClassLoader_cls,init,apk,dexOutput,nativelib,LoadModuleClassLoader);
+//    pEnv->DeleteGlobalRef(LoadModuleClassLoader);
+//    LoadModuleClassLoader = pEnv->NewGlobalRef(ApkClassLoader);
+    //---------------------------------------------------------------------------------------------------------------------
+
+    jobject SystemClassLoader_obj = pEnv->CallStaticObjectMethod(ClassLoader_cls,ClassLoader_getSystemClassLoader_cls);
+    jobject ApkClassLoader = pEnv->NewObject(DexClassLoader_cls,init,apk,dexOutput,nativelib,SystemClassLoader_obj);
+
     if(pEnv->ExceptionCheck()){
-        goto out2;
+//        goto out2;
     }
 //    Class clazz = dexClassLoader.loadClass(name);
     LOGE("loadclass Entry_class=%s ",appinfoNativeVec->Entry_class.c_str());
-    entryClass_obj = pEnv->CallObjectMethod(dexClassLoader, Class_loadClass_method, class_name);
+    entryClass_obj = pEnv->CallObjectMethod(ApkClassLoader, Class_loadClass_method, class_name);
     if(pEnv->ExceptionCheck()){
-        goto out2;
+//        goto out2;
     }
 //    Method native_hook = clazz.getMethod("native_hook");
     LOGE("invoke method_name=%s ",appinfoNativeVec->Entry_method.c_str());
+    jmethodID call_method_mth = pEnv->GetStaticMethodID(static_cast<jclass>(entryClass_obj), appinfoNativeVec->Entry_method.c_str(), "(Landroid/content/Context;)V");
 
-    entryMethod_obj = pEnv->CallObjectMethod(entryClass_obj, clsmethod_method, method_name, JAAR);
+//调用java反射方法进行调用的，但是传参数比较麻烦
+//    entryMethod_obj = pEnv->CallObjectMethod(entryClass_obj, getmethod_method, method_name,JAAR);
     if(pEnv->ExceptionCheck()){
         goto out2;
     }
 //    native_hook.invoke(clazz);
-    pEnv->CallObjectMethod(entryMethod_obj, invoke_met, entryClass_obj, JAAR);
+//    pEnv->CallObjectMethod(entryMethod_obj, invoke_met, entryClass_obj,JAAR);
+    pEnv->CallStaticVoidMethod(static_cast<jclass>(entryClass_obj), call_method_mth,RxposedContext);
     if(pEnv->ExceptionCheck()){
 
     }
@@ -246,7 +262,8 @@ void rprocess::load_apk_And_exe_Class_Method(JNIEnv *pEnv, AppinfoNative *appinf
     pEnv->ExceptionDescribe();
     pEnv->ExceptionClear();//清除引发的异常，在Java层不会打印异常堆栈信息，如果不清除，后面的调用ThrowNew抛出的异常堆栈信息会
     pEnv->DeleteLocalRef(entryMethod_obj);
-    pEnv->DeleteLocalRef(dexClassLoader);
+    pEnv->DeleteLocalRef(SystemClassLoader_obj);
+    pEnv->DeleteLocalRef(ApkClassLoader);
     pEnv->DeleteLocalRef(entryClass_obj);
 }
 
@@ -305,7 +322,7 @@ void rprocess::setProcessName(char *tmp) {
 }
 
 void rprocess::setRxposedContext(jobject RxposedContext) {
-
+    this->RxposedContext = RxposedContext;
 }
 
 bool rprocess::is_isIsolatedProcess() {

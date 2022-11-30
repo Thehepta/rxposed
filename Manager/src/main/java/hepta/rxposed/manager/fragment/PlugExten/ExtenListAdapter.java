@@ -1,4 +1,10 @@
-package hepta.rxposed.manager.fragment.PlugExtend;
+package hepta.rxposed.manager.fragment.PlugExten;
+
+import  hepta.rxposed.manager.util.Util;
+
+import android.content.ComponentName;
+import android.content.Intent;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 
@@ -7,12 +13,13 @@ import com.chad.library.adapter.base.module.LoadMoreModule;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 
 import hepta.rxposed.manager.R;
+import hepta.rxposed.manager.RxposedApp;
 
 
-public class ExtendListAdapter extends BaseQuickAdapter<ExtendData.ExtendInfo, BaseViewHolder> implements LoadMoreModule {
+public class ExtenListAdapter extends BaseQuickAdapter<ExtenDataProvider.ExtendInfo, BaseViewHolder> implements LoadMoreModule {
 
 
-    public ExtendListAdapter(int layoutResId) {
+    public ExtenListAdapter(int layoutResId) {
         super(layoutResId);
     }
 
@@ -24,7 +31,7 @@ public class ExtendListAdapter extends BaseQuickAdapter<ExtendData.ExtendInfo, B
 
 
     @Override
-    protected void convert(@NonNull BaseViewHolder baseViewHolder, ExtendData.ExtendInfo item) {
+    protected void convert(@NonNull BaseViewHolder baseViewHolder, ExtenDataProvider.ExtendInfo item) {
         if (item == null) {
             return;
         }
@@ -32,7 +39,12 @@ public class ExtendListAdapter extends BaseQuickAdapter<ExtendData.ExtendInfo, B
         baseViewHolder.setText(R.id.app_name, item.getAppName());
         baseViewHolder.setText(R.id.description, item.getPackageName());
         baseViewHolder.setImageDrawable(R.id.app_icon,item.getIcon());
-
+        baseViewHolder.findView(R.id.btn_open_app).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Util.StartRxmoduleApplication(item.getPackageName());
+            }
+        });
 //        ListItemRxmoduleBinding binding = DataBindingUtil.getBinding(baseViewHolder.itemView);
 //        if (binding != null) {
 //            binding.setModuleInfo(moduleInfo);   //setAppInfo 这个函数就是在xml 文件中设置的data variable 里的name,后面的类名和这里直接对应

@@ -8,32 +8,40 @@ import androidx.annotation.Nullable;
 
 import com.chad.library.adapter.base.entity.node.BaseNode;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import hepta.rxposed.manager.RxposedApp;
+import hepta.rxposed.manager.fragment.PlugSupport.SupportData;
 import hepta.rxposed.manager.fragment.base.AppInfoDataProvider;
 import hepta.rxposed.manager.fragment.base.AppInfoNode;
 import hepta.rxposed.manager.fragment.base.ModuleInfo;
 import hepta.rxposed.manager.fragment.base.ModuleInfoProvider;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
-public class ExtenData extends ModuleInfoProvider<ExtenData.ExtendInfo> {
+public class ExtenDataProvider extends ModuleInfoProvider<ExtenDataProvider.ExtendInfo> {
 
 
 
-    private static ExtenData _sInstance;
+    private static ExtenDataProvider _sInstance;
 
 
-    public static ExtenData getInstance() {
+    public static ExtenDataProvider getInstance() {
         if (_sInstance == null) {
-            _sInstance = new ExtenData();
+            _sInstance = new ExtenDataProvider();
         }
         return _sInstance;
     }
 
 
-    public ExtenData() {
+    public ExtenDataProvider() {
         super( RxposedApp.getInstance().getFilesDir()+"/rxposed_modules");
     }
 
@@ -68,7 +76,7 @@ public class ExtenData extends ModuleInfoProvider<ExtenData.ExtendInfo> {
             if (!app.enabled)
                 continue;
             //xposedmodule
-            if (app.metaData != null && app.metaData.containsKey("xposedmodule")) {
+            if (app.metaData != null && app.metaData.containsKey("rxmodule")) {
                 ExtendInfo installed = new ExtendInfo(pkg,RxposedApp.getInstance().getPackageManager(), AppInfoDataProvider.getInstance().getAllMapApps_module(pkg.packageName,RxposedApp.getInstance().getPackageManager()));
                 map_modules.put(installed.getUID(),installed);
             }
@@ -77,8 +85,6 @@ public class ExtenData extends ModuleInfoProvider<ExtenData.ExtendInfo> {
     }
 
 
-
-    //    ByUidGetModuleInfo
 
 
 

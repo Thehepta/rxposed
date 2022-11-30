@@ -1,4 +1,4 @@
-package hepta.rxposed.manager.fragment.base;
+package hepta.rxposed.loadxposed.ui.home;
 
 import android.widget.CompoundButton;
 
@@ -9,9 +9,8 @@ import com.chad.library.adapter.base.entity.node.BaseNode;
 import com.chad.library.adapter.base.provider.BaseNodeProvider;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 
-import hepta.rxposed.manager.R;
-import hepta.rxposed.manager.fragment.PlugSupport.SupportData;
-import hepta.rxposed.manager.fragment.base.AppInfoNode;
+import hepta.rxposed.loadxposed.R;
+
 
 public class AppInfoNodeProvider extends BaseNodeProvider
 {

@@ -59,9 +59,8 @@ public class AppInfoNode extends BaseNode {
 
 
     public void setEnable(boolean enable) {
-        Log.e("Rzx","setHookStatus:"+enable+" appName:"+appName+" uid ="+getUID());
+//        Log.e("Rzx","setHookStatus:"+enable+" appName:"+appName+" uid ="+getUID());
         this.enable = enable;
-//        ModuleInfoProvider.getInstance().UpdateConfig();
     }
 
     public void setModuleName(String moduleName) {

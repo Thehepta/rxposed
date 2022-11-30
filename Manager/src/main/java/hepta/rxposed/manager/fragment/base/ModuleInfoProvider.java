@@ -1,5 +1,8 @@
 package hepta.rxposed.manager.fragment.base;
 
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -8,21 +11,25 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
-import hepta.rxposed.manager.util.LogUtil;
+import hepta.rxposed.manager.RxposedApp;
+import hepta.rxposed.manager.util.Util;
 
 
 public abstract class ModuleInfoProvider<T extends ModuleInfo> {
 
     private Map<Integer, T> map_modules ;
     private String ConfigPath ;
-
+    private JSONObject rxposedModulejson = new JSONObject();
 
     public ModuleInfoProvider(String ConfigPath){
         this.ConfigPath = ConfigPath;
@@ -60,7 +67,7 @@ public abstract class ModuleInfoProvider<T extends ModuleInfo> {
                     }
                 }
             }else{
-                LogUtil.LogD("readConfig content == null");
+                Util.LogD("readConfig content == null");
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -80,10 +87,10 @@ public abstract class ModuleInfoProvider<T extends ModuleInfo> {
                 }
             }
         } catch (UnsupportedEncodingException | FileNotFoundException e) {
-            LogUtil.LogE("Cannot find the file specified!");
+            Util.LogE("Cannot find the file specified!");
             e.printStackTrace();
         } catch (IOException e) {
-            LogUtil.LogE("Error reading file content!");
+            Util.LogE("Error reading file content!");
             e.printStackTrace();
         }
         return null;
@@ -107,5 +114,104 @@ public abstract class ModuleInfoProvider<T extends ModuleInfo> {
 
         return config;
     }
+
+
+    public void UpdateConfig() {
+        for (Map.Entry<Integer, T> entry : map_modules.entrySet()) {
+            T moduleInfo = entry.getValue();
+            JSONArray appList = addmodule(moduleInfo.getUID(),moduleInfo.getEnable());
+            for(AppInfoNode appInfo : moduleInfo.getAppInfoList()){
+                if(appInfo.getEnable()){
+                    appList.put(appInfo.getUID());
+                }
+            }
+        }
+        Util.LogD(rxposedModulejson.toString());
+        File config = getConfigFile();
+        try {
+            FileWriter fw = new FileWriter(config);
+            fw.write("");
+            fw.flush();
+            fw.write(rxposedModulejson.toString());
+            fw.flush();
+            fw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public JSONArray addmodule(int uid, boolean enable){
+
+        JSONArray appobject = new JSONArray();
+        try {
+            JSONObject moduleInfo = new JSONObject();
+            moduleInfo.put("enable",enable);
+            moduleInfo.put("EnableProcUid",appobject);
+            rxposedModulejson.put(String.valueOf(uid),moduleInfo);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return appobject;
+    }
+
+    public String  getConfigToString(String ProcessName){
+        PackageManager pm =  RxposedApp.getInstance().getPackageManager();
+
+        String json = readerJson();
+        List<Integer> uidlist = new ArrayList<>();
+        try {
+            ApplicationInfo info = pm.getApplicationInfo(ProcessName, PackageManager.GET_UNINSTALLED_PACKAGES);
+            if(json !=null) {
+                try {
+                    JSONObject parseobj = new JSONObject(json);
+                    Iterator<String> iterator = parseobj.keys();
+                    while(iterator.hasNext()){
+                        String key =  iterator.next();
+                        JSONObject value = parseobj.getJSONObject(key);
+                        boolean enable = value.getBoolean("enable");
+                        if(!enable){
+                            continue;
+                        }
+                        JSONArray EnableProcUidList = value.getJSONArray("EnableProcUid");
+                        for(int i = 0; i < EnableProcUidList.length(); i ++) {
+                            int enableAppUid= EnableProcUidList.getInt(i);
+                            if (enableAppUid == info.uid){
+                                uidlist.add(Integer.valueOf(key));
+                            }
+                        }
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        ListIterator<Integer> it = uidlist.listIterator();
+        StringBuilder retString = new StringBuilder();
+
+        while(it.hasNext()) {
+            String pkgName = pm.getNameForUid(it.next());
+            try {
+                ApplicationInfo applicationInfo = pm.getApplicationInfo(pkgName,PackageManager.GET_UNINSTALLED_PACKAGES|PackageManager.GET_META_DATA);
+                String entry_class  = applicationInfo.metaData.getString("rxposed_clsentry");
+                String entry_method = applicationInfo.metaData.getString("rxposed_mtdentry");
+                retString.append(applicationInfo.packageName+":"+entry_class+":"+entry_method);
+                if(it.hasNext()){
+                    retString.append("|");
+                }
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+        if(retString.toString()==""){
+            return "null";
+        }else {
+
+            return retString.toString();
+        }
+    }
+
 
 }

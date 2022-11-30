@@ -23,7 +23,7 @@ android {
         externalNativeBuild {
             cmake {
                 arguments "-DRXDEBUG=OFF" ,"-DSONAME=${TextAppSo}" , "-DSOINJECT=${Rxposed_Inject_So}" //给cmake传参数
-                cppFlags '-DRXDEBUG=0'      //源文件文件编译宏参数
+                cppFlags '-DRXDEBUG=1'      //源文件文件编译宏参数
 //                cppFlags "-frtti -fexceptions -Wpointer-arith"
                 abiFilters 'armeabi-v7a', 'arm64-v8a'
             }

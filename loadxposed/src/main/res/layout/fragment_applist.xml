@@ -2,10 +2,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
-        <import  type="hepta.rxposed.manager.fragment.base.ModuleInfo" />
+        <import  type="hepta.rxposed.loadxposed.ui.home.ModuleInfo" />
         <variable
             name="modInfo"
-            type="hepta.rxposed.manager.fragment.base.ModuleInfo" />
+            type="hepta.rxposed.loadxposed.ui.home.ModuleInfo" />
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout

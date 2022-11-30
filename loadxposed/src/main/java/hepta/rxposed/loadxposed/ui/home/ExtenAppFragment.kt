@@ -19,10 +19,12 @@ package hepta.rxposed.loadxposed.ui.home
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.InputType
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CompoundButton
 import androidx.appcompat.widget.SwitchCompat
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.afollestad.materialdialogs.LayoutMode
@@ -31,28 +33,37 @@ import com.afollestad.materialdialogs.bottomsheets.BottomSheet
 import com.afollestad.materialdialogs.input.input
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import com.chad.library.adapter.base.entity.node.BaseNode
-import hepta.rxposed.manager.MainActivity
-import hepta.rxposed.manager.R
-import hepta.rxposed.manager.fragment.PlugExten.ExtenDataProvider
-import hepta.rxposed.manager.fragment.base.AppInfoNode
-import hepta.rxposed.manager.fragment.base.ModuleInfo
-import hepta.rxposed.manager.fragment.base.baseCollToolbarFragment
+import hepta.rxposed.loadxposed.MainActivity
+import hepta.rxposed.loadxposed.R
+import hepta.rxposed.loadxposed.databinding.FragmentApplistBinding
 
 
 /**
  * A simple [Fragment] subclass.
  */
-class ExtenAppFragment : baseCollToolbarFragment() {
+class ExtenAppFragment : Fragment() {
 
+    lateinit var binding: FragmentApplistBinding
+    private var moduleInfo: ModuleInfo? = null
     private var appsAdapter: AppInfoAdapter? = null
     private val filterListApp: MutableList<AppInfoNode> = mutableListOf()
     val Datalist: MutableList<BaseNode> = ArrayList()
 
 
-    override fun getModuleInfo(): ModuleInfo {
-        return ExtenDataProvider.getInstance().ByUidGetModuleInfo(arguments?.getInt("Key")!!)
-    }
 
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_applist, container, false)
+        var mainActivity = requireActivity() as MainActivity
+        mainActivity.DisableToolBar();  //主动调用activity的方法，隐藏toolbar
+        moduleInfo = ExtenDataProvider.getInstance().ByUidGetModuleInfo(arguments?.getInt("Key")!!)
+
+
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

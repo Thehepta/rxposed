@@ -27,7 +27,6 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/huise"
             android:colorControlNormal="@color/black" />
 
         <fragment
@@ -46,6 +45,5 @@
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
         app:elevation="0dp"
-        app:headerLayout="@layout/nav_view_header"
-        app:menu="@menu/nav_drawer_menu" />
+        app:menu="@menu/bottom_nav_menu" />
 </androidx.drawerlayout.widget.DrawerLayout>
