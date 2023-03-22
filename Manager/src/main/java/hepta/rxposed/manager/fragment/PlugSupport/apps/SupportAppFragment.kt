@@ -33,7 +33,7 @@ import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import com.chad.library.adapter.base.entity.node.BaseNode
 import hepta.rxposed.manager.MainActivity
 import hepta.rxposed.manager.R
-import hepta.rxposed.manager.fragment.PlugSupport.SupportData
+import hepta.rxposed.manager.fragment.PlugSupport.SupportInfoProvider
 import hepta.rxposed.manager.fragment.base.AppInfoNode
 import hepta.rxposed.manager.fragment.base.ModuleInfo
 import hepta.rxposed.manager.fragment.base.SectionBarNode
@@ -54,12 +54,12 @@ class SupportAppFragment : baseCollToolbarFragment() {
 
 
     override fun getModuleInfo(): ModuleInfo {
-        return SupportData.getInstance().ByUidGetModuleInfo(arguments?.getInt("Key")!!)
+        return SupportInfoProvider.getInstance().ByUidGetModuleInfo(arguments?.getInt("Key")!!)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        var supportinfo:SupportData.SupportInfo = moduleInfo as SupportData.SupportInfo
+        var supportinfo: SupportInfoProvider.SupportInfo = moduleInfo as SupportInfoProvider.SupportInfo
 
         val result: java.util.ArrayList<Any?> = java.util.ArrayList<Any?>(supportinfo.depondsList.values)
 

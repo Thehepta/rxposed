@@ -33,7 +33,7 @@ import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import com.chad.library.adapter.base.entity.node.BaseNode
 import hepta.rxposed.manager.MainActivity
 import hepta.rxposed.manager.R
-import hepta.rxposed.manager.fragment.PlugExten.ExtenDataProvider
+import hepta.rxposed.manager.fragment.PlugExten.ExtenInfoProvider
 import hepta.rxposed.manager.fragment.base.AppInfoNode
 import hepta.rxposed.manager.fragment.base.ModuleInfo
 import hepta.rxposed.manager.fragment.base.baseCollToolbarFragment
@@ -50,7 +50,7 @@ class ExtenAppFragment : baseCollToolbarFragment() {
 
 
     override fun getModuleInfo(): ModuleInfo {
-        return ExtenDataProvider.getInstance().ByUidGetModuleInfo(arguments?.getInt("Key")!!)
+        return ExtenInfoProvider.getInstance().ByUidGetModuleInfo(arguments?.getInt("Key")!!)
     }
 
 

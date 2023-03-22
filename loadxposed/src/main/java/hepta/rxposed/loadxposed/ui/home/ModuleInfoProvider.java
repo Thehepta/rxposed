@@ -33,6 +33,10 @@ public abstract class ModuleInfoProvider<T extends ModuleInfo> {
 
     public ModuleInfoProvider(String ConfigPath){
         this.ConfigPath = ConfigPath;
+
+    }
+
+    public void init(){
         map_modules = initModuelList();
         readConfig();
     }

@@ -1,5 +1,5 @@
 // IsoatedService.aidl
-package hepta.rxposed.rxposedloaderapp;
+package hepta.rxposed.nativeloader;
 
 // Declare any non-default types here with import statements
 

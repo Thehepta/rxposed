@@ -14,7 +14,7 @@ project("framework")
 
 # add the executable
 
-add_subdirectory(rxposedLoader)
+add_subdirectory(nativeloader)
 
 add_library( # Sets the name of the library.
         ${SONAME}
@@ -50,7 +50,7 @@ target_link_libraries( # Specifies the target library.
         #        hookbase                         #直接链接就可以，不用进行导入等操作
         # Links the target library to the log library
         # included in the NDK.
-        rxposedLoader
+        nativeloader
         ${log-lib})
 
 

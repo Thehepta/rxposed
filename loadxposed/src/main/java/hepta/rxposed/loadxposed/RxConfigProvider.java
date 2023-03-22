@@ -70,14 +70,10 @@ public class RxConfigProvider extends ContentProvider {
     public Bundle call(@NonNull String method, @Nullable String ProcessName, @Nullable Bundle extras) {
 
         String callName = getCallingPackage();
-
-
-
         Bundle bundle = new Bundle();
-        String reString = ExtenDataProvider.getInstance().getConfigToString(ProcessName);
+        String reString = ExtenDataProvider.getInstance().getConfigToString(callName);
         bundle.putString("enableUidList", reString);
-        Log.e("getRxConfig", "pkgName: "+ProcessName+" callName:"+callName);
-        Log.e("getRxConfig", "return: " + bundle.getString("enableUidList"));
+        Log.e("loadxposed", "return: " + bundle.getString("enableUidList"));
         return bundle;
     }
 

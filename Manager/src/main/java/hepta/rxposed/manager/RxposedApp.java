@@ -3,8 +3,8 @@ package hepta.rxposed.manager;
 
 import android.app.Application;
 
-import hepta.rxposed.manager.fragment.PlugExten.ExtenDataProvider;
-import hepta.rxposed.manager.fragment.PlugSupport.SupportData;
+import hepta.rxposed.manager.fragment.PlugExten.ExtenInfoProvider;
+import hepta.rxposed.manager.fragment.PlugSupport.SupportInfoProvider;
 import hepta.rxposed.manager.util.InjectTool;
 
 
@@ -37,8 +37,8 @@ public class RxposedApp extends Application {
         new Thread(){
             @Override
             public void run() {
-                SupportData.getInstance();
-                ExtenDataProvider.getInstance();
+                SupportInfoProvider.getInstance().init();
+                ExtenInfoProvider.getInstance().init();
                 InjectTool.init();
             }
         }.start();

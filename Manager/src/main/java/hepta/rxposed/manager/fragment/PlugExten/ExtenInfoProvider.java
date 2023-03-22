@@ -8,40 +8,32 @@ import androidx.annotation.Nullable;
 
 import com.chad.library.adapter.base.entity.node.BaseNode;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import hepta.rxposed.manager.RxposedApp;
-import hepta.rxposed.manager.fragment.PlugSupport.SupportData;
 import hepta.rxposed.manager.fragment.base.AppInfoDataProvider;
 import hepta.rxposed.manager.fragment.base.AppInfoNode;
 import hepta.rxposed.manager.fragment.base.ModuleInfo;
 import hepta.rxposed.manager.fragment.base.ModuleInfoProvider;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 
-public class ExtenDataProvider extends ModuleInfoProvider<ExtenDataProvider.ExtendInfo> {
+public class ExtenInfoProvider extends ModuleInfoProvider<ExtenInfoProvider.ExtendInfo> {
 
 
 
-    private static ExtenDataProvider _sInstance;
+    private static ExtenInfoProvider _sInstance;
 
 
-    public static ExtenDataProvider getInstance() {
+    public static ExtenInfoProvider getInstance() {
         if (_sInstance == null) {
-            _sInstance = new ExtenDataProvider();
+            _sInstance = new ExtenInfoProvider();
         }
         return _sInstance;
     }
 
 
-    public ExtenDataProvider() {
+    public ExtenInfoProvider() {
         super( RxposedApp.getInstance().getFilesDir()+"/rxposed_modules");
     }
 

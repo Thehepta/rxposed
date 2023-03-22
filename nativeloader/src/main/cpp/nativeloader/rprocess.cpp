@@ -2,9 +2,9 @@
 // Created by Intel on 2022/4/5.
 //
 
-
+#include "jni.h"
 #include "include/rprocess.h"
-
+#include "android/log.h"
 
 jobject LoadModuleClassLoader = nullptr;
 
@@ -216,8 +216,8 @@ void rprocess::load_apk_And_exe_Class_Method(JNIEnv *pEnv, AppinfoNative *appinf
     jclass Method_cls = pEnv->FindClass("java/lang/reflect/Method");
     jmethodID invoke_met =  pEnv->GetMethodID(Method_cls,"invoke","(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;");
     jmethodID getmethod_method = pEnv->GetMethodID(Class_cls, "getMethod", "(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;");
-    LOGE("new classload ");
-    jobject entryMethod_obj = nullptr;
+//    LOGE("new classload ");
+//    jobject entryMethod_obj = nullptr;
     jobject entryClass_obj = nullptr;
 
     //---------------------------------------------------------------------------------------------------------------------
@@ -261,7 +261,7 @@ void rprocess::load_apk_And_exe_Class_Method(JNIEnv *pEnv, AppinfoNative *appinf
     out2:
     pEnv->ExceptionDescribe();
     pEnv->ExceptionClear();//清除引发的异常，在Java层不会打印异常堆栈信息，如果不清除，后面的调用ThrowNew抛出的异常堆栈信息会
-    pEnv->DeleteLocalRef(entryMethod_obj);
+//    pEnv->DeleteLocalRef(entryMethod_obj);
     pEnv->DeleteLocalRef(SystemClassLoader_obj);
     pEnv->DeleteLocalRef(ApkClassLoader);
     pEnv->DeleteLocalRef(entryClass_obj);
@@ -328,4 +328,40 @@ void rprocess::setRxposedContext(jobject RxposedContext) {
 bool rprocess::is_isIsolatedProcess() {
     int uid = getuid();
     return (uid >= 99000 && uid <= 99999)|| (uid >= 90000 && uid <= 98999);
+}
+
+jobject rprocess::getSystemContext(JNIEnv *env)
+{
+    //获取Activity Thread的实例对象
+    jclass activityThreadClass = env->FindClass("android/app/ActivityThread");
+    if(NDK_ExceptionCheck(env,"find class android/app/ActivityThread failed")){
+        return nullptr;
+    }
+    jmethodID currentActivityThread = env->GetStaticMethodID(activityThreadClass, "currentActivityThread", "()Landroid/app/ActivityThread;");
+    jobject at = env->CallStaticObjectMethod(activityThreadClass, currentActivityThread);
+    if(at == nullptr){
+//        LOGE("Failed to call currentActivityThread,at is null");
+        return nullptr;
+    }
+    //ContextImpl，RxposedContext
+    jmethodID getApplication = env->GetMethodID(activityThreadClass, "getRxposedContext", "()Landroid/app/ContextImpl;");
+    jobject context = env->CallObjectMethod(at, getApplication);
+    if(context == nullptr){
+        LOGE("Failed to call getRxposedContext,context is null");
+        return nullptr;
+    }
+    env->DeleteLocalRef(at);
+    return context;
+}
+
+//清除异常，打印java堆栈好用户输入，继续执行
+bool rprocess::NDK_ExceptionCheck(JNIEnv *env,const char* message){
+
+    if(env->ExceptionCheck()){
+        LOGD("%s",message);
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return true;
+    }
+    return false;
 }

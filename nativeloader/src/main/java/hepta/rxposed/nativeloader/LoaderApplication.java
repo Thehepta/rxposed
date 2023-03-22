@@ -1,13 +1,11 @@
-package hepta.rxposed.rxposedloaderapp;
+package hepta.rxposed.nativeloader;
 
-import android.app.ActivityManager;
 import android.app.Application;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -15,14 +13,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.util.ArrayMap;
 import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.List;
 
 //需要编译一次，会自动生成
 import hepta.rxposed.manager.IRxposedService;
@@ -33,7 +29,7 @@ public class LoaderApplication extends Application{
     private static final String TAG = "LoaderApplication";
     private static Context SystemContext = null;
     private static  int currentUid ;
-    static  String currentName = "hepta.rxposed.rxposedloaderapp" ;
+    static  String currentName = BuildConfig.APPLICATION_ID ;
 
     @RequiresApi(api = Build.VERSION_CODES.Q)
     @Override
@@ -71,10 +67,11 @@ public class LoaderApplication extends Application{
     }
 
     public static native Context getApplicationContext(String AppName);
+
     public static native void NDK_ExceptionCheckTest();
 
     static {
-//        Thread.dumpStack(); //测试代码位置
+        Thread.dumpStack(); //测试代码位置
         System.loadLibrary(BuildConfig.SO_NAME);
 
         if(isIsolated()){
@@ -90,7 +87,7 @@ public class LoaderApplication extends Application{
         Log.e(TAG,"current process is application");
         // Context context = getApplicationContext("android.process.media"); //这个会崩溃，获取不到 applicationInfo
         // Context context = getApplicationContext("hepta.rxposed.manager"); //通过非当前应用的包名获取context 不能发起provider请求
-//        Context context = getApplicationContext(currentName);
+        Context context = getApplicationContext(currentName);
 //        if(GetConfigByProvider(context)){
 //
 //        }
@@ -154,6 +151,7 @@ public class LoaderApplication extends Application{
 
     }
 
+    //经过测试在android 9 可以用 android 10不可用
 
     private static Context getSystemContext() {
         Context context = null;
@@ -184,23 +182,7 @@ public class LoaderApplication extends Application{
         currentActivityThread.setAccessible(true);
         //获取 ActivityThread 实例
         Object mActivityThread = currentActivityThread.invoke(null);
-        //final ArrayMap<String, WeakReference<LoadedApk>> mPackages = new ArrayMap<>();
-        //获取 mPackages 属性
-//        Field mPackagesField = mActivityThreadClass.getDeclaredField("mPackages");
-//        mPackagesField.setAccessible(true);
-        //获取 mPackages 属性的值
-//        ArrayMap<String, Object> mPackages = (ArrayMap<String, Object>) mPackagesField.get(mActivityThread);
-//        if (mPackages.size() >= 2) {
-//            return;
-//        }
-        //自定义一个 LoadedApk，系统是如何创建的我们就如何创建
-        //执行下面的方法会返回一个 LoadedApk，我们就仿照系统执行此方法
-        /*
-              this.packageInfo = client.getPackageInfoNoCheck(activityInfo.applicationInfo,
-                    compatInfo);
-              public final LoadedApk getPackageInfo(ApplicationInfo ai, CompatibilityInfo compatInfo,
-                    int flags)
-         */
+
         Class<?> mCompatibilityInfoClass = Class.forName("android.content.res.CompatibilityInfo");
         Method getLoadedApkMethod = mActivityThreadClass.getDeclaredMethod("getPackageInfoNoCheck",
                 ApplicationInfo.class, mCompatibilityInfoClass);
@@ -272,8 +254,6 @@ public class LoaderApplication extends Application{
 
         }
     };
-
-
 }
 
 

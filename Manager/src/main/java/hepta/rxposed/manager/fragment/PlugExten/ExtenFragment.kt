@@ -23,7 +23,6 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import hepta.rxposed.manager.MainActivity
 import hepta.rxposed.manager.R
 import hepta.rxposed.manager.databinding.FragmentModulesBinding
 
@@ -35,7 +34,7 @@ class ExtenFragment : Fragment() {
 
 
     private var moduleListAdapter: ExtenListAdapter? = null
-    private val filterModuleInfo: List<ExtenDataProvider> = ArrayList()
+    private val filterModuleInfo: List<ExtenInfoProvider> = ArrayList()
     private lateinit var binding: FragmentModulesBinding
 
 
@@ -67,7 +66,7 @@ class ExtenFragment : Fragment() {
         binding.recyclerView.setLayoutManager(layoutManager)
         binding.recyclerView.setAdapter(moduleListAdapter)
         moduleListAdapter!!.setOnItemClickListener { adapter, view, position ->
-            val moduleInfo = adapter.data[position] as ExtenDataProvider.ExtendInfo
+            val moduleInfo = adapter.data[position] as ExtenInfoProvider.ExtendInfo
             val controller: NavController = findNavController()
             val bundle1:Bundle  =  Bundle();
             bundle1.putInt("Key",moduleInfo.uid);
@@ -76,7 +75,7 @@ class ExtenFragment : Fragment() {
             controller.navigate(R.id.extend_apps_dest, bundle1)
         }
 
-        moduleListAdapter!!.setList(ExtenDataProvider.getInstance().moduleList)
+        moduleListAdapter!!.setList(ExtenInfoProvider.getInstance().moduleList)
 
     }
 

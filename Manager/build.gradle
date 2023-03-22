@@ -24,10 +24,10 @@ def build_Module_copy_file(type,taskname,file_name){
     if(type.equals("debug")){
         command = "../gradlew -p ../${taskname} externalNativeBuildDebug"
         Asset_dir = "mergeDebugAssets"
-        println("gradlr:"+"externalNativeBuildDebug")
+        println("rxposed gradle:"+"externalNativeBuildDebug")
     }
     if(type.equals("release")){
-        println("gradlr:"+"externalNativeBuildRelease")
+        println("rxposed gradle:"+"externalNativeBuildRelease")
         Asset_dir = "mergeReleaseAssets"
         command = "../gradlew -p ../${taskname} externalNativeBuildRelease"
     }
@@ -104,17 +104,15 @@ android {
 
     android.applicationVariants.all { variant ->
         variant.outputs.each { variantOutput ->
-//            println("applicationVariants.name----------------${variant.name}")
+            println("applicationVariants.name----------------${variant.name}")
 //            println("applicationVariants.description----------------${variant.description}")
 //            println("applicationVariants.mergeAssets----------------${variant.mergeAssets}")
 //            println("applicationVariants.name----------------${variant.mergeAssets.name}")
 
-
             variant.mergeAssetsProvider.get().doLast {
-
-                build_Module_copy_file(variant.name,"rxposedloaderapp","librxposedLoader.so")
-                build_Module_copy_file(variant.name,"RxposedTool","InjectTool")
-
+                println("mergeAssetsProvider.name----------------${variant.name}")
+                build_Module_copy_file(variant.name,"nativeloader","${Rxposed_Inject_So_name}")
+                build_Module_copy_file(variant.name,"Tool","InjectTool")
 
             }
 

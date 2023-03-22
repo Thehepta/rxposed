@@ -21,6 +21,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Start isolatedProcess" />
+
+        <Button
+            android:id="@+id/loadapk"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="loadapk" />
+
+        <Button
+            android:id="@+id/startact"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="start Activity" />
     </LinearLayout>
 
 

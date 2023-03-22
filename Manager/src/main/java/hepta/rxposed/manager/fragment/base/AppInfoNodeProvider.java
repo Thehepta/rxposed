@@ -10,8 +10,6 @@ import com.chad.library.adapter.base.provider.BaseNodeProvider;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 
 import hepta.rxposed.manager.R;
-import hepta.rxposed.manager.fragment.PlugSupport.SupportData;
-import hepta.rxposed.manager.fragment.base.AppInfoNode;
 
 public class AppInfoNodeProvider extends BaseNodeProvider
 {

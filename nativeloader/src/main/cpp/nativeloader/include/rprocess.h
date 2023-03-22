@@ -10,9 +10,21 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include "NDKhelper.h"
+#include "jni.h"
+#include "android/log.h"
 using namespace std;
 
+#define LOG_TAG "RxposedInject"
+#if RXDEBUG
+// 调用 debug 版本方法
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+#define DEBUG(...) __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,"[file %s],[line %d],[function:%s]",__FILE__, __LINE__,__func__);
+#define LOGD(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+#else
+#define LOGE(...)
+#define LOGD(...)
+#define DEBUG(...)
+#endif
 
 
 class rprocess {
@@ -82,7 +94,9 @@ private:
     string providerHost_pkgName;
 
 
+    jobject getSystemContext(JNIEnv *pEnv);
 
+    bool NDK_ExceptionCheck(JNIEnv *pEnv, const char *string);
 };
 
 

@@ -1,4 +1,4 @@
-package hepta.rxposed.rxposedloaderapp;
+package hepta.rxposed.nativeloader;
 
 import android.content.Context;
 

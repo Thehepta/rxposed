@@ -33,12 +33,11 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 
 
 add_library( # Sets the name of the library.
-        rxposedLoader
+        nativeloader
              # Sets the library as a shared library.
         SHARED
              # Provides a relative path to your source file(s).
         zygote_hook.cpp
-        NDKhelper.cpp
         rprocess.cpp
         )
 
@@ -63,7 +62,7 @@ find_library( # Sets the name of the path variable.
 # build script, prebuilt third-party libraries, or system libraries.
 
 target_link_libraries( # Specifies the target library.
-        rxposedLoader
+        nativeloader
         # Links the target library to the log library
         # included in the NDK.
         libdobby

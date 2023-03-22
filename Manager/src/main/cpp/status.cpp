@@ -38,13 +38,13 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
 }
 
 __unused __attribute__((constructor(101)))
-void constructor_101() { // __attribute__((constructor))修饰 最先执行
+void constructor_101() { // __attribute__((constructor))修饰 最先执行 one
     LOGD("constructor_101 TEXT");
 
 }
 
 __unused __attribute__((constructor(102)))
-void constructor_102() { // __attribute__((constructor))修饰 最先执行
+void constructor_102() { // __attribute__((constructor))修饰 最先执行 two
     LOGD("constructor_102 TEXT");
 
 }

@@ -147,6 +147,7 @@ void hook_setArgv0(){
 //    android_os_Process_setArg_addr = (unsigned int (*)(unsigned int *,unsigned int *,unsigned int *))DobbySymbolResolver ("librxpopsed.so", "Java_com_example_rxpopsed_MainActivity_stringFromJNI");
 //    DobbyHook((void *)android_os_Process_setArg_addr, (void *)android_os_Process_setArg_call, (void **)&android_os_Process_setArg_org);
 }
+
 void dobby(unsigned int serviceUid){
 //    rprocess::GetInstance()->setServiceUid(serviceUid);
     zygote_server_init();

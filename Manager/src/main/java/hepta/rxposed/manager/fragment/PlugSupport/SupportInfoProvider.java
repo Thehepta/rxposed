@@ -19,22 +19,22 @@ import hepta.rxposed.manager.fragment.base.AppInfoNode;
 import hepta.rxposed.manager.fragment.base.ModuleInfo;
 import hepta.rxposed.manager.fragment.base.ModuleInfoProvider;
 
-public class SupportData extends ModuleInfoProvider<SupportData.SupportInfo> {
+public class SupportInfoProvider extends ModuleInfoProvider<SupportInfoProvider.SupportInfo> {
 
 
 
-    private static SupportData _sInstance;
+    private static SupportInfoProvider _sInstance;
 
 
-    public static SupportData getInstance() {
+    public static SupportInfoProvider getInstance() {
         if (_sInstance == null) {
-            _sInstance = new SupportData();
+            _sInstance = new SupportInfoProvider();
         }
         return _sInstance;
     }
 
 
-    public SupportData() {
+    public SupportInfoProvider() {
         super( RxposedApp.getInstance().getFilesDir()+"/rxposed_support");
     }
 

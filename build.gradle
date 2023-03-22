@@ -9,7 +9,8 @@ plugins {
 
 ext {
     TextAppSo = "Loadtest"
-    Rxposed_Inject_So = "rxposedLoader"
+    Rxposed_Inject_So = "nativeloader"
+    Rxposed_Inject_So_name = "lib${Rxposed_Inject_So}.so"
     Rxposed_Tool = ""
 }
 

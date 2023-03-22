@@ -10,6 +10,7 @@ import com.swift.sandhook.xposedcompat.XposedCompat;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
+import hepta.rxposed.loadxposed.ui.home.ExtenDataProvider;
 
 public class MyApp extends Application {
 
@@ -27,7 +28,8 @@ public class MyApp extends Application {
         Log.e("XposedCompat", "MyApp:");
         super.onCreate();
         instance = this;
-        XposedEntry.LoadEntry();
+        ExtenDataProvider.getInstance().init();
+        XposedEntry.LoadApk_text(this);
 //        XposedEntry.Entry(this);
 //        XposedEntry.hook(this);
 
@@ -59,7 +61,7 @@ public class MyApp extends Application {
     }
 
     static {
-        Thread.dumpStack(); //测试代码位置
+//        Thread.dumpStack(); //测试代码位置
     }
 
 }

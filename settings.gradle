@@ -19,8 +19,7 @@ dependencyResolutionManagement {
 }
 rootProject.name = "Rxposed"
 include ':Manager'
-include ':rxposedloader'
-include ':RxposedTool'
+include ':nativeloader'
+include ':Tool'
 include ':loadxposed'
-include ':mylibrary'
 include ':hiddenapistubs'

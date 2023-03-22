@@ -2,6 +2,7 @@ package hepta.rxposed.manager.fragment.base;
 
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Objects;
 
 import hepta.rxposed.manager.RxposedApp;
 import hepta.rxposed.manager.util.Util;
@@ -27,12 +29,15 @@ import hepta.rxposed.manager.util.Util;
 
 public abstract class ModuleInfoProvider<T extends ModuleInfo> {
 
+    private String TAG = "ModuleInfoProvider";
     private Map<Integer, T> map_modules ;
     private String ConfigPath ;
     private JSONObject rxposedModulejson = new JSONObject();
 
     public ModuleInfoProvider(String ConfigPath){
         this.ConfigPath = ConfigPath;
+    }
+    public void init(){
         map_modules = initModuelList();
         readConfig();
     }
@@ -57,13 +62,23 @@ public abstract class ModuleInfoProvider<T extends ModuleInfo> {
                 JSONObject parseobj = new JSONObject(json);
                 for (Map.Entry<Integer, T> entry : map_modules.entrySet()) {
                     T moduleInfo = entry.getValue();
-                    JSONObject json_moduleInfo = parseobj.getJSONObject(String.valueOf(moduleInfo.getUID()));
-                    JSONArray enabelAppUidList =  json_moduleInfo.getJSONArray("EnableProcUid");
-                    moduleInfo.enable = json_moduleInfo.getBoolean("enable");
-
-                    for(int i = 0; i < enabelAppUidList.length(); i ++) {
-                        int enableAppUid= (int) enabelAppUidList.get(i);
-                        moduleInfo.getAppInfoMaps().get(enableAppUid).enable = true;
+                    Log.e(TAG,"module Name:"+moduleInfo.getAppName()+" uid:"+moduleInfo.getUID());
+                    String uid_str = String.valueOf(moduleInfo.getUID());
+                    if(parseobj.has(uid_str)){
+                        JSONObject json_moduleInfo = parseobj.getJSONObject(uid_str);
+                        JSONArray enabelAppUidList =  json_moduleInfo.getJSONArray("EnableProcUid");
+                        moduleInfo.enable = json_moduleInfo.getBoolean("enable");
+                        for(int i = 0; i < enabelAppUidList.length(); i ++) {
+                            int enableAppUid= (int) enabelAppUidList.get(i);
+                            AppInfoNode enableAppUid_AppInfoNode = moduleInfo.getAppInfoMaps().get(enableAppUid);
+                            if(enableAppUid_AppInfoNode == null){
+                                continue;
+                            }else {
+                                enableAppUid_AppInfoNode.enable = true;
+                            }
+                        }
+                    }else {
+                        continue;
                     }
                 }
             }else{
@@ -155,8 +170,8 @@ public abstract class ModuleInfoProvider<T extends ModuleInfo> {
         return appobject;
     }
 
-    public String  getConfigToString(String ProcessName){
-        PackageManager pm =  RxposedApp.getInstance().getPackageManager();
+    public String  getConfigToString(String ProcessName,PackageManager pm){
+
 
         String json = readerJson();
         List<Integer> uidlist = new ArrayList<>();

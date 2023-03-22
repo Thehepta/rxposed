@@ -10,7 +10,7 @@ import com.chad.library.adapter.base.provider.BaseNodeProvider;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 
 import hepta.rxposed.manager.R;
-import hepta.rxposed.manager.fragment.PlugExten.ExtenDataProvider;
+import hepta.rxposed.manager.fragment.PlugExten.ExtenInfoProvider;
 
 
 public class SupportNodeProvider extends BaseNodeProvider {
@@ -30,7 +30,7 @@ public class SupportNodeProvider extends BaseNodeProvider {
 
     @Override
     public void convert(@NonNull BaseViewHolder baseViewHolder, BaseNode baseNode) {
-        ExtenDataProvider.ExtendInfo item = (ExtenDataProvider.ExtendInfo) baseNode;
+        ExtenInfoProvider.ExtendInfo item = (ExtenInfoProvider.ExtendInfo) baseNode;
         baseViewHolder.setText(R.id.app_name, item.getAppName());
         baseViewHolder.setText(R.id.description, item.getPackageName());
         baseViewHolder.setImageDrawable(R.id.app_icon,item.getIcon());

@@ -2,8 +2,6 @@ package hepta.rxposed.manager.fragment.PlugExten;
 
 import  hepta.rxposed.manager.util.Util;
 
-import android.content.ComponentName;
-import android.content.Intent;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -13,10 +11,9 @@ import com.chad.library.adapter.base.module.LoadMoreModule;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 
 import hepta.rxposed.manager.R;
-import hepta.rxposed.manager.RxposedApp;
 
 
-public class ExtenListAdapter extends BaseQuickAdapter<ExtenDataProvider.ExtendInfo, BaseViewHolder> implements LoadMoreModule {
+public class ExtenListAdapter extends BaseQuickAdapter<ExtenInfoProvider.ExtendInfo, BaseViewHolder> implements LoadMoreModule {
 
 
     public ExtenListAdapter(int layoutResId) {
@@ -31,7 +28,7 @@ public class ExtenListAdapter extends BaseQuickAdapter<ExtenDataProvider.ExtendI
 
 
     @Override
-    protected void convert(@NonNull BaseViewHolder baseViewHolder, ExtenDataProvider.ExtendInfo item) {
+    protected void convert(@NonNull BaseViewHolder baseViewHolder, ExtenInfoProvider.ExtendInfo item) {
         if (item == null) {
             return;
         }

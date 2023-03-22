@@ -26,7 +26,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import hepta.rxposed.manager.MainActivity
 import hepta.rxposed.manager.R
 import hepta.rxposed.manager.databinding.FragmentFrameworksBinding
-import hepta.rxposed.manager.util.Consts
 
 
 /**
@@ -36,7 +35,7 @@ class SupportFragment : Fragment() {
 
 
     private var moduleListAdapter: SupportListAdapter? = null
-    private val filterModuleInfo: List<SupportData.SupportInfo> = ArrayList()
+    private val filterModuleInfo: List<SupportInfoProvider.SupportInfo> = ArrayList()
     private lateinit var binding: FragmentFrameworksBinding
 
 
@@ -70,7 +69,7 @@ class SupportFragment : Fragment() {
         binding.recyclerView.setLayoutManager(layoutManager)
         binding.recyclerView.setAdapter(moduleListAdapter)
         moduleListAdapter!!.setOnItemClickListener { adapter, view, position ->
-            val moduleInfo = adapter.data[position] as SupportData.SupportInfo
+            val moduleInfo = adapter.data[position] as SupportInfoProvider.SupportInfo
 
 //            val controller: NavController =
 //                Navigation.findNavController()
@@ -85,7 +84,7 @@ class SupportFragment : Fragment() {
 
         }
 
-        moduleListAdapter!!.setList(SupportData.getInstance().moduleList)
+        moduleListAdapter!!.setList(SupportInfoProvider.getInstance().moduleList)
 
     }
 
