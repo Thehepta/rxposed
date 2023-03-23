@@ -4,31 +4,17 @@ plugins {
 }
 
 android {
-    signingConfigs {
-        debug {
-            storeFile file('/home/chic/Android/android_signer/rxposed.jks')
-            storePassword 'rzx865800446'
-            keyPassword 'rzx865800446'
-            keyAlias 'key0'
-        }
-        release {
-        storeFile file('/home/chic/Android/android_signer/rxposed.jks')
-            storePassword 'rzx865800446'
-            keyPassword 'rzx865800446'
-            keyAlias 'key0'
-        }
-    }
     compileSdk 32
 
     defaultConfig {
         applicationId "hepta.rxposed.loadxposed"
-        minSdk 28
+        minSdk 29
         targetSdk 32
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        signingConfig signingConfigs.release
+//        signingConfig signingConfigs.release
     }
 
     buildTypes {
@@ -39,12 +25,12 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
+//            signingConfig signingConfigs.release
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
     kotlinOptions {
         jvmTarget = '1.8'
@@ -56,6 +42,7 @@ android {
     dataBinding {
         enabled = true
     }
+    namespace 'hepta.rxposed.loadxposed'
 
 
 }

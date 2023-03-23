@@ -1,6 +1,7 @@
 //
 // Created by Intel on 2022/4/5.
 //
+#include <sys/system_properties.h>
 
 #include "jni.h"
 #include "include/rprocess.h"

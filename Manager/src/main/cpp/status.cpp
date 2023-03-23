@@ -1,6 +1,7 @@
 #include <cinttypes>
 #include <list>
 #include <sys/mman.h>
+#include <sys/system_properties.h>
 #include <set>
 #include <string_view>
 
