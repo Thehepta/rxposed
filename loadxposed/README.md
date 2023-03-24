@@ -1,0 +1,3 @@
+# loadxposed
+
+这是一个rxposed模块，同时还是一个xposed管理器。我将manager的模块管理和ContentProvider 代码移植过来做成一个app。像manager程序一样，只不过用于管理xposed模块。同时这个项目还包括rxposed插件代码，用于加载xposed插件的apk。

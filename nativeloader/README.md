@@ -1,0 +1,5 @@
+# nativeloader
+
+核心代码主要是native代码。
+
+由于native代码有一些是jni代码，写起来容易出错，java文件里面的代码，就是这个jni的java代码以及对这个java代码和技术点进行测试的demo。
