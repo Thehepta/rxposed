@@ -3,12 +3,14 @@
 #### 介绍
 rxposed,是一个Android平台全局注入框架，通过ptrace zygote进程的方式，可以为我们提供ndk接口和java接口，并且可以通过管理程序，进行行为管控。
 
-[Manager](Manager/README.md)  rxposed 行为管控app
 
-RxposedTool   ptrace  注入工具
+[核心技术点具体实现说明文档](/document/DOC.md)
 
-nativeloader  rxposed 注入到zygote中进行hook的代码，以及在hook的app启动的时候提供ndk接口和java接口
-
-loadxposed    这个属于一个rxposed的模块，主要用于加载和管理xposed模块
+| 项目         | 描述                                    | 链接      |
+|------------|---------------------------------------|---------|
+| `Manager`  | rxposed 行为管控app                       | [Manager/README.md](/Manager/README.md) |
+| `Tool`     | 进行ptrace的注入工具                         |  |
+| `nativeloader` | rxposed 核心代码，在应用启动的时候进行hook，加载模块并执行   | [nativeloader/README.md](/nativeloader/README.md) |
+| `loadxposed` | 一个rxposed的模块，用于注入加载xposed以及管理xposed模块 | [loadxposed/README.md](/loadxposed/README.md) |
 
 
