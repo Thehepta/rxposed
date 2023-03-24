@@ -4,20 +4,7 @@ plugins {
 }
 
 android {
-    signingConfigs {
-        debug {
-            storeFile file('/home/chic/Android/android_signer/rxposed.jks')
-            storePassword 'rzx865800446'
-            keyPassword 'rzx865800446'
-            keyAlias 'key0'
-        }
-        release {
-        storeFile file('/home/chic/Android/android_signer/rxposed.jks')
-            storePassword 'rzx865800446'
-            keyPassword 'rzx865800446'
-            keyAlias 'key0'
-        }
-    }
+
     compileSdk 32
 
     defaultConfig {
@@ -28,7 +15,6 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        signingConfig signingConfigs.release
     }
 
     buildTypes {
@@ -36,11 +22,7 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
-        }
+
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
