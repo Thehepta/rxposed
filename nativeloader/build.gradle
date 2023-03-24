@@ -7,21 +7,6 @@ plugins {
 
 android {
 
-    signingConfigs {
-        debug {
-            storeFile file('/home/chic/Android/android_signer/rxposed.jks')
-            storePassword 'rzx865800446'
-            keyPassword 'rzx865800446'
-            keyAlias 'key0'
-        }
-        release {
-            storeFile file('/home/chic/Android/android_signer/rxposed.jks')
-            storePassword 'rzx865800446'
-            keyPassword 'rzx865800446'
-            keyAlias 'key0'
-        }
-    }
-
     compileSdk 32
 
     defaultConfig {
@@ -43,7 +28,6 @@ android {
 
         //给java传递参数
         buildConfigField "String", "SO_NAME", "\"${TextAppSo}\""
-        signingConfig signingConfigs.release
 
     }
 
