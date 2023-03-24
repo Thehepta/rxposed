@@ -12,4 +12,4 @@ nativeloader  rxposed 注入到zygote中进行hook的代码，以及在hook的ap
 loadxposed    这个属于一个rxposed的模块，主要用于加载和管理xposed模块
 
 
-`[我的简介](/Manager/README.md)`|[我的简介](/Manager/README.md)
+`[技术文档](/document/DOC.md)`|[技术文档](/Manager/README.md)
