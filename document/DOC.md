@@ -42,7 +42,7 @@ java hook 使用了sandhook
 
 
 #### 操作示意图
-![这是图片](./1.png "Magic Gardens")
+![](1.png)
 
 
 
