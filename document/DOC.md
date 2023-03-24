@@ -42,8 +42,7 @@ java hook 使用了sandhook
 
 
 #### 操作示意图
-![这是图片](./1.png "Magic Gardens")
-
+![输入图片说明](1.png)
 
 
 #### ptrace方式注入so库到zygote进程中
@@ -550,7 +549,7 @@ public Application makeApplication(boolean forceDefaultAppClass,
     
     在android 10 上，由于找到了context的生成方法,他有一个关键的函数**getPackageInfoNoCheck()** 
     
-    ![](./2.jpg)
+    ![](2.jpg)
     
     ​				(别人的图)
     
