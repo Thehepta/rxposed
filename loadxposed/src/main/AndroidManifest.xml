@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="hepta.rxposed.loadxposed">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:extractNativeLibs="true"
+        android:name=".MyApp"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <provider android:name="hepta.rxposed.loadxposed.RxConfigProvider"
+            android:authorities="hepta.rxposed.loadxposed.Provider"
+            android:enabled="true"
+            android:exported="true" />
+
+        <meta-data
+            android:name="rxmodule"
+            android:value="true" />
+        <meta-data
+            android:name="rxposed_clsentry"
+            android:value="hepta.rxposed.loadxposed.XposedEntry" />
+
+        <meta-data
+            android:name="rxposed_mtdentry"
+            android:value="Entry" />
+<!--        String entry_class  = applicationInfo.metaData.getString("rxposed_clsentry");-->
+<!--        String entry_method = applicationInfo.metaData.getString("rxposed_mtdentry");-->
+
+    </application>
+
+</manifest>

@@ -131,8 +131,6 @@ class MainActivity : AppCompatActivity() {
 
     // TODO STEP 9.7 - Have NavigationUI handle up behavior in the ActionBar
     override fun onSupportNavigateUp(): Boolean {
-        // Allows NavigationUI to support proper up navigation or the drawer layout
-        // drawer menu, depending on the situation
         return findNavController(R.id.my_nav_host_fragment).navigateUp(appBarConfiguration)
     }
     // TODO END STEP 9.7
@@ -140,8 +138,6 @@ class MainActivity : AppCompatActivity() {
     public  fun DisableToolBar() {
         toolbar.layoutParams.height = 0
 
-        // Allows NavigationUI to support proper up navigation or the drawer layout
-        // drawer menu, depending on the situation
     }
 
     public  fun EnableToolBar() {

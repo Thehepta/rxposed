@@ -3,14 +3,9 @@ package hepta.rxposed.manager;
 
 import android.app.Application;
 
-
-
-import java.io.File;
-
-import hepta.rxposed.manager.fragment.modules.ModuleInfo;
-import hepta.rxposed.manager.fragment.modules.ModuleInfoProvider;
+import hepta.rxposed.manager.fragment.PlugExten.ExtenInfoProvider;
+import hepta.rxposed.manager.fragment.PlugSupport.SupportInfoProvider;
 import hepta.rxposed.manager.util.InjectTool;
-import hepta.rxposed.manager.util.LogUtil;
 
 
 public class RxposedApp extends Application {
@@ -39,11 +34,14 @@ public class RxposedApp extends Application {
     }
 
     private void initConfig() {
-        ModuleInfoProvider.getInstance();
-        for (ModuleInfo moduleInfo : ModuleInfoProvider.getInstance().getModuleList()){
-            LogUtil.LogD(moduleInfo.getAppName());
-        }
-        InjectTool.su_path = getSharedPreferences("rxposed",MODE_PRIVATE).getString("supath","su");
+        new Thread(){
+            @Override
+            public void run() {
+                SupportInfoProvider.getInstance().init();
+                ExtenInfoProvider.getInstance().init();
+                InjectTool.init();
+            }
+        }.start();
     }
 
     static {

@@ -32,7 +32,7 @@ import com.afollestad.materialdialogs.list.listItems
 import hepta.rxposed.manager.widget.DialogUtil
 import hepta.rxposed.manager.R
 import hepta.rxposed.manager.util.InjectTool
-import hepta.rxposed.manager.util.LogUtil
+import hepta.rxposed.manager.util.Util
 
 
 /**
@@ -44,7 +44,7 @@ class HomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        LogUtil.LogD("onCreateView")
+        Util.LogD("onCreateView")
         setHasOptionsMenu(true)
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
@@ -77,11 +77,14 @@ class HomeFragment : Fragment() {
                 }
             }, Tips = R.string.RootShowTips, Ok = R.string.Edit)
 
-
-
-
             true
         }
+        val btn_framework = view?.findViewById<Button>(R.id.btn_framework)
+        btn_framework?.setOnClickListener {
+            findNavController().navigate(R.id.frameworks_dest, null)
+
+        }
+
 
     }
 
@@ -104,7 +107,7 @@ class HomeFragment : Fragment() {
                 DialogUtil.DidalogSimple(requireContext(),R.string.activityMessage, {
                     InjectTool.zygote_patrace(context)
                     DialogUtil.DidalogSimple(requireContext(),R.string.rxrebootMessage, {
-                        InjectTool.zygote_reboot(requireContext())
+                        InjectTool.Application_reboot()
                     })
                 })
             }
@@ -123,14 +126,14 @@ class HomeFragment : Fragment() {
 
             MaterialDialog(requireContext(), BottomSheet(LayoutMode.WRAP_CONTENT)).show {
                 listItems(R.array.rxposetOptions, waitForPositiveButton = false) { _, index, text ->
-                    LogUtil.LogD("$text")
+                    Util.LogD("$text")
 
                     when(index){
                         0 -> DialogUtil.DidalogSimple(requireContext(),R.string.zygoteMessage, {
                             InjectTool.zygote_reboot()
                         })
                         1 -> DialogUtil.DidalogSimple(requireContext(),R.string.rebootMessage, {
-                            InjectTool.zygote_reboot(requireContext())
+                            InjectTool.Application_reboot()
                         })
                     }
 

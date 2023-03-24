@@ -2,61 +2,65 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
-        <import  type="hepta.rxposed.manager.fragment.modules.ModuleInfo" />
+        <import  type="hepta.rxposed.manager.fragment.base.ModuleInfo" />
         <variable
             name="modInfo"
-            type="ModuleInfo" />
+            type="hepta.rxposed.manager.fragment.base.ModuleInfo" />
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/coordinatorLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical"
         android:fitsSystemWindows="true">
 
-        <com.google.android.material.appbar.AppBarLayout
-            android:id="@+id/appbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            android:fitsSystemWindows="true">
 
-            <com.google.android.material.appbar.SubtitleCollapsingToolbarLayout
-                android:id="@+id/toolbar_layout"
+            <com.google.android.material.appbar.AppBarLayout
+                android:id="@+id/appbar"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/app_bar_height"
-                android:background="@color/white"
-                app:collapsedSubtitleTextColor="#090808"
-                app:collapsedTitleTextColor="#0C0C0C"
-                app:expandedSubtitleTextColor="#0E0D0D"
-                app:expandedTitleTextColor="#131212"
-                app:layout_scrollFlags="scroll|exitUntilCollapsed"
-                app:titleCollapseMode="scale">
+                android:layout_height="wrap_content"
+                android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+                android:fitsSystemWindows="true">
 
-                <View
-                    android:id="@+id/click_view"
+                <com.google.android.material.appbar.SubtitleCollapsingToolbarLayout
+                    android:id="@+id/toolbar_layout"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    android:layout_height="@dimen/app_bar_height"
+                    android:background="@color/white"
+                    app:collapsedSubtitleTextColor="#090808"
+                    app:collapsedTitleTextColor="#0C0C0C"
+                    app:expandedSubtitleTextColor="#0E0D0D"
+                    app:expandedTitleTextColor="#131212"
+                    app:layout_scrollFlags="scroll|exitUntilCollapsed"
+                    app:titleCollapseMode="scale">
 
-                <com.google.android.material.appbar.MaterialToolbar
-                    android:id="@+id/toolbar"
-                    app:menu="@menu/applist_main_menu"
-                    android:layout_width="match_parent"
-                    android:layout_height="?actionBarSize"
-                    app:layout_collapseMode="pin"
-                    app:subtitle="@{modInfo.packageName}"
-                    app:title="@{modInfo.appName}" />
+                    <!--                <View-->
+                    <!--                    android:id="@+id/click_view"-->
+                    <!--                    android:layout_width="match_parent"-->
+                    <!--                    android:layout_height="match_parent" />-->
 
-            </com.google.android.material.appbar.SubtitleCollapsingToolbarLayout>
+                    <com.google.android.material.appbar.MaterialToolbar
+                        android:id="@+id/toolbar"
+                        app:menu="@menu/applist_main_menu"
+                        android:layout_width="match_parent"
+                        android:layout_height="?actionBarSize"
+                        app:layout_collapseMode="pin"
+                        app:subtitle="@{modInfo.packageName}"
+                        app:title="@{modInfo.appName}" />
+
+                </com.google.android.material.appbar.SubtitleCollapsingToolbarLayout>
 
 
-        </com.google.android.material.appbar.AppBarLayout>
+            </com.google.android.material.appbar.AppBarLayout>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerView"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerView"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

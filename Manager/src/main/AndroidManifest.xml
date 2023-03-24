@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="hepta.rxposed.manager">
 
+
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -27,24 +29,12 @@
 
         </activity>
 
-<!--        <receiver android:name="hepta.rxposed.manager.DeepLinkAppWidgetProvider"-->
-<!--            android:exported="true">-->
-<!--            <intent-filter>-->
-<!--                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />-->
-<!--            </intent-filter>-->
-
-<!--            <meta-data-->
-<!--                android:name="android.appwidget.provider"-->
-<!--                android:resource="@xml/deep_link_appwidget_info" />-->
-<!--        </receiver>-->
-
-
-        <provider android:name="hepta.rxposed.manager.RxConfigProvider"
+        <provider android:name="hepta.rxposed.manager.service.RxConfigProvider"
             android:authorities="hepta.rxposed.manager.Provider"
             android:enabled="true"
             android:exported="true" />
 
-        <service android:name="hepta.rxposed.manager.RxConfigService"
+        <service android:name="hepta.rxposed.manager.service.RxConfigService"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
