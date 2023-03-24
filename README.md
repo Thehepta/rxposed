@@ -14,4 +14,4 @@ loadxposed    这个属于一个rxposed的模块，主要用于加载和管理xp
 
 [Your Title](your-project-name/tree/master/your-subfolder)
 
-[README](your-project-name/blob/master/your-subfolder/README.md)
+[README](rxposed/blob/master/Manager/README.md)
