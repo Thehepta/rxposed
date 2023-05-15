@@ -34,7 +34,7 @@ public class AppInfoNodeProvider extends BaseNodeProvider
     public void convert(@NonNull BaseViewHolder baseViewHolder, BaseNode baseNode) {
         AppInfoNode item = (AppInfoNode) baseNode;
         baseViewHolder.setText(R.id.app_name, item.getAppName());
-        baseViewHolder.setText(R.id.description, item.getPackageName());
+        baseViewHolder.setText(R.id.app_packageName, item.getPackageName());
         baseViewHolder.setImageDrawable(R.id.app_icon,item.getIcon());
         SwitchCompat switchCompat = baseViewHolder.findView(R.id.switcher);
         switchCompat.setChecked(item.getEnable());

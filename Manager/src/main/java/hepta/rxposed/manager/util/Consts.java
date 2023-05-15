@@ -11,4 +11,8 @@ public  class Consts {
     public static final int MODULE_TYPE_APP = 4;
 
 
+    public static final String INJECT_FRAGMENT_ARGE = "injectProcess";
+    public static final String INJECTLIST_FRAGMENT_ARGE = "injectList";
+
+
 }

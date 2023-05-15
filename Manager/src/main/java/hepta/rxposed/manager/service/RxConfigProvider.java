@@ -14,7 +14,7 @@ import androidx.annotation.Nullable;
 import java.io.File;
 import java.io.FileNotFoundException;
 
-import hepta.rxposed.manager.fragment.PlugExten.ExtenInfoProvider;
+import hepta.rxposed.manager.fragment.LoadExten.ExtenInfoProvider;
 
 public class RxConfigProvider extends ContentProvider {
 

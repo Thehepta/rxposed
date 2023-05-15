@@ -4,7 +4,6 @@
 #include <linux/mman.h>
 #include <sys/mman.h>
 #include "include/rprocess.h"
-#include "include/dobby.h"
 int (*orig_loader_dlopen)(int a1);
 void (*putty)(int , int, int);
 char * tmpe;
@@ -74,7 +73,7 @@ int (*system_property_get_addr)( char*, char *);
 int (*system_property_get_org)( char*, char *);
 int system_property_get_call(char* name , char *value){
     int re;
-    LOGD("native hook %s ret: %d",name,re);
+//    LOGD("native hook %s ret: %d",name,re);
     if(!strncmp(name,"rxposed_activity", strlen("rxposed_activity"))){
         re = strlen("true");
         memcpy(value, "true", strlen("true"));
@@ -109,7 +108,6 @@ void android_os_Process_setArg_call(JNIEnv* env, jobject clazz, jstring name){
     } else{
         Destroy = rprocess::GetInstance()->Init(env, name);
     }
-
     if(Destroy){
         DobbyDestroy((void *)android_os_Process_setArg_addr);
     }
@@ -155,5 +153,11 @@ void dobby(unsigned int serviceUid){
 void dobby_str(const char* AUTHORITY){
     rprocess::GetInstance()->setAUTHORITY(strdup(AUTHORITY));
     zygote_server_init();
+
+}
+
+void Inject_Porcess(const char* pkgName){
+
+    rprocess::GetInstance()->LoadExternApk(strdup(pkgName));
 
 }

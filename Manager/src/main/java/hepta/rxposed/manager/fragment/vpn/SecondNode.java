@@ -11,14 +11,19 @@ import java.util.List;
  */
 public class SecondNode extends BaseNode {
 
-    private String title;
+    private String process_name;
+    private String pid;
 
-    public SecondNode(String title) {
-        this.title = title;
+    public SecondNode(String pid,String process_name) {
+        this.pid = pid;
+        this.process_name = process_name;
     }
 
-    public String getTitle() {
-        return title;
+    public String getPid() {
+        return pid;
+    }
+    public String getProcess_name() {
+        return process_name;
     }
 
     /**

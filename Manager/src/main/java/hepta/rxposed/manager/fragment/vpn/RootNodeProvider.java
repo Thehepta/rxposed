@@ -1,5 +1,6 @@
 package hepta.rxposed.manager.fragment.vpn;
 
+import android.graphics.drawable.Drawable;
 import android.view.View;
 
 import com.chad.library.adapter.base.entity.node.BaseNode;
@@ -19,14 +20,21 @@ public class RootNodeProvider extends BaseNodeProvider {
 
     @Override
     public int getLayoutId() {
-        return R.layout.item_section_bar;
+        return R.layout.item_inject_user;
     }
 
     @Override
     public void convert(@NotNull BaseViewHolder baseViewHolder, @NotNull BaseNode baseNode) {
         // 数据类型需要自己强转
         RootNode entity = (RootNode) baseNode;
-        baseViewHolder.setText(R.id.tv_name, entity.getTitle());
+        baseViewHolder.setText(R.id.user_id, entity.getUid());
+        baseViewHolder.setText(R.id.user_name, entity.getUserName());
+//        baseViewHolder.setText(R.id.description, entity.getPkgName());
+        Drawable icon = entity.getIcon();
+        if(icon !=null){
+            baseViewHolder.setImageDrawable(R.id.app_icon, icon);
+
+        }
     }
 
     @Override

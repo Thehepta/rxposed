@@ -20,9 +20,14 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import android.view.*
 import android.widget.*
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentResultListener
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import com.afollestad.materialdialogs.LayoutMode
 import com.afollestad.materialdialogs.MaterialDialog
@@ -44,8 +49,8 @@ class HomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+
         Util.LogD("onCreateView")
-        setHasOptionsMenu(true)
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
 
@@ -53,12 +58,12 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         rxposed_activity_ui_init()
-        val btn_modules = view?.findViewById<Button>(R.id.btn_modules)
+        val btn_modules = view.findViewById<Button>(R.id.btn_modules)
         btn_modules?.setOnClickListener {
             findNavController().navigate(R.id.modules_dest, null)
         }
 
-        val btn_root = view?.findViewById<Button>(R.id.btn_root)
+        val btn_root = view.findViewById<Button>(R.id.btn_root)
         btn_root?.setOnClickListener {
 
             DialogUtil.DidalogSimple(requireContext(),"当前设置:"+ InjectTool.su_path,{
@@ -79,13 +84,45 @@ class HomeFragment : Fragment() {
 
             true
         }
-        val btn_framework = view?.findViewById<Button>(R.id.btn_framework)
+        val btn_framework = view.findViewById<Button>(R.id.btn_framework)
         btn_framework?.setOnClickListener {
-            findNavController().navigate(R.id.frameworks_dest, null)
+            findNavController().navigate(R.id.pluginject_dest, null)
 
         }
 
 
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.main_menu, menu)
+
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                when(menuItem.itemId){
+                    R.id.id_toolbar_option->{
+                        MaterialDialog(requireContext(), BottomSheet(LayoutMode.WRAP_CONTENT)).show {
+                            listItems(R.array.rxposetOptions, waitForPositiveButton = false) { _, index, text ->
+                                Util.LogD("$text")
+
+                                when(index){
+                                    0 -> DialogUtil.DidalogSimple(requireContext(),R.string.zygoteMessage, {
+                                        InjectTool.zygote_reboot()
+                                    })
+                                    1 -> DialogUtil.DidalogSimple(requireContext(),R.string.rebootMessage, {
+                                        InjectTool.Application_reboot()
+                                    })
+                                }
+
+                            }
+                            positiveButton(android.R.string.cancel)
+                        }
+                    }
+                }
+                return false
+            }
+
+        },viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
 
@@ -114,35 +151,6 @@ class HomeFragment : Fragment() {
         }
     }
 
-
     external fun get_rxposed_activity():Boolean
-
-
-    @SuppressLint("CheckResult")
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.main_menu, menu)
-        var option =  menu.findItem(R.id.id_toolbar_option)
-        option.setOnMenuItemClickListener {
-
-            MaterialDialog(requireContext(), BottomSheet(LayoutMode.WRAP_CONTENT)).show {
-                listItems(R.array.rxposetOptions, waitForPositiveButton = false) { _, index, text ->
-                    Util.LogD("$text")
-
-                    when(index){
-                        0 -> DialogUtil.DidalogSimple(requireContext(),R.string.zygoteMessage, {
-                            InjectTool.zygote_reboot()
-                        })
-                        1 -> DialogUtil.DidalogSimple(requireContext(),R.string.rebootMessage, {
-                            InjectTool.Application_reboot()
-                        })
-                    }
-
-                }
-                positiveButton(android.R.string.cancel)
-            }
-            true
-        }
-    }
-
 
 }

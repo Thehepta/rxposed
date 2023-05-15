@@ -1,4 +1,8 @@
-package hepta.rxposed.manager.fragment.PlugSupport;
+package hepta.rxposed.manager.fragment.LoadExten;
+
+import  hepta.rxposed.manager.util.Util;
+
+import android.view.View;
 
 import androidx.annotation.NonNull;
 
@@ -9,10 +13,10 @@ import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 import hepta.rxposed.manager.R;
 
 
-public class SupportListAdapter extends BaseQuickAdapter<SupportInfoProvider.SupportInfo, BaseViewHolder> implements LoadMoreModule {
+public class ExtenListAdapter extends BaseQuickAdapter<ExtenInfoProvider.ExtendInfo, BaseViewHolder> implements LoadMoreModule {
 
 
-    public SupportListAdapter(int layoutResId) {
+    public ExtenListAdapter(int layoutResId) {
         super(layoutResId);
     }
 
@@ -24,15 +28,20 @@ public class SupportListAdapter extends BaseQuickAdapter<SupportInfoProvider.Sup
 
 
     @Override
-    protected void convert(@NonNull BaseViewHolder baseViewHolder, SupportInfoProvider.SupportInfo item) {
+    protected void convert(@NonNull BaseViewHolder baseViewHolder, ExtenInfoProvider.ExtendInfo item) {
         if (item == null) {
             return;
         }
 
         baseViewHolder.setText(R.id.app_name, item.getAppName());
-        baseViewHolder.setText(R.id.description, item.getPackageName());
+        baseViewHolder.setText(R.id.app_packageName, item.getPackageName());
         baseViewHolder.setImageDrawable(R.id.app_icon,item.getIcon());
-
+        baseViewHolder.findView(R.id.btn_open_app).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Util.StartRxmoduleApplication(item.getPackageName());
+            }
+        });
 //        ListItemRxmoduleBinding binding = DataBindingUtil.getBinding(baseViewHolder.itemView);
 //        if (binding != null) {
 //            binding.setModuleInfo(moduleInfo);   //setAppInfo 这个函数就是在xml 文件中设置的data variable 里的name,后面的类名和这里直接对应

@@ -1,4 +1,4 @@
-package hepta.rxposed.manager.fragment.PlugSupport.apps;
+package hepta.rxposed.manager.fragment.LoadExten.apps;
 
 import androidx.annotation.Nullable;
 
@@ -10,8 +10,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 import java.util.List;
 
-import hepta.rxposed.manager.fragment.PlugExten.ExtenInfoProvider;
-import hepta.rxposed.manager.fragment.PlugSupport.SupportInfoProvider;
+import hepta.rxposed.manager.fragment.LoadExten.ExtenInfoProvider;
+import hepta.rxposed.manager.fragment.PlugInject.SupportInfoProvider;
 import hepta.rxposed.manager.fragment.base.AppInfoNode;
 import hepta.rxposed.manager.fragment.base.AppInfoNodeProvider;
 import hepta.rxposed.manager.fragment.base.SectionBarNode;
@@ -25,14 +25,10 @@ public class AppInfoAdapter extends BaseNodeAdapter {
         // 需要占满一行的，使用此方法（例如section）
         addFullSpanNodeProvider(new SectionBarNodeProvider<SectionBarNode>());
         // 普通的item provider
-        addNodeProvider(new AppInfoNodeProvider(SupportInfoProvider.getInstance()));
-        addNodeProvider(new SupportNodeProvider());
-
+        addNodeProvider(new AppInfoNodeProvider(ExtenInfoProvider.getInstance()));
     }
 
-
-
-    @Override
+        @Override
     public void setList(@Nullable Collection<? extends BaseNode> list) {
         super.setList(list);
     }
@@ -47,8 +43,8 @@ public class AppInfoAdapter extends BaseNodeAdapter {
             return 0;
         } else if (node instanceof AppInfoNode) {
             return 1;
-        }else if (node instanceof ExtenInfoProvider.ExtendInfo) {
-            return 2;
+        }else if (node instanceof SupportInfoProvider.SupportInfo) {
+            return 3;
         }
         return -1;
     }

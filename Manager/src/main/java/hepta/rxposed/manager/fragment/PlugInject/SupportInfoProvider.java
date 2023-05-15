@@ -1,4 +1,4 @@
-package hepta.rxposed.manager.fragment.PlugSupport;
+package hepta.rxposed.manager.fragment.PlugInject;
 
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;

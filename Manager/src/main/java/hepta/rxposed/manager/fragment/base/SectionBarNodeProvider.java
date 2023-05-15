@@ -53,7 +53,7 @@ public class SectionBarNodeProvider<T extends SectionBarNodeProvider.baseSection
 
     @Override
     public int getLayoutId() {
-        return R.layout.item_section_bar;
+        return R.layout.item_inject_user;
     }
 
     @Override

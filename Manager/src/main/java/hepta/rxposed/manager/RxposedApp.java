@@ -3,8 +3,8 @@ package hepta.rxposed.manager;
 
 import android.app.Application;
 
-import hepta.rxposed.manager.fragment.PlugExten.ExtenInfoProvider;
-import hepta.rxposed.manager.fragment.PlugSupport.SupportInfoProvider;
+import hepta.rxposed.manager.fragment.LoadExten.ExtenInfoProvider;
+import hepta.rxposed.manager.fragment.PlugInject.SupportInfoProvider;
 import hepta.rxposed.manager.util.InjectTool;
 
 
@@ -46,6 +46,8 @@ public class RxposedApp extends Application {
 
     static {
             System.loadLibrary("status");
+
+
     }
 
 }

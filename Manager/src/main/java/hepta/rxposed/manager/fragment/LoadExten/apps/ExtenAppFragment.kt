@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package hepta.rxposed.manager.fragment.PlugSupport.apps
+package hepta.rxposed.manager.fragment.LoadExten.apps
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -33,44 +33,41 @@ import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import com.chad.library.adapter.base.entity.node.BaseNode
 import hepta.rxposed.manager.MainActivity
 import hepta.rxposed.manager.R
-import hepta.rxposed.manager.fragment.PlugSupport.SupportInfoProvider
+import hepta.rxposed.manager.fragment.LoadExten.ExtenInfoProvider
 import hepta.rxposed.manager.fragment.base.AppInfoNode
 import hepta.rxposed.manager.fragment.base.ModuleInfo
-import hepta.rxposed.manager.fragment.base.SectionBarNode
 import hepta.rxposed.manager.fragment.base.baseCollToolbarFragment
-import hepta.rxposed.manager.util.Util
 
 
 /**
  * A simple [Fragment] subclass.
  */
-class SupportAppFragment : baseCollToolbarFragment() {
+class ExtenAppFragment : baseCollToolbarFragment() {
 
     private var appsAdapter: AppInfoAdapter? = null
     private val filterListApp: MutableList<AppInfoNode> = mutableListOf()
     val Datalist: MutableList<BaseNode> = ArrayList()
 
 
-
-
     override fun getModuleInfo(): ModuleInfo {
-        return SupportInfoProvider.getInstance().ByUidGetModuleInfo(arguments?.getInt("Key")!!)
+        return ExtenInfoProvider.getInstance().ByUidGetModuleInfo(arguments?.getInt("Key")!!)
     }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        var supportinfo: SupportInfoProvider.SupportInfo = moduleInfo as SupportInfoProvider.SupportInfo
-
-        val result: java.util.ArrayList<Any?> = java.util.ArrayList<Any?>(supportinfo.depondsList.values)
-
-        val firstSectionBar = SectionBarNode(result as List<BaseNode>? , "依赖应用")
-        Datalist.add(firstSectionBar)
-        val secondSectionBar = SectionBarNode(moduleInfo?.appInfoList as List<BaseNode>?, "应用列表")
-        Datalist.add(secondSectionBar)
-
+        initData();
         initRecycleView();
-//        initSwitchBar()
+        initSwitchBar()
         initToolbar();
+    }
+
+
+//初始化多级列表数据
+    private fun initData() {
+//        val secondSectionBar = SectionBarNode(moduleInfo?.appInfoList as List<BaseNode>?, "应用列表")
+//        Datalist.add(secondSectionBar)
+
     }
 
     private fun initSwitchBar() {
@@ -80,7 +77,6 @@ class SupportAppFragment : baseCollToolbarFragment() {
         var switchCompat = headerView.findViewById<SwitchCompat>(R.id.switch_enable)
         switchCompat.isChecked = moduleInfo!!.getEnable()
         switchCompat.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
-            Util.LogE("check:",isChecked)
             moduleInfo?.setEnable(isChecked)
         })
         appsAdapter?.addHeaderView(headerView);
@@ -98,15 +94,16 @@ class SupportAppFragment : baseCollToolbarFragment() {
 //            val appInfo = adapter.data[position] as AppModuleInfo
 //            LogUtil.LogD(appInfo.appName)
 //        }
-        appsAdapter?.setList(Datalist)
+//        appsAdapter?.setList(Datalist)
+        appsAdapter?.setList(moduleInfo?.appInfoList)
         //绑定数据
         binding.modInfo = moduleInfo
     }
 
     @SuppressLint("CheckResult")
     private fun initToolbar() {
-        binding.toolbar.setNavigationIcon(R.drawable.toolbar_back)
-
+        binding.toolbar.setNavigationIcon(R.drawable.toolbar_back)  //添加返回键
+        //返回键调动函数
         binding.toolbar.setNavigationOnClickListener {
             requireActivity().onBackPressed()
         }
@@ -119,7 +116,6 @@ class SupportAppFragment : baseCollToolbarFragment() {
                 }
                 negativeButton(android.R.string.ok)
                 positiveButton(android.R.string.cancel)
-
             }
             dialog.negativeButton {
                 filterListApp.clear()
@@ -140,7 +136,7 @@ class SupportAppFragment : baseCollToolbarFragment() {
                         }
                     }
                 }
-//                applistAdapter?.setList(filterListApp)
+                appsAdapter?.setList(filterListApp)
             }
 
             dialog.positiveButton {
@@ -169,7 +165,7 @@ class SupportAppFragment : baseCollToolbarFragment() {
                         filterListApp.add(it)
                     }
                 }
-//                applistAdapter?.setList(filterListApp)
+                appsAdapter?.setList(filterListApp)
             }
             dialog.negativeButton {
 

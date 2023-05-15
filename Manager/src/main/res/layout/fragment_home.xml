@@ -87,7 +87,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="80dp"
                 android:textColor="@color/black"
-                android:text="依赖框架"/>
+                android:text="进程\n注入模块"/>
         </LinearLayout>
         <View
             android:layout_width="1px"
@@ -102,7 +102,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="80dp"
                 android:textColor="@color/black"
-                android:text="注入模块"/>
+                android:text="启动\n加载模块"/>
         </LinearLayout>
         <View
             android:layout_width="1px"

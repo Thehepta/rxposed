@@ -12,8 +12,8 @@
   ~ limitations under the License.
   -->
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:app="http://schemas.android.com/apk/res-auto"
-            xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     app:startDestination="@+id/home_dest">
     <fragment
         android:id="@+id/home_dest"
@@ -29,73 +29,7 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
             app:popExitAnim="@anim/slide_out_right" />
-
-        <!-- TODO END STEP 7.1 -->
-
     </fragment>
-
-    <fragment
-        android:id="@+id/flow_step_one_dest"
-        android:name="hepta.rxposed.manager.fragment.FlowStepFragment"
-        tools:layout="@layout/flow_step_one_fragment">
-        <argument
-            android:name="flowStepNumber"
-            app:argType="integer"
-            android:defaultValue="1"/>
-
-        <action
-            android:id="@+id/next_action"
-            app:destination="@+id/flow_step_two_dest">
-        </action>
-    </fragment>
-
-    <fragment
-        android:id="@+id/flow_step_two_dest"
-        android:name="hepta.rxposed.manager.fragment.FlowStepFragment"
-        tools:layout="@layout/flow_step_two_fragment">
-
-        <argument
-            android:name="flowStepNumber"
-            app:argType="integer"
-            android:defaultValue="2"/>
-
-        <action
-            android:id="@+id/next_action"
-            app:popUpTo="@id/home_dest">
-        </action>
-    </fragment>
-
-    <!-- TODO STEP 4 Create a new navigation destination pointing to SettingsFragment -->
-    <fragment
-        android:id="@+id/settings_dest"
-        android:name="hepta.rxposed.manager.fragment.SettingsFragment"
-        android:label="@string/settings"
-        tools:layout="@layout/fragment_settings" />
-    <!-- TODO END STEP 4 -->
-
-
-    <fragment
-        android:id="@+id/modules_dest"
-        android:name="hepta.rxposed.manager.fragment.PlugExten.ExtenFragment"
-        android:label="@string/modules"
-        tools:layout="@layout/fragment_modules" />
-    <fragment
-        android:id="@+id/frameworks_dest"
-        android:name="hepta.rxposed.manager.fragment.PlugSupport.SupportFragment"
-        android:label="@string/frameworks"
-        tools:layout="@layout/fragment_frameworks" />
-
-    <fragment
-        android:id="@+id/support_apps_dest"
-        android:name="hepta.rxposed.manager.fragment.PlugSupport.apps.SupportAppFragment"
-        android:label="@string/apps"
-        tools:layout="@layout/fragment_applist" />
-
-    <fragment
-        android:id="@+id/extend_apps_dest"
-        android:name="hepta.rxposed.manager.fragment.PlugExten.apps.ExtenAppFragment"
-        android:label="@string/apps"
-        tools:layout="@layout/fragment_applist" />
 
     <fragment
         android:id="@+id/vpn_dest"
@@ -104,16 +38,40 @@
         tools:layout="@layout/fragment_vpn" />
 
     <fragment
-        android:id="@+id/deeplink_dest"
-        android:name="hepta.rxposed.manager.DeepLinkFragment"
-        android:label="@string/deeplink"
-        tools:layout="@layout/deeplink_fragment">
+        android:id="@+id/processlist_dest"
+        android:name="hepta.rxposed.manager.fragment.process.ProcessFragment"
+        android:label="@string/inject"
+        tools:layout="@layout/processlist_fragment"/>
 
-        <argument
-            android:name="myarg"
-            android:defaultValue="Android!"/>
-        <!-- TODO STEP 11.1 - Add a deep link to www.example.com/{myarg}/ -->
-        <!--<deepLink app:uri="www.example.com/{myarg}" />-->
-        <!-- TODO END STEP 11.1 -->
-    </fragment>
+
+
+    <fragment
+        android:id="@+id/settings_dest"
+        android:name="hepta.rxposed.manager.fragment.SettingsFragment"
+        android:label="@string/settings"
+        tools:layout="@layout/fragment_settings" />
+    <fragment
+        android:id="@+id/modules_dest"
+        android:name="hepta.rxposed.manager.fragment.LoadExten.ExtenFragment"
+        android:label="@string/modules"
+        tools:layout="@layout/fragment_modules" />
+    <fragment
+        android:id="@+id/pluginject_dest"
+        android:name="hepta.rxposed.manager.fragment.PlugInject.SupportFragment"
+        android:label="@string/frameworks"
+        tools:layout="@layout/fragment_frameworks" />
+
+
+    <fragment
+        android:id="@+id/process_info_dest"
+        android:name="hepta.rxposed.manager.fragment.process.processInfo.ProcessInfoFragment"
+        android:label="@string/proces"
+        tools:layout="@layout/fragment_userprocess" />
+    <fragment
+        android:id="@+id/extend_apps_dest"
+        android:name="hepta.rxposed.manager.fragment.LoadExten.apps.ExtenAppFragment"
+        android:label="@string/apps"
+        tools:layout="@layout/fragment_applist" />
+
+
 </navigation>

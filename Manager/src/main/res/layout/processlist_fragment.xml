@@ -22,23 +22,9 @@
     android:orientation="vertical"
     android:padding="8dp">
 
-    <TextView
-        android:id="@+id/text"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <EditText
-        android:id="@+id/args_edit_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/deep_link_instructions" />
-
-    <Button
-        android:id="@+id/send_notification_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/send_deep_link_notification_button" />
-
-
+        android:layout_height="wrap_content"/>
 
 </LinearLayout>
