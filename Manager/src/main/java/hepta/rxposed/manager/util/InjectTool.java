@@ -34,10 +34,13 @@ public  class InjectTool {
     public static String armv7_InjectTool = "armv7_"+"InjectTool";
     public static String HostName = BuildConfig.APPLICATION_ID;
     public static String HostProviderName = BuildConfig.APPLICATION_ID+".Provider";
+
+    public static int arch_armv7=32;
+    public static int arch_armv8=64;
     public static String InjectArg = HostName+":"+HostProviderName;
     public static Context context = null;
     public static void zygote_reboot() throws IOException {
-        rootRun(su_path,"killall zygote");
+        rootRun("killall zygote");
     }
 
 
@@ -80,13 +83,45 @@ public  class InjectTool {
 //        Runtime.getRuntime().exec("su "+cmd_arm64);
 
 //        rootRun("su","top");
-        rootRun(su_path,cmd_arm64);
-        rootRun(su_path,cmd_armv7);
+        rootRun(cmd_arm64);
+        rootRun(cmd_armv7);
         return  true;
     }
 
+    public static void Inject_Process(String PorcessName,String so_path)  {
 
 
+
+    }
+
+    public static void Inject_Process(int Pid,String Inject_Arg)  {
+        int arch = ByPidGetProcessArch(Pid);
+        Log.e("Rzx","inject arch:"+arch);
+        if(arch == arch_armv8){
+            String InjectTool_arm64_path = context.getFilesDir().getAbsolutePath()+ File.separator+arm64_InjectTool;
+            String InjectSo_arm64_path   = context.getFilesDir().getAbsolutePath()+ File.separator+arm64_so;
+
+            String cmd_arm64 = InjectTool_arm64_path+" -p "+Pid+" -so "+ InjectSo_arm64_path+" -symbols _Z9dobby_strPKc "+Inject_Arg;;
+            rootRun(cmd_arm64);
+        }else {
+            String InjectTool_armv7_path = context.getFilesDir().getAbsolutePath()+ File.separator+armv7_InjectTool;
+            String InjectSo_armv7_path   = context.getFilesDir().getAbsolutePath()+ File.separator+armv7_so;
+
+            String cmd_armv7 = InjectTool_armv7_path+" -p "+Pid+" -so "+ InjectSo_armv7_path+" -symbols _Z9Inject_ProcessPKc "+Inject_Arg;
+            rootRun(cmd_armv7);
+        }
+
+
+    }
+
+    private static int ByPidGetProcessArch(int pid) {
+        String exe = rootRun("file /proc/"+pid+"/exe");
+        if(exe.contains("app_process64")){
+            return 64;
+        }else {
+            return 32;
+        }
+    }
 
 
     public static boolean copyAssetToDst(Context context, String fileName,String dstFilePath){
@@ -121,14 +156,30 @@ public  class InjectTool {
     }
 
 
+    public static String shell(String cmd){
+        try {
+            Process process = Runtime.getRuntime().exec(cmd);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line = "";
+            while (true) {
+                if ((line = reader.readLine()) == null) break;
+                return line;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return null;
+    }
 
 
-
-    private static void rootRun(String su_tool,  String cmd)
+    public static String rootRun(String cmd)
     {
+
+        String Result  ="";
         try {
             // 申请获取root权限
-            Process process = Runtime.getRuntime().exec(su_tool); //"/system/xbin/su"
+            Process process = Runtime.getRuntime().exec(su_path); //"/system/xbin/su"
             // 获取输出流
             OutputStream outputStream = process.getOutputStream();
             InputStream is = process.getInputStream();
@@ -139,23 +190,28 @@ public  class InjectTool {
             dataOutputStream.close();
             outputStream.close();
             int code = process.waitFor();
-            Log.d("InjectTool", "Run:\"" + cmd +"\", "+"process.waitFor() = " + code);
-            String line;
+            String is_line = null;
+            String es_line = null;
+//            Log.d("InjectTool", "Run:\"" + cmd +"\", "+"process.waitFor() = " + code);
             BufferedReader br;
             br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-            while ((line = br.readLine()) != null) {
-                Log.d("InjectTool is ", line);
+            while ((is_line = br.readLine()) != null) {
+//                Log.d("InjectTool is ", is_line);
+                Result = Result+is_line+"\n";
             }
 
             br = new BufferedReader(new InputStreamReader(es, "UTF-8"));
-            while ((line = br.readLine()) != null) {
-                Log.e("InjectTool es", line);
+            while ((es_line = br.readLine()) != null) {
+//                Log.e("InjectTool es", es_line);
+//                Result += es_line;
+
             }
 
         } catch (Throwable t) {
-            Log.e("InjectTool", "Throwable = " + t.getMessage());
+//            Log.e("InjectTool", "Throwable = " + t.getMessage());
             t.printStackTrace();
         }
+        return Result;
     }
 
 }

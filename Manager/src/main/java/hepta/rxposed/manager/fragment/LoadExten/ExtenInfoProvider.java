@@ -1,4 +1,4 @@
-package hepta.rxposed.manager.fragment.PlugExten;
+package hepta.rxposed.manager.fragment.LoadExten;
 
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;

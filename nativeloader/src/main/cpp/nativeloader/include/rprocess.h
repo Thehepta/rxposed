@@ -10,8 +10,10 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include "jni.h"
-#include "android/log.h"
+#include <jni.h>
+#include <android/log.h>
+#include "dobby.h"
+
 using namespace std;
 
 #define LOG_TAG "RxposedInject"
@@ -80,6 +82,8 @@ public:
     void setRxposedContext(jobject RxposedContext);
     vector<AppinfoNative*> AppinfoNative_vec ;
 
+    void LoadExternApk(char *string);
+
 protected:
     static rprocess  *instance_; //引用性声明
 
@@ -97,6 +101,8 @@ private:
     jobject getSystemContext(JNIEnv *pEnv);
 
     bool NDK_ExceptionCheck(JNIEnv *pEnv, const char *string);
+
+    JNIEnv *Pre_GetEnv();
 };
 
 

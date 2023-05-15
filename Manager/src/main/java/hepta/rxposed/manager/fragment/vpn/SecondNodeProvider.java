@@ -23,6 +23,6 @@ public class SecondNodeProvider extends BaseNodeProvider {
     @Override
     public void convert(@NonNull BaseViewHolder baseViewHolder, BaseNode baseNode) {
         SecondNode entity = (SecondNode) baseNode;
-        baseViewHolder.setText(R.id.tv_name, entity.getTitle());
+        baseViewHolder.setText(R.id.tv_name, entity.getPid());
     }
 }

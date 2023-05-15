@@ -17,9 +17,9 @@
         android:icon="@drawable/ic_home"
         android:title="@string/home" />
     <item
-        android:id="@id/deeplink_dest"
+        android:id="@id/processlist_dest"
         android:icon="@drawable/ic_android"
-        android:title="@string/deeplink" />
+        android:title="@string/inject" />
     <item
         android:id="@id/vpn_dest"
         android:icon="@drawable/ic_android"

@@ -1,20 +1,7 @@
-/*
- * Copyright (C) 2018 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package hepta.rxposed.manager.fragment.vpn
+
+import android.content.pm.PackageManager
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -24,58 +11,76 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.chad.library.adapter.base.entity.node.BaseNode
 import hepta.rxposed.manager.R
+import hepta.rxposed.manager.util.InjectTool
+import java.math.BigInteger
+import java.util.*
 
-/**
- * A simple [Fragment] subclass.
- */
+
 class VpnFragment : Fragment() {
-
     override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_vpn, container, false)
     }
 
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        var nodeAdapter = NodeAdapter()
-        var rv_list = view.findViewById<RecyclerView>(R.id.rv_list)
-        rv_list.layoutManager = LinearLayoutManager(requireContext())
-        rv_list.adapter = nodeAdapter
-        nodeAdapter.setList(getEntity())
-
+        val nodeAdapter = NodeAdapter()
+        val recyclerView = view.findViewById<RecyclerView>(R.id.rv_list)
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        recyclerView.adapter = nodeAdapter
+//        nodeAdapter.setList(entity())
+//        entity()
     }
 
-    private fun getEntity(): List<BaseNode>? {
-        //总的 list，里面放的是 FirstNode
-        val list: MutableList<BaseNode> = ArrayList()
-        for (i in 0..7) {
 
-            //SecondNode 的 list
-            val secondNodeList: MutableList<BaseNode> = ArrayList()
-            for (n in 0..5) {
-                val seNode = SecondNode("Second Node $n")
-                secondNodeList.add(seNode)
+    fun  entity() : Collection<BaseNode>? {
+            val processList = InjectTool.rootRun("ps -ef | awk '{print $1, $2, $8}'").split("\n")
+            val pm = requireContext().packageManager
+            val list = mutableListOf<BaseNode>()
+            for (process in processList.drop(1)) {
+                if (process.isEmpty()) {
+                    continue
+                }
+                val tmpProcess = process.split(" ")
+                val UserName = tmpProcess[0]
+                val pid = tmpProcess[1]
+                val processName = tmpProcess[2]
+                val uid_str = InjectTool.shell("id -u $UserName")
+                val bigint = BigInteger(uid_str, 10)
+                val uid = bigint.toInt()
+                val pkgs = pm.getPackagesForUid(uid)
+                var pkgName = ""
+                var icon: Drawable? = null
+                if (pkgs != null) {
+                    pkgName = pkgs[0]
+                    val applicationInfo = pm.getApplicationInfo(pkgName, PackageManager.GET_UNINSTALLED_PACKAGES)
+                    icon =  applicationInfo.loadIcon(pm)
+                }
+                var currentRootNode: MutableList<BaseNode>? = null
+                list.forEach {
+                    var rootNode =  it as RootNode
+                    if(rootNode.getUID() == uid){
+                        currentRootNode = it.childNode
+                    }
+                }
+                currentRootNode.let {
+                    if (it != null) {
+                        val seNode = SecondNode(pid, processName)
+                        it.add(seNode)
+                    }else{
+                        val secondNodeList: MutableList<BaseNode> = ArrayList()
+                        val seNode = SecondNode(pid, processName)
+                        secondNodeList.add(seNode)
+                        var entity = RootNode(secondNodeList, UserName, uid)
+                        entity.pkgName = pkgName
+                        entity.setIcon(icon)
+                        list.add(entity)
+                    }
+                }
             }
-            val entity = RootNode(secondNodeList, "Root Node $i")
-            list.add(entity)
+            return list
         }
-        val firstNodeList: MutableList<BaseNode> = ArrayList()
-
-        for (n in 0..5) {
-            val seNode = FirstNode("First Node $n")
-            firstNodeList.add(seNode)
-        }
-
-
-        val entityfirst = RootNode(firstNodeList, "Root Node $100")
-        list.add(entityfirst)
-        return list
-    }
-
 }

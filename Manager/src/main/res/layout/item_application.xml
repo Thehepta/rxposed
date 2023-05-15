@@ -63,13 +63,13 @@
                 android:textAppearance="?android:attr/textAppearanceListItem"
                 android:textIsSelectable="false"
                 android:textSize="16sp"
-                app:layout_constraintBottom_toTopOf="@id/description"
+                app:layout_constraintBottom_toTopOf="@id/app_packageName"
                 app:layout_constraintStart_toEndOf="@id/app_icon"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:text="@tools:sample/first_names" />
 
             <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/description"
+                android:id="@+id/app_packageName"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -94,8 +94,8 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/switcher"
                 app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintStart_toStartOf="@id/description"
-                app:layout_constraintTop_toBottomOf="@id/description"
+                app:layout_constraintStart_toStartOf="@id/app_packageName"
+                app:layout_constraintTop_toBottomOf="@id/app_packageName"
                 tools:text="@tools:sample/lorem" />
 
             <com.google.android.material.textview.MaterialTextView

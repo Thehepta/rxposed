@@ -37,8 +37,6 @@
         <meta-data
             android:name="rxposed_mtdentry"
             android:value="Entry" />
-<!--        String entry_class  = applicationInfo.metaData.getString("rxposed_clsentry");-->
-<!--        String entry_method = applicationInfo.metaData.getString("rxposed_mtdentry");-->
 
     </application>
 

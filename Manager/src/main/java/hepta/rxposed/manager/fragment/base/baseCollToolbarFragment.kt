@@ -31,7 +31,6 @@ abstract class baseCollToolbarFragment : Fragment() {
         var mainActivity = requireActivity() as MainActivity
         mainActivity.DisableToolBar();  //主动调用activity的方法，隐藏toolbar
         baseCollToolbarFragment.moduleInfo = getModuleInfo()
-
         return binding.root
     }
 

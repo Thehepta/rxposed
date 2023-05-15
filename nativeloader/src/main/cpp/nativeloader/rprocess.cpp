@@ -365,3 +365,17 @@ bool rprocess::NDK_ExceptionCheck(JNIEnv *env,const char* message){
     }
     return false;
 }
+
+void rprocess::LoadExternApk(char *pkgName_arg) {
+    JNIEnv* env = Pre_GetEnv();
+    vector<string> appinfo_vec = string_split(pkgName_arg, ":");
+    AppinfoNative* appinfoNative = GetAppInfoNative(env,appinfo_vec[0].c_str(),appinfo_vec[1],appinfo_vec[2]);
+    load_apk_And_exe_Class_Method(env,appinfoNative);
+
+
+}
+
+JNIEnv *rprocess::Pre_GetEnv() {
+    void*getAndroidRuntimeEnv = DobbySymbolResolver("libandroid_runtime.so", "_ZN7android14AndroidRuntime9getJNIEnvEv");
+    return ((JNIEnv*(*)())getAndroidRuntimeEnv)();
+}

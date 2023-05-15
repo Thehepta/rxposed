@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package hepta.rxposed.manager.fragment.PlugSupport
+package hepta.rxposed.manager.fragment.LoadExten
 
 import android.os.Bundle
 import android.view.*
@@ -23,20 +23,19 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import hepta.rxposed.manager.MainActivity
 import hepta.rxposed.manager.R
-import hepta.rxposed.manager.databinding.FragmentFrameworksBinding
+import hepta.rxposed.manager.databinding.FragmentModulesBinding
 
 
 /**
  * A simple [Fragment] subclass.
  */
-class SupportFragment : Fragment() {
+class ExtenFragment : Fragment() {
 
 
-    private var moduleListAdapter: SupportListAdapter? = null
-    private val filterModuleInfo: List<SupportInfoProvider.SupportInfo> = ArrayList()
-    private lateinit var binding: FragmentFrameworksBinding
+    private var moduleListAdapter: ExtenListAdapter? = null
+    private val filterModuleInfo: List<ExtenInfoProvider> = ArrayList()
+    private lateinit var binding: FragmentModulesBinding
 
 
     override fun onCreateView(
@@ -44,10 +43,9 @@ class SupportFragment : Fragment() {
             container: ViewGroup?,
             savedInstanceState: Bundle?
     ): View? {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_frameworks, container, false)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_modules, container, false)
         setHasOptionsMenu(true)
-        var mainActivity = requireActivity() as MainActivity
-        mainActivity.EnableToolBar()
+
         // Inflate the layout for this fragment
         return binding.root
     }
@@ -62,29 +60,22 @@ class SupportFragment : Fragment() {
     }
 
     private fun initRecycleView() {
-        moduleListAdapter =
-            SupportListAdapter(R.layout.item_module)
+        moduleListAdapter = ExtenListAdapter(R.layout.item_module)
         val layoutManager = LinearLayoutManager(requireContext())
         layoutManager.orientation = LinearLayoutManager.VERTICAL
         binding.recyclerView.setLayoutManager(layoutManager)
         binding.recyclerView.setAdapter(moduleListAdapter)
         moduleListAdapter!!.setOnItemClickListener { adapter, view, position ->
-            val moduleInfo = adapter.data[position] as SupportInfoProvider.SupportInfo
-
-//            val controller: NavController =
-//                Navigation.findNavController()
-//            controller.navigate(R.id.apps_dest)
+            val moduleInfo = adapter.data[position] as ExtenInfoProvider.ExtendInfo
             val controller: NavController = findNavController()
             val bundle1:Bundle  =  Bundle();
             bundle1.putInt("Key",moduleInfo.uid);
-//            bundle1.putInt("type", Consts.START_FRAGMENT_FRAMEWORK);
-
+//            bundle1.putInt("type", START_FRAGMENT_MODULE);
             // 把Persion数据放入到bundle中
-            controller.navigate(R.id.support_apps_dest, bundle1)
-
+            controller.navigate(R.id.extend_apps_dest, bundle1)
         }
 
-        moduleListAdapter!!.setList(SupportInfoProvider.getInstance().moduleList)
+        moduleListAdapter!!.setList(ExtenInfoProvider.getInstance().moduleList)
 
     }
 
