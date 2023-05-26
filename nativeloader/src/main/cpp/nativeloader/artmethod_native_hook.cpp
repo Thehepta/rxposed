@@ -2,8 +2,7 @@
 // Created by chic on 2023/5/23.
 //
 
-#include "artmethod_native_hook.h"
-#include "RestrictionBypass.h"
+#include "include/artmethod_native_hook.h"
 inline static bool IsIndexId(jmethodID mid) { return ((reinterpret_cast<uintptr_t>(mid) % 2) != 0); }
 
 static jfieldID field_art_method = nullptr;
@@ -19,9 +18,6 @@ void *GetArtMethod(JNIEnv *env, jclass clazz, jmethodID methodId) {
         if (IsIndexId(methodId)) {
             jobject method = env->ToReflectedMethod(clazz, methodId, true);
             return reinterpret_cast<void *>(env->GetLongField(method, field_art_method));
-        } else {
-            return reinterpret_cast<void *>(env->GetLongField(reinterpret_cast<jobject>(methodId), field_art_method));
-
         }
     }
     return methodId;
@@ -45,10 +41,9 @@ void *GetOriginalNativeFunction(const uintptr_t *art_method) {
     return (void *)art_method[jni_offset];
 }
 
-jfieldID get_Executable_Field_internal(
-        JavaVM *_vm) {
-    JNIEnv *env;
-    _vm->AttachCurrentThread(&env, nullptr);
+//Executable 的artMethod 可能是隐藏的，需要注意是否能获取
+jfieldID getArtMethod_filed(JNIEnv *env){
+
     jclass clazz = env->FindClass("java/lang/reflect/Executable");
     auto field = env->GetFieldID(static_cast<jclass>(clazz), "artMethod", "J");
     if (env->ExceptionCheck()) {
@@ -56,23 +51,7 @@ jfieldID get_Executable_Field_internal(
         env->ExceptionClear();
 
     }
-    _vm->DetachCurrentThread();
     return field;
-}
-
-
-
-jfieldID getArtMethod_filed(JNIEnv *env){
-    JavaVM *_vm ;
-    env->GetJavaVM(&_vm);
-
-    auto future = std::async(&get_Executable_Field_internal,_vm);
-    auto result = future.get();
-    if (env->ExceptionCheck()) {
-        env->ExceptionDescribe();
-        env->ExceptionClear();
-    }
-    return result;
 }
 
 
@@ -89,7 +68,6 @@ bool INIT_HOOK_PlatformABI(JNIEnv *env, jclass clazz, jmethodID methodId, void *
 
     bool success = false;
     for (int i = 0; i < 30; ++i) {
-        LOGE("found i = %d",i);
 
         if (reinterpret_cast<void *>(artMethod[i]) == native) {
             jni_offset = i;

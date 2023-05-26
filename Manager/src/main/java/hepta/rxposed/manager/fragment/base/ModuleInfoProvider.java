@@ -208,17 +208,11 @@ public abstract class ModuleInfoProvider<T extends ModuleInfo> {
 
         while(it.hasNext()) {
             String pkgName = pm.getNameForUid(it.next());
-            try {
-                ApplicationInfo applicationInfo = pm.getApplicationInfo(pkgName,PackageManager.GET_UNINSTALLED_PACKAGES|PackageManager.GET_META_DATA);
-                String entry_class  = applicationInfo.metaData.getString("rxposed_clsentry");
-                String entry_method = applicationInfo.metaData.getString("rxposed_mtdentry");
-                retString.append(applicationInfo.packageName+":"+entry_class+":"+entry_method);
-                if(it.hasNext()){
-                    retString.append("|");
-                }
-            } catch (PackageManager.NameNotFoundException e) {
-                e.printStackTrace();
+            retString.append(pkgName);
+            if(it.hasNext()){
+                retString.append("|");
             }
+
         }
         if(retString.toString()==""){
             return "null";
@@ -226,6 +220,8 @@ public abstract class ModuleInfoProvider<T extends ModuleInfo> {
 
             return retString.toString();
         }
+
+
     }
 
 

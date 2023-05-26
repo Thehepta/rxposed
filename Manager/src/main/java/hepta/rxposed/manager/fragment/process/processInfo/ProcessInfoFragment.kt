@@ -41,6 +41,7 @@ import hepta.rxposed.manager.fragment.base.AppInfoNode
 import hepta.rxposed.manager.fragment.process.UIDPorcessNode
 import hepta.rxposed.manager.util.Consts.INJECTLIST_FRAGMENT_ARGE
 import hepta.rxposed.manager.util.Consts.INJECT_FRAGMENT_ARGE
+import hepta.rxposed.manager.util.InjectTool
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -58,6 +59,7 @@ class ProcessInfoFragment : Fragment() {
     private var toolbar: Toolbar? = null
     private var recyclerView:RecyclerView? = null
 
+    private var inject_pid = "-1"
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -94,6 +96,7 @@ class ProcessInfoFragment : Fragment() {
         appsAdapter?.setOnClickInjectListener(object :usprocInfoAdapter.OnClickInjectListener{
             override fun onClick(item: UIDPorcessNode.subprocess?) {
                 if (item != null) {
+                    inject_pid = item.pid;
                     val bundle1:Bundle  =  Bundle();
                     bundle1.putBoolean(INJECT_FRAGMENT_ARGE,true);
                     findNavController().navigate(R.id.pluginject_dest, bundle1)
@@ -112,14 +115,12 @@ class ProcessInfoFragment : Fragment() {
             val it: MutableListIterator<String> = apkNaemList.listIterator()
             while (it.hasNext()){
                 var apkName = it.next()
-                var app_metaData = RxposedApp.getInstance().applicationContext.packageManager.getApplicationInfo(apkName,PackageManager.GET_META_DATA).metaData
-                var method_entry = app_metaData.getString("rxposed_mtdentry")
-                var class_entry = app_metaData.getString("rxposed_clsentry")
-                retString.append(apkName + ":" + class_entry + ":" + method_entry)
+                retString.append(apkName)
                 if (it.hasNext()) {
-                    retString.append("|")
+                    retString.append(":")
                 }
             }
+            InjectTool.Inject_Process(inject_pid.toInt(),retString.toString())
             Log.e("Rzx","ProcessInject_Apk:"+retString.toString())
         }
     }

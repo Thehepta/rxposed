@@ -31,7 +31,7 @@ public class RxposedTextService extends Service {
         /*java.lang.SecurityException: Isolated process not allowed to call getContentProvider
 
         Uri uri = Uri.parse("content://hepta.rxposed.manager.Provider");
-        ContentResolver contentResolver = getApplicationContext().getContentResolver();
+        ContentResolver contentResolver = CreateApplicationContext().getContentResolver();
         Bundle bundle =contentResolver.call(uri,"getConfig",LoaderApplication.currentName,null);
 
          */

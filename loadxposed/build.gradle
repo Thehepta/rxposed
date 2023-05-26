@@ -48,12 +48,9 @@ android {
 dependencies {
     api project(path: ':hiddenapistubs')
 
-    // 载入 sandHook
-    implementation 'com.swift.sandhook:hooklib:4.2.1'
-    implementation 'com.swift.sandhook:xposedcompat:4.2.0'
-//    implementation files('libs/xposedcompat-4.2.0.aar')
-//    implementation files('libs/hooklib-4.2.1.aar')
-//    implementation files('libs/hookannotation-4.2.1.jar')
+    // 载入 pine
+    implementation 'top.canyie.pine:core:+'
+
 
 
     implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:3.0.11'

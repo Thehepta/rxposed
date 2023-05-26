@@ -5,11 +5,6 @@ import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
-
-import com.swift.sandhook.xposedcompat.XposedCompat;
-
-import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XposedHelpers;
 import hepta.rxposed.loadxposed.ui.home.ExtenDataProvider;
 
 public class MyApp extends Application {
@@ -35,30 +30,6 @@ public class MyApp extends Application {
 
     }
 
-
-
-
-    private void sandhooktext(Context context) {
-
-        XposedCompat.cacheDir = context.getCacheDir();
-//for load xp module(sandvxp)
-        XposedCompat.context = context;
-        XposedCompat.classLoader = context.getClassLoader();
-        XposedCompat.isFirstApplication= true;
-        XposedHelpers.findAndHookMethod(Activity.class, "onCreate", Bundle.class,new XC_MethodHook() {
-            @Override
-            protected void beforeHookedMethod(XC_MethodHook.MethodHookParam param) throws Throwable {
-                super.beforeHookedMethod(param);
-                Log.e("XposedCompat", "beforeHookedMethod: " + param.method.getName());
-            }
-
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                super.afterHookedMethod(param);
-                Log.e("XposedCompat", "afterHookedMethod: " + param.method.getName());
-            }
-        });
-    }
 
     static {
 //        Thread.dumpStack(); //测试代码位置

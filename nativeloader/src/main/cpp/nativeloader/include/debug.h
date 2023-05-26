@@ -2,8 +2,8 @@
 // Created by chic on 2023/5/23.
 //
 
-#ifndef RXPOSED_LOG_H
-#define RXPOSED_LOG_H
+#ifndef RXPOSED_DEBUG_H
+#define RXPOSED_DEBUG_H
 
 
 #include "android/log.h"
@@ -26,4 +26,4 @@
 
 
 
-#endif //RXPOSED_LOG_H
+#endif //RXPOSED_DEBUG_H

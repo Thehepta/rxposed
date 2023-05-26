@@ -338,7 +338,7 @@ int init_inject(int argc, char *argv[]){
         printf("[+] SELinux is Permissive or Disabled\n");
         strcpy(process_inject.orig_selinux, strdup("Permissive"));// 设置flag
     }
-
+    printf("[+] lib_path = %s\n",process_inject.lib_path);
     int re = inject_remote_process(process_inject.pid, process_inject.lib_path, process_inject.func_symbols, process_inject.func_args);
 
 

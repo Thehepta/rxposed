@@ -69,7 +69,6 @@ android {
                 cppFlags ''
             }
         }
-
         buildConfigField "String", "Rxposed_Inject_So", "\"${Rxposed_Inject_So}\""
 
     }

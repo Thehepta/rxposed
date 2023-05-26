@@ -13,30 +13,30 @@
 
 
 
-class injectApp {
+class InjectApp {
 
 public:
 
-    static injectApp *GetInstance()
+    static InjectApp *GetInstance()
     {
         if( instance_ == nullptr )
         {
-            instance_ = new injectApp();
+            instance_ = new InjectApp();
         }
         return instance_;
     }
 
 
     void LoadExternApk(char *pkgName_arg);
-    JNIEnv *Pre_GetEnv();
 
 
 
 
 protected:
-    static injectApp  *instance_; //引用性声明
+    static InjectApp  *instance_; //引用性声明
 
 };
 
 
+bool hookinit(JNIEnv *env);
 #endif //RXPOSED_INJECTAPP_H

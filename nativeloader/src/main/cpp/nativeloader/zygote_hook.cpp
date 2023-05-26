@@ -4,114 +4,124 @@
 #include <linux/mman.h>
 #include <sys/mman.h>
 #include "include/rprocess.h"
-#include "include/injectApp.h"
-int (*orig_loader_dlopen)(int a1);
-void (*putty)(int , int, int);
-char * tmpe;
-
-//#ifdef __arm__
-//int fake_artmethod_invoker(int a1)
-//{
-//    orig_loader_dlopen(a1);
-//}
-//#elif __aarch64__
-//
-//
-//#endif
-//
-//#define
-
-void rxposde_init();
-
-extern void start_entry();
-extern void start_java();
+#include "include/InjectApp.h"
 
 
-unsigned int (*fork_addr)();
-unsigned int (*fork_addr_org)();
+void application_hook_init();
 
-unsigned int fork_call(){
+void * nativeForkAndSpecialize_addr;
+int (*nativeForkAndSpecialize_org)(
+        JNIEnv* env, jclass, jint uid, jint gid, jintArray gids, jint runtime_flags,
+        jobjectArray rlimits, jint mount_external, jstring se_info, jstring nice_name,
+        jintArray managed_fds_to_close, jintArray managed_fds_to_ignore, jboolean is_child_zygote,
+        jstring instruction_set, jstring app_data_dir, jboolean is_top_app,
+        jobjectArray pkg_data_info_list, jobjectArray allowlisted_data_info_list,
+        jboolean mount_data_dirs, jboolean mount_storage_dirs);
 
-    unsigned int ret = fork_addr_org();
+int nativeForkAndSpecialize_hook(
+        JNIEnv* env, jclass clazz, jint uid, jint gid, jintArray gids, jint runtime_flags,
+        jobjectArray rlimits, jint mount_external, jstring se_info, jstring nice_name,
+        jintArray managed_fds_to_close, jintArray managed_fds_to_ignore, jboolean is_child_zygote,
+        jstring instruction_set, jstring app_data_dir, jboolean is_top_app,
+        jobjectArray pkg_data_info_list, jobjectArray allowlisted_data_info_list,
+        jboolean mount_data_dirs, jboolean mount_storage_dirs){
+    DEBUG()
+    char * pkgName = const_cast<char *>(env->GetStringUTFChars(nice_name, nullptr));
+    rprocess::GetInstance()->Init(pkgName,uid);
+    int ret = nativeForkAndSpecialize_org(env,clazz,uid,gid,gids,runtime_flags,rlimits,mount_external,se_info,nice_name,managed_fds_to_close,managed_fds_to_ignore,is_child_zygote,
+                                          instruction_set, app_data_dir,is_top_app,pkg_data_info_list,allowlisted_data_info_list,mount_data_dirs,mount_storage_dirs);
+    return ret;
+};
+
+
+
+
+
+void *fork_addr;
+unsigned int (*fork_org)();
+
+
+void process_unhook(){
+    DobbyDestroy((void *)fork_addr);
+    DobbyDestroy((void *)nativeForkAndSpecialize_addr);
+}
+
+unsigned int fork_hook(){
+    DEBUG()
+
+    unsigned int ret = fork_org();
     if(ret == 0){
-        //如果是子进程，销毁fork 的hook点
-        DobbyDestroy((void *)fork_addr);
-        rxposde_init();
-//        LOGE("fork_call child process,ID is %d\n",getpid());
+        if (rprocess::GetInstance()->Enable()) {
+            application_hook_init();
+        }
+        process_unhook();
         return ret;
     }else{
-//        LOGE("fork_call parent process,ID is %d\n",getpid());
         return ret;
-    };
-}
-
-
-
-unsigned int (*vfork_addr)();
-unsigned int (*vfork_addr_org)();
-
-//vfork 不能hook
-//1.据说vfork创建的是线程，不是进程
-//2.有bug，如果有人调用了vfrok 会崩溃，目前没搞明白原因，frida也有这个bug
-//unsigned int vfork_call(){
-//    unsigned int pid =  vfork_addr_org();
-//    if(pid<0)
-//        printf("error in fork!\n");
-//    else if(pid == 0)
-//    {
-////        DobbyDestroy((void *)vfork_addr);
-//        LOGE("vfork_call child process,ID is %d\n",getpid());
-//        return pid;
-//    }
-//    else
-//    {
-//        LOGE("vfork_call parent process,ID is %d\n",getpid());
-//        return pid;
-//    }
-//}
-
-int (*system_property_get_addr)( char*, char *);
-int (*system_property_get_org)( char*, char *);
-int system_property_get_call(char* name , char *value){
-    int re;
-//    LOGD("native hook %s ret: %d",name,re);
-    if(!strncmp(name,"rxposed_activity", strlen("rxposed_activity"))){
-        re = strlen("true");
-        memcpy(value, "true", strlen("true"));
-//        DobbyDestroy((void *)system_property_get_addr);
-    } else{
-        re = system_property_get_org(name,value);
     }
-    return re;
+}
+
+
+
+int (*setregid_org)(gid_t rgid, gid_t egid);
+int setregid_hook(gid_t rgid, gid_t egid){
+    LOGE("setregid_hook %d",rgid);
+    return setregid_org(rgid,egid);
+}
+
+int (*setreuid_org)(gid_t rgid, gid_t egid);
+int setreuid_hook(gid_t ruid, gid_t euid){
+    LOGE("setreuid_hook %d",ruid);
+    return setreuid_org(ruid,euid);
+}
+
+
+void zygote_server_init() {
+    JNIEnv* env = Pre_GetEnv();
+    DEBUG();
+    void *android_os_Process_setArg_addr =  DobbySymbolResolver("","_Z27android_os_Process_setArgV0P7_JNIEnvP8_jobjectP8_jstring");
+    LOGE("android_os_Process_setArg_addr %p",android_os_Process_setArg_addr);
+
+    void * setreuid = DobbySymbolResolver("","setreuid");
+    void * setregid = DobbySymbolResolver("","setregid");
+    fork_addr = DobbySymbolResolver("","fork");
+    DobbyHook(setregid,reinterpret_cast<dobby_dummy_func_t>(setregid_hook),reinterpret_cast<dobby_dummy_func_t *>(&setregid_org));
+    DobbyHook(setreuid,reinterpret_cast<dobby_dummy_func_t>(setreuid_hook),reinterpret_cast<dobby_dummy_func_t *>(&setreuid_org));
+    DobbyHook(fork_addr, reinterpret_cast<dobby_dummy_func_t>(fork_hook),reinterpret_cast<dobby_dummy_func_t *>(&fork_org));
+
+    if(!hook_init_and_text(env)){
+        LOGE("hook_init_and_text failed");
+    }
+    jclass Zygote_cls =  env->FindClass("com/android/internal/os/Zygote");
+    jmethodID nativeForkAndSpecialize_method = env->GetStaticMethodID(Zygote_cls,"nativeForkAndSpecialize", "(II[II[[IILjava/lang/String;Ljava/lang/String;[I[IZLjava/lang/String;Ljava/lang/String;Z[Ljava/lang/String;[Ljava/lang/String;ZZ)I");
+    nativeForkAndSpecialize_addr = getJmethod_JniFunction(env,Zygote_cls,nativeForkAndSpecialize_method);
+    LOGE("get native_art_nativeForkAndSpecialize_method %p",nativeForkAndSpecialize_addr);
+    DobbyHook(nativeForkAndSpecialize_addr,reinterpret_cast<dobby_dummy_func_t>(nativeForkAndSpecialize_hook),reinterpret_cast<dobby_dummy_func_t *>(&nativeForkAndSpecialize_org));
+
 }
 
 
 
 
 
-void (*android_os_Process_setArg_addr)(JNIEnv* env, jobject clazz, jstring name);
+
+
+void *android_os_Process_setArg_addr;
 void (*android_os_Process_setArg_org)(JNIEnv* env, jobject clazz, jstring name);
 void android_os_Process_setArg_call(JNIEnv* env, jobject clazz, jstring name){
-    android_os_Process_setArg_org(env,clazz,name);
-    if(rprocess::GetInstance()->is_isIsolatedProcess()){
-        LOGD("isIsolatedProcess is recent not support hook uid = %d processName = %s",getuid(),env->GetStringUTFChars(name, nullptr));
-        DobbyDestroy((void *)android_os_Process_setArg_addr);
-        return;
+    DEBUG();
+    char * pkgName = const_cast<char *>(env->GetStringUTFChars(name, nullptr));
+    LOGE("android_os_Process_setArg_call : %s",pkgName);
+
+    if(rprocess::GetInstance()->is_Load(env,pkgName)){
+//        rprocess::GetInstance()->LoadModule(env);
+        DEBUG();
+        DobbyDestroy(android_os_Process_setArg_addr);
     }
 
-    bool Destroy = false;
-//    LOGE("android_os_Process_setArg_call name %s ",env->GetStringUTFChars(name, nullptr));
-    if(rprocess::GetInstance()->is_providerHostProcess(env, name)){
-        //service process
-        system_property_get_addr = (int (*)( char*, char *))DobbySymbolResolver (nullptr, "__system_property_get");
-        DobbyHook((void *)system_property_get_addr, (void *)system_property_get_call, (void **)&system_property_get_org);
-        Destroy = true;
-    } else{
-        Destroy = rprocess::GetInstance()->Init(env, name);
-    }
-    if(Destroy){
-        DobbyDestroy((void *)android_os_Process_setArg_addr);
-    }
+    android_os_Process_setArg_org(env,clazz,name);
+
+
 }
 
 
@@ -123,42 +133,27 @@ int selinux_android_setcontext_call(uid_t uid , bool isSystemServer , char* sein
     return re;
 }
 
-void rxposde_init() {
+void application_hook_init() {
     //hook selinux_android_setcontext，获取进程安全上下文
     selinux_android_setcontext_addr = (int (*)(uid_t,bool,const char*,const char *))DobbySymbolResolver ("libandroid_runtime.so", "selinux_android_setcontext");
     DobbyHook((void *)selinux_android_setcontext_addr, (void *)selinux_android_setcontext_call, (void **)&selinux_android_setcontext_org);
 
-    android_os_Process_setArg_addr = (void (*)(JNIEnv *env, jobject clazz, jstring name)) DobbySymbolResolver("libandroid_runtime.so","_Z27android_os_Process_setArgV0P7_JNIEnvP8_jobjectP8_jstring");
-    DobbyHook((void *) android_os_Process_setArg_addr, (void *) android_os_Process_setArg_call, (void **) &android_os_Process_setArg_org);
-}
-
-void zygote_server_init() {
-    fork_addr = (unsigned int (*)())DobbySymbolResolver("libc.so", "fork");
-    DobbyHook((void *)fork_addr, (void *)fork_call, (void **)&fork_addr_org);
-//    vfork_addr = (unsigned int (*)())DobbySymbolResolver("libc.so", "vfork");
-//    DobbyHook((void *)vfork_addr, (void *)vfork_call, (void **)&vfork_addr_org);
+    android_os_Process_setArg_addr = DobbySymbolResolver("libandroid_runtime.so","_Z27android_os_Process_setArgV0P7_JNIEnvP8_jobjectP8_jstring");
+    DobbyHook(android_os_Process_setArg_addr, (void *) android_os_Process_setArg_call, (void **) &android_os_Process_setArg_org);
 }
 
 
-
-
-void hook_setArgv0(){
-//    android_os_Process_setArg_addr = (unsigned int (*)(unsigned int *,unsigned int *,unsigned int *))DobbySymbolResolver ("librxpopsed.so", "Java_com_example_rxpopsed_MainActivity_stringFromJNI");
-//    DobbyHook((void *)android_os_Process_setArg_addr, (void *)android_os_Process_setArg_call, (void **)&android_os_Process_setArg_org);
-}
-
-void dobby(unsigned int serviceUid){
-//    rprocess::GetInstance()->setServiceUid(serviceUid);
-    zygote_server_init();
-}
-void dobby_str(const char* AUTHORITY){
+void Ptrace_Zygotes(const char* AUTHORITY){
     rprocess::GetInstance()->setAUTHORITY(strdup(AUTHORITY));
     zygote_server_init();
+}
+void Inject_Porcess(const char* AUTHORITY_pkgName){
+
+    vector<string> arg_vec = string_split(strdup(AUTHORITY_pkgName), ":");
+    InjectApp::GetInstance()->LoadExternApk(strdup(AUTHORITY_pkgName));
 
 }
 
-void Inject_Porcess(const char* pkgName){
 
-    injectApp::GetInstance()->LoadExternApk(strdup(pkgName));
 
-}
+
