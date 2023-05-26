@@ -4,6 +4,7 @@
 #include <linux/mman.h>
 #include <sys/mman.h>
 #include "include/rprocess.h"
+#include "include/injectApp.h"
 int (*orig_loader_dlopen)(int a1);
 void (*putty)(int , int, int);
 char * tmpe;
@@ -158,6 +159,6 @@ void dobby_str(const char* AUTHORITY){
 
 void Inject_Porcess(const char* pkgName){
 
-    rprocess::GetInstance()->LoadExternApk(strdup(pkgName));
+    injectApp::GetInstance()->LoadExternApk(strdup(pkgName));
 
 }
