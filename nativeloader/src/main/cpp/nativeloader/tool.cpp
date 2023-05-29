@@ -434,10 +434,10 @@ jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,strin
     auto Binder_class = env->FindClass("android/os/Binder");
     auto Bundle_class = env->FindClass("android/os/Bundle");
     jmethodID Binder_init = env->GetMethodID(Binder_class, "<init>","()V");
+    jmethodID Binder_getCallingUid = env->GetStaticMethodID(Binder_class, "getCallingUid", "()I");
     jmethodID Bundle_init = env->GetMethodID(Bundle_class, "<init>","()V");
     jmethodID Bundle_getString_method = env->GetMethodID(Bundle_class, "getString","(Ljava/lang/String;)Ljava/lang/String;");
     auto IContentProvider_class = env->FindClass("android/content/IContentProvider");
-    auto IContentProvider_call_method = env->GetMethodID(IContentProvider_class,"call","(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroid/os/Bundle;)Landroid/os/Bundle;");
     auto ContentProviderHolder_provider_filed = env->GetFieldID(ContentProviderHolder_class,"provider","Landroid/content/IContentProvider;");
     jmethodID ActivityManager_getservice_method_ = env->GetStaticMethodID(ServiceManager_cls, "getService", "()Landroid/app/IActivityManager;");
     jobject IActivityManager_Obj = env->CallStaticObjectMethod(ServiceManager_cls, ActivityManager_getservice_method_);
@@ -463,9 +463,23 @@ jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,strin
 //    jstring j_key = env->NewStringUTF(key.c_str());
 
     DEBUG()
+    jobject ret_bundle;
+    if(android_get_device_api_level() == 33){
+        jstring root_jstring = env->NewStringUTF("root");
+        auto AttributionSource_class = env->FindClass("android/content/AttributionSource");
+        jmethodID AttributionSource_init = env->GetMethodID(AttributionSource_class, "<init>","(ILjava/lang/String;Ljava/lang/String;)V");
+        jint uid = env->CallStaticIntMethod(Binder_class,Binder_getCallingUid);
+        auto  attributionSourceObj = env->NewObject(AttributionSource_class,AttributionSource_init,uid,root_jstring,nullptr);
 
-    jobject ret_bundle = env->CallObjectMethod(provider_IContentProviderObj,IContentProvider_call_method, j_callingPkg,
-                                               nullptr,j_AUTHORITY,j_method,j_processName,mExtras_BundleObj);
+        auto IContentProvider_call_method = env->GetMethodID(IContentProvider_class,"call","(Landroid/content/AttributionSource;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroid/os/Bundle;)Landroid/os/Bundle;");
+        ret_bundle = env->CallObjectMethod(provider_IContentProviderObj,IContentProvider_call_method, attributionSourceObj,j_AUTHORITY,j_method,j_processName,mExtras_BundleObj);
+
+    } else{
+        auto IContentProvider_call_method = env->GetMethodID(IContentProvider_class,"call","(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroid/os/Bundle;)Landroid/os/Bundle;");
+        ret_bundle = env->CallObjectMethod(provider_IContentProviderObj,IContentProvider_call_method, j_callingPkg,
+                                                   nullptr,j_AUTHORITY,j_method,j_processName,mExtras_BundleObj);
+    }
+
 //    jstring config = static_cast<jstring>(env->CallObjectMethod(ret_bundle, Bundle_getString_method,j_key));
 //    const char *  enableUidList_str = env->GetStringUTFChars(config, nullptr);
 //    LOGE("get RxConfigPrvider is %s",enableUidList_str);

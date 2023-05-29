@@ -26,10 +26,11 @@ int nativeForkAndSpecialize_hook(
         jobjectArray pkg_data_info_list, jobjectArray allowlisted_data_info_list,
         jboolean mount_data_dirs, jboolean mount_storage_dirs){
     DEBUG()
-    char * pkgName = const_cast<char *>(env->GetStringUTFChars(nice_name, nullptr));
-    rprocess::GetInstance()->Init(pkgName,uid);
+    char * pkgName = const_cast<char *>(env->GetStringUTFChars(nice_name,reinterpret_cast<jboolean *>(true)));
+    rprocess::GetInstance()->Init(pkgName,uid,gid);
     int ret = nativeForkAndSpecialize_org(env,clazz,uid,gid,gids,runtime_flags,rlimits,mount_external,se_info,nice_name,managed_fds_to_close,managed_fds_to_ignore,is_child_zygote,
                                           instruction_set, app_data_dir,is_top_app,pkg_data_info_list,allowlisted_data_info_list,mount_data_dirs,mount_storage_dirs);
+
     return ret;
 };
 
@@ -48,7 +49,7 @@ void process_unhook(){
 
 unsigned int fork_hook(){
     DEBUG()
-
+//    abort();
     unsigned int ret = fork_org();
     if(ret == 0){
         if (rprocess::GetInstance()->Enable()) {
@@ -110,6 +111,7 @@ void *android_os_Process_setArg_addr;
 void (*android_os_Process_setArg_org)(JNIEnv* env, jobject clazz, jstring name);
 void android_os_Process_setArg_call(JNIEnv* env, jobject clazz, jstring name){
     DEBUG();
+
     char * pkgName = const_cast<char *>(env->GetStringUTFChars(name, nullptr));
     LOGE("android_os_Process_setArg_call : %s",pkgName);
 
@@ -128,6 +130,8 @@ void android_os_Process_setArg_call(JNIEnv* env, jobject clazz, jstring name){
 int (*selinux_android_setcontext_addr)(uid_t,bool,const char*,const char *);
 int (*selinux_android_setcontext_org)(uid_t,bool,const char*,const char *);
 int selinux_android_setcontext_call(uid_t uid , bool isSystemServer , char* seinfo , char *pkgName){
+    LOGE("selinux_android_setcontext_call getuid :%d",getuid());
+    LOGE("selinux_android_setcontext_call : %s uid :%d",pkgName,uid);
     int re = selinux_android_setcontext_org(uid,isSystemServer,seinfo,pkgName);
     DobbyDestroy((void *)selinux_android_setcontext_addr);
     return re;

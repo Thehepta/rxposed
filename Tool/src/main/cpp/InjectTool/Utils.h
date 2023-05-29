@@ -205,25 +205,30 @@ void handle_selinux_detect() {
  */
 bool set_selinux_state(int value) {
     bool succ = true;
-    int fd;
-    char path[PATH_MAX];
-    char buf[20];
+//    int fd;
+//    char path[PATH_MAX];
+//    char buf[20];
+//
+//    if (!process_selinux.selinux_mnt) {
+//        errno = ENOENT;
+//        return -1;
+//    }
+//
+//    snprintf(path, sizeof path, "%s/enforce", process_selinux.selinux_mnt);
+//    fd = open(path, O_RDWR);
+//    if (fd < 0)
+//        return -1;
+//
+//    snprintf(buf, sizeof buf, "%d", (int)value);
+//    int ret = write(fd, buf, strlen(buf));
+//    close(fd);
+//    if (ret < 0)
+//        succ = false;
 
-    if (!process_selinux.selinux_mnt) {
-        errno = ENOENT;
-        return -1;
-    }
-
-    snprintf(path, sizeof path, "%s/enforce", process_selinux.selinux_mnt);
-    fd = open(path, O_RDWR);
-    if (fd < 0)
-        return -1;
-
-    snprintf(buf, sizeof buf, "%d", (int)value);
-    int ret = write(fd, buf, strlen(buf));
-    close(fd);
-    if (ret < 0)
-        succ = false;
+    char cmd[20];
+    snprintf(cmd, 20, "setenforce %d", value);
+    system(cmd);
+    printf("[+] setlinux cmd :%s\n",cmd);
     return succ;
 }
 
