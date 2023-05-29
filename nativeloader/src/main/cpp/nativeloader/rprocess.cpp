@@ -24,15 +24,18 @@ int system_property_get_call(char* name , char *value){
 
 
 rprocess::rprocess() {
+    processName = "null";
+    currentUid = -1;
+    gid = -1;
 
 }
 
 rprocess * rprocess::instance_ =nullptr;
 
-void rprocess::Init(char* nice_name,int uid) {
-    hostUid = uid;
+void rprocess::Init(char* nice_name,uid_t uid,gid_t gid) {
+    currentUid = uid;
     processName = nice_name;
-
+    this->gid = gid;
 }
 
 
@@ -56,7 +59,6 @@ bool rprocess::InitModuleInfo() {
         jstring element = static_cast<jstring>(env->CallObjectMethod(config, ArrayList_get_method,i));
         string appinfo = env->GetStringUTFChars(element,0);
         vector<string> vectorApp = string_split(appinfo,":");
-
         string source = vectorApp[0];
         string pkgName = "";
         string Entry_class = vectorApp[1];
@@ -64,11 +66,9 @@ bool rprocess::InitModuleInfo() {
         size_t startPost = source.find(bask);
 #ifdef __aarch64__
         string NativelibPath = source.replace(startPost,bask.length(),"lib/arm64");
-
 #else
         string NativelibPath = source.replace(startPost,bask.length(),"lib/arm");
 #endif
-
         AppinfoNative* appinfoNative = new AppinfoNative(source,pkgName,NativelibPath,Entry_class,Entry_method);
         AppinfoNative_vec.push_back(appinfoNative);
 
@@ -83,7 +83,6 @@ void rprocess::setAUTHORITY(char* arg_tmp){
     LOGE("UID: %d",hostUid);
     providerHost_pkgName=arg[1];
     LOGE("UID: %s",providerHost_pkgName.c_str());
-
     AUTHORITY =arg[2];
     LOGE("AUTHORITY: %s",AUTHORITY.c_str());
 
@@ -96,19 +95,9 @@ bool rprocess::LoadModule(JNIEnv *env){
         load_apk_And_exe_Class_Method(env, RxposedContext, appinfoNativeVec);
     }
 
-
     return true;
 }
 
-jobject rprocess::getRxposedContext(JNIEnv *env)
-{
-
-//            return
-//
-
-
-    return getSystemContext(env);
-}
 
 bool rprocess::is_isIsolatedProcess() {
     DEBUG();
@@ -120,6 +109,7 @@ bool rprocess::is_isIsolatedProcess() {
 
 bool rprocess::Enable() {
     DEBUG()
+    LOGE("hostUid = %d currentUid = %d packaName = %s gid =%d",hostUid,currentUid,processName.c_str(),gid);
     if( hostUid != currentUid){
         if(rprocess::GetInstance()->is_isIsolatedProcess()) {
             return false;

@@ -26,11 +26,8 @@ void InjectApp::LoadExternApk(char *arg) {
 
 bool hookinit(JNIEnv *env){
 
-
     jclass  Process_cls = env->FindClass("android/os/Process");
-
     DEBUG();
-
     jmethodID javamethod = env->GetStaticMethodID(Process_cls,"getUidForName", "(Ljava/lang/String;)I");
     DEBUG();
 

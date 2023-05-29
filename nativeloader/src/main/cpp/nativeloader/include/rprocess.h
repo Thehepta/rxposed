@@ -28,9 +28,8 @@ public:
     {
     }
 
-    void Init(char* nice_name,int uid);
+    void Init(char* nice_name,uid_t uid,gid_t gid);
     bool LoadModule(JNIEnv *env);
-    jobject getRxposedContext(JNIEnv *env);
     bool InitModuleInfo();
     bool is_Load(JNIEnv* env,char * name);
     bool is_isIsolatedProcess();
@@ -47,8 +46,9 @@ private:
     rprocess();
     string processName;
     jobject RxposedContext;
-    int hostUid;
-    int currentUid;
+    uid_t hostUid;
+    gid_t gid;
+    uid_t currentUid;
     string AUTHORITY;
     string providerHost_pkgName;
 };

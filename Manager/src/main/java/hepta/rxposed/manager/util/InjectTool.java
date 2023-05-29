@@ -81,11 +81,12 @@ public  class InjectTool {
 
 
     public static boolean zygote_patrace() throws IOException {
+        int uid = context.getApplicationInfo().uid;
 
         //修改函数或者参数，记得修改符号
 //        String cmd = InjectTool_arm64_path+" -n zygote64 -so "+ injectSo+" -symbols _Z9dobby_strPKc com.rxposed.qmulkt:com.rxposed.qmulkt.Provider";
 
-        String cmd_arm64 = InjectTool_arm64_path+" -n zygote64 -so "+ InjectSo_arm64_path+" -symbols _Z9dobby_strPKc "+InjectArg;
+        String cmd_arm64 = InjectTool_arm64_path+" -n zygote64 -so "+ InjectSo_arm64_path+" -symbols _Z14Ptrace_ZygotesPKc "+uid+":"+InjectArg;
 //        String cmd_armv7 = InjectTool_armv7_path+" -n zygote -so "  + InjectSo_armv7_path+" -symbols _Z9dobby_strPKc "+InjectArg;
         Log.d("rzx",cmd_arm64);
 //        Log.d("rzx",cmd_armv7);

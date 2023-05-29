@@ -340,8 +340,7 @@ int init_inject(int argc, char *argv[]){
     }
     printf("[+] lib_path = %s\n",process_inject.lib_path);
     int re = inject_remote_process(process_inject.pid, process_inject.lib_path, process_inject.func_symbols, process_inject.func_args);
-
-
+    sleep(1);
     // 如果原SELinux状态为严格 则恢复状态
     if (strcmp(process_inject.orig_selinux,"Enforcing") == 0){
         if (set_selinux_state(1)){
