@@ -132,7 +132,7 @@ AppinfoNative* GetPmAppInfoNative(JNIEnv *env, jobject android_Context, string p
 
 void load_apk_And_exe_Class_Method(JNIEnv *pEnv, jobject android_context,AppinfoNative *appinfoNativeVec) {
 
-    LOGE("enbale pkgName:%s ",appinfoNativeVec->pkgName.c_str());
+    LOGE("enbale pkgName:%s ",appinfoNativeVec->source.c_str());
     jstring apk = pEnv->NewStringUTF(appinfoNativeVec->source.c_str());
     jstring dexOutput = nullptr;
     jstring nativelib = pEnv->NewStringUTF(appinfoNativeVec->NativelibPath.c_str());
@@ -178,19 +178,23 @@ void load_apk_And_exe_Class_Method(JNIEnv *pEnv, jobject android_context,Appinfo
 //    Method native_hook = clazz.getMethod("native_hook");
     LOGE("invoke method_name=%s ",appinfoNativeVec->Entry_method.c_str());
     jmethodID call_method_mth = pEnv->GetStaticMethodID(static_cast<jclass>(entryClass_obj), appinfoNativeVec->Entry_method.c_str(), "(Landroid/content/Context;)V");
-
+    DEBUG();
 //调用java反射方法进行调用的，但是传参数比较麻烦
 //    entryMethod_obj = pEnv->CallObjectMethod(entryClass_obj, getmethod_method, method_name,JAAR);
     if(pEnv->ExceptionCheck()){
         goto out2;
     }
+    DEBUG();
+
 //    native_hook.invoke(clazz);
 //    pEnv->CallObjectMethod(entryMethod_obj, invoke_met, entryClass_obj,JAAR);
     pEnv->CallStaticVoidMethod(static_cast<jclass>(entryClass_obj), call_method_mth,android_context);
+    DEBUG();
     if(pEnv->ExceptionCheck()){
 
     }
-    out2:
+    DEBUG();
+out2:
     pEnv->ExceptionDescribe();
     pEnv->ExceptionClear();//清除引发的异常，在Java层不会打印异常堆栈信息，如果不清除，后面的调用ThrowNew抛出的异常堆栈信息会
 //    pEnv->DeleteLocalRef(entryMethod_obj);
@@ -469,7 +473,7 @@ jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,strin
         auto AttributionSource_class = env->FindClass("android/content/AttributionSource");
         jmethodID AttributionSource_init = env->GetMethodID(AttributionSource_class, "<init>","(ILjava/lang/String;Ljava/lang/String;)V");
         jint uid = env->CallStaticIntMethod(Binder_class,Binder_getCallingUid);
-        auto  attributionSourceObj = env->NewObject(AttributionSource_class,AttributionSource_init,uid,root_jstring,nullptr);
+        auto  attributionSourceObj = env->NewObject(AttributionSource_class,AttributionSource_init,uid,j_callingPkg,nullptr);
 
         auto IContentProvider_call_method = env->GetMethodID(IContentProvider_class,"call","(Landroid/content/AttributionSource;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroid/os/Bundle;)Landroid/os/Bundle;");
         ret_bundle = env->CallObjectMethod(provider_IContentProviderObj,IContentProvider_call_method, attributionSourceObj,j_AUTHORITY,j_method,j_processName,mExtras_BundleObj);

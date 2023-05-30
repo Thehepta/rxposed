@@ -86,42 +86,21 @@ public class RxConfigProvider extends ContentProvider {
         Bundle bundle = new Bundle();
         Log.e("getRxConfig","method:"+method);
         Log.e("getRxConfig","ProcessName:"+ProcessName);
-        Log.e("getCallingPackage","getCallingPackage:"+getCallingPackage());
 
-
-        bundle.putString("enableUidList", "fewfewfewfewfewfewfew");
-//        if(method.equals("appinfo")){
-//
-//            try {
-//                 ApplicationInfo applicationInfo =  RxposedApp.getInstance().getBaseContext().getPackageManager().getApplicationInfo(ProcessName, PackageManager.GET_META_DATA);
-//                 String apk_path = applicationInfo.sourceDir;
-//                 String apk_native_lib = applicationInfo.nativeLibraryDir;
-//                 String entry_class = applicationInfo.metaData.getString("rxposed_clsentry");
-//                 String entry_method = applicationInfo.metaData.getString("rxposed_mtdentry");
-//                bundle.putString("apk_path", apk_path);
-//                bundle.putString("apk_native_lib", apk_native_lib);
-//                bundle.putString("rxposed_clsentry", entry_class);
-//                bundle.putString("rxposed_mtdentry", entry_method);
-//                return bundle;
-//            } catch (PackageManager.NameNotFoundException e) {
-//                throw new RuntimeException(e);
-//            }
-//
-//        }else {
-        String callName = getCallingPackage();
-        List<Integer> uidList = ExtenInfoProvider.getInstance().getConfigToUidList(callName,getContext().getPackageManager());
+        List<Integer> uidList = ExtenInfoProvider.getInstance().getConfigToUidList(ProcessName,getContext().getPackageManager());
         ArrayList<String> stringList = new ArrayList<>();
-        int i = 0;
+        PackageManager pm = RxposedApp.getInstance().getBaseContext().getPackageManager();
         for(int uid:uidList ){
-            i++;
             try {
-                ApplicationInfo applicationInfo =  RxposedApp.getInstance().getBaseContext().getPackageManager().getApplicationInfo(ProcessName, PackageManager.GET_META_DATA);
+                String nameForUid =  pm.getNameForUid(uid);
+                ApplicationInfo applicationInfo = pm.getApplicationInfo(nameForUid,PackageManager.GET_META_DATA);
                 String apk_path = applicationInfo.sourceDir;
                 String entry_class = applicationInfo.metaData.getString("rxposed_clsentry");
                 String entry_method = applicationInfo.metaData.getString("rxposed_mtdentry");
                 stringList.add(apk_path+":"+entry_class+":"+entry_method);
             } catch (PackageManager.NameNotFoundException e) {
-                throw new RuntimeException(e);
+//                throw new RuntimeException(e);
+                Log.e("getRxConfig","uid PackageManager$NameNotFoundException ");
             }
         }
         bundle.putStringArrayList("ModuleList", stringList);

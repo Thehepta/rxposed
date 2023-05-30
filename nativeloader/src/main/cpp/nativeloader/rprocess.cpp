@@ -34,7 +34,7 @@ rprocess * rprocess::instance_ =nullptr;
 
 void rprocess::Init(char* nice_name,uid_t uid,gid_t gid) {
     currentUid = uid;
-    processName = nice_name;
+    processName = strdup(nice_name);
     this->gid = gid;
 }
 
@@ -59,17 +59,19 @@ bool rprocess::InitModuleInfo() {
         jstring element = static_cast<jstring>(env->CallObjectMethod(config, ArrayList_get_method,i));
         string appinfo = env->GetStringUTFChars(element,0);
         vector<string> vectorApp = string_split(appinfo,":");
-        string source = vectorApp[0];
+        string source(vectorApp[0]);
         string pkgName = "";
         string Entry_class = vectorApp[1];
         string Entry_method = vectorApp[2];
         size_t startPost = source.find(bask);
 #ifdef __aarch64__
-        string NativelibPath = source.replace(startPost,bask.length(),"lib/arm64");
+        string NativelibPath = vectorApp[0].replace(startPost,bask.length(),"lib/arm64");
 #else
-        string NativelibPath = source.replace(startPost,bask.length(),"lib/arm");
+        string NativelibPath = vectorApp[0].replace(startPost,bask.length(),"lib/arm");
 #endif
-        AppinfoNative* appinfoNative = new AppinfoNative(source,pkgName,NativelibPath,Entry_class,Entry_method);
+        LOGE("source:%s",source.c_str());
+        LOGE("NativelibPath:%s",NativelibPath.c_str());
+        AppinfoNative* appinfoNative = new AppinfoNative(pkgName,source,NativelibPath,Entry_class,Entry_method);
         AppinfoNative_vec.push_back(appinfoNative);
 
     }
