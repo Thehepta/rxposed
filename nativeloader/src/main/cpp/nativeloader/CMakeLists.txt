@@ -38,6 +38,9 @@ add_library( # Sets the name of the library.
         SHARED
              # Provides a relative path to your source file(s).
         zygote_hook.cpp
+        InjectApp.cpp
+        tool.cpp
+        artmethod_native_hook.cpp
         rprocess.cpp
         )
 

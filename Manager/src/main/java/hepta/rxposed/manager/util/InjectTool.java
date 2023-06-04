@@ -39,6 +39,11 @@ public  class InjectTool {
     public static int arch_armv8=64;
     public static String InjectArg = HostName+":"+HostProviderName;
     public static Context context = null;
+    private static String InjectTool_arm64_path;
+    private static String InjectTool_armv7_path;
+    private static String InjectSo_arm64_path;
+    private static String InjectSo_armv7_path;
+
     public static void zygote_reboot() throws IOException {
         rootRun("killall zygote");
     }
@@ -47,6 +52,22 @@ public  class InjectTool {
     public static void init(){
         context = RxposedApp.getInstance().getApplicationContext();
         InjectTool.su_path = context.getSharedPreferences("rxposed",MODE_PRIVATE).getString("supath","su");
+
+        InjectTool_arm64_path = context.getFilesDir().getAbsolutePath()+ File.separator+arm64_InjectTool;
+        InjectTool_armv7_path = context.getFilesDir().getAbsolutePath()+ File.separator+armv7_InjectTool;
+        InjectSo_arm64_path   = context.getFilesDir().getAbsolutePath()+ File.separator+arm64_so;
+        InjectSo_armv7_path   = context.getFilesDir().getAbsolutePath()+ File.separator+armv7_so;
+
+        try {
+            InjectTool.copyAssetToDst(context,arm64_InjectTool,InjectTool_arm64_path);
+            Runtime.getRuntime().exec("chmod +x "+InjectTool_arm64_path);
+            InjectTool.copyAssetToDst(context,armv7_InjectTool,InjectTool_armv7_path);
+            Runtime.getRuntime().exec("chmod +x "+InjectTool_armv7_path);
+            InjectTool.copyAssetToDst(context,arm64_so,InjectSo_arm64_path);
+            InjectTool.copyAssetToDst(context,armv7_so,InjectSo_armv7_path);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
@@ -59,64 +80,48 @@ public  class InjectTool {
     }
 
 
-    public static boolean zygote_patrace(Context context) throws IOException {
-
-        String InjectTool_arm64_path = context.getFilesDir().getAbsolutePath()+ File.separator+arm64_InjectTool;
-        String InjectTool_armv7_path = context.getFilesDir().getAbsolutePath()+ File.separator+armv7_InjectTool;
-        String InjectSo_arm64_path   = context.getFilesDir().getAbsolutePath()+ File.separator+arm64_so;
-        String InjectSo_armv7_path   = context.getFilesDir().getAbsolutePath()+ File.separator+armv7_so;
-
-        InjectTool.copyAssetToDst(context,arm64_InjectTool,InjectTool_arm64_path);
-        Runtime.getRuntime().exec("chmod +x "+InjectTool_arm64_path);
-        InjectTool.copyAssetToDst(context,armv7_InjectTool,InjectTool_armv7_path);
-        Runtime.getRuntime().exec("chmod +x "+InjectTool_armv7_path);
-        InjectTool.copyAssetToDst(context,arm64_so,InjectSo_arm64_path);
-        InjectTool.copyAssetToDst(context,armv7_so,InjectSo_armv7_path);
+    public static boolean zygote_patrace() throws IOException {
+        int uid = context.getApplicationInfo().uid;
 
         //修改函数或者参数，记得修改符号
 //        String cmd = InjectTool_arm64_path+" -n zygote64 -so "+ injectSo+" -symbols _Z9dobby_strPKc com.rxposed.qmulkt:com.rxposed.qmulkt.Provider";
 
-        String cmd_arm64 = InjectTool_arm64_path+" -n zygote64 -so "+ InjectSo_arm64_path+" -symbols _Z9dobby_strPKc "+InjectArg;
-        String cmd_armv7 = InjectTool_armv7_path+" -n zygote -so "  + InjectSo_armv7_path+" -symbols _Z9dobby_strPKc "+InjectArg;
+        String cmd_arm64 = InjectTool_arm64_path+" -n zygote64 -so "+ InjectSo_arm64_path+" -symbols _Z14Ptrace_ZygotesPKc "+uid+":"+InjectArg;
+//        String cmd_armv7 = InjectTool_armv7_path+" -n zygote -so "  + InjectSo_armv7_path+" -symbols _Z9dobby_strPKc "+InjectArg;
         Log.d("rzx",cmd_arm64);
-        Log.d("rzx",cmd_armv7);
+//        Log.d("rzx",cmd_armv7);
 //        Runtime.getRuntime().exec("su "+cmd_arm64);
 
 //        rootRun("su","top");
         rootRun(cmd_arm64);
-        rootRun(cmd_armv7);
+//        rootRun(cmd_armv7);
         return  true;
     }
 
-    public static void Inject_Process(String PorcessName,String so_path)  {
 
+    // /data/user/0/hepta.rxposed.manager/files/arm64_InjectTool -p 4903 -so /data/user/0/hepta.rxposed.manager/files/arm64_libnativeloader.so -symbols _Z9Inject_ProcessPKc hepta.rxposed.manager.Provider;com.hep>                                                     <
+    public static void Inject_Process(int Pid,String package_list)  {
 
-
-    }
-
-    public static void Inject_Process(int Pid,String Inject_Arg)  {
+        String Inject_Arg = HostProviderName+":"+package_list;
         int arch = ByPidGetProcessArch(Pid);
         Log.e("Rzx","inject arch:"+arch);
         if(arch == arch_armv8){
-            String InjectTool_arm64_path = context.getFilesDir().getAbsolutePath()+ File.separator+arm64_InjectTool;
-            String InjectSo_arm64_path   = context.getFilesDir().getAbsolutePath()+ File.separator+arm64_so;
 
-            String cmd_arm64 = InjectTool_arm64_path+" -p "+Pid+" -so "+ InjectSo_arm64_path+" -symbols _Z9dobby_strPKc "+Inject_Arg;;
+            String cmd_arm64 = InjectTool_arm64_path+" -p "+Pid+" -so "+ InjectSo_arm64_path+" -symbols _Z14Inject_PorcessPKc "+Inject_Arg;;
+            Log.e("Rzx 64",cmd_arm64);
             rootRun(cmd_arm64);
         }else {
-            String InjectTool_armv7_path = context.getFilesDir().getAbsolutePath()+ File.separator+armv7_InjectTool;
-            String InjectSo_armv7_path   = context.getFilesDir().getAbsolutePath()+ File.separator+armv7_so;
 
-            String cmd_armv7 = InjectTool_armv7_path+" -p "+Pid+" -so "+ InjectSo_armv7_path+" -symbols _Z9Inject_ProcessPKc "+Inject_Arg;
+            String cmd_armv7 = InjectTool_armv7_path+" -p "+Pid+" -so "+ InjectSo_armv7_path+" -symbols _Z14Inject_PorcessPKc "+Inject_Arg;
+            Log.e("Rzx 32",cmd_armv7);
             rootRun(cmd_armv7);
         }
-
 
     }
 
     private static int ByPidGetProcessArch(int pid) {
-        String exe = rootRun("file /proc/"+pid+"/exe");
-        if(exe.contains("app_process64")){
+        String exe = rootRun("file -L /proc/"+pid+"/exe");
+        if(exe.contains("linker64")){
             return 64;
         }else {
             return 32;
@@ -196,7 +201,7 @@ public  class InjectTool {
             BufferedReader br;
             br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
             while ((is_line = br.readLine()) != null) {
-//                Log.d("InjectTool is ", is_line);
+                Log.d("InjectTool is ", is_line);
                 Result = Result+is_line+"\n";
             }
 

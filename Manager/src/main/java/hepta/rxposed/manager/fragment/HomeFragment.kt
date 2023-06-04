@@ -142,7 +142,7 @@ class HomeFragment : Fragment() {
             btn_activity?.setOnClickListener {
 
                 DialogUtil.DidalogSimple(requireContext(),R.string.activityMessage, {
-                    InjectTool.zygote_patrace(context)
+                    InjectTool.zygote_patrace()
                     DialogUtil.DidalogSimple(requireContext(),R.string.rxrebootMessage, {
                         InjectTool.Application_reboot()
                     })

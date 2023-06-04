@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.18.1)
 # The version number.
-set (Tutorial_VERSION_MAJOR 1)
-set (Tutorial_VERSION_MINOR 0)
 
 project("framework")
 

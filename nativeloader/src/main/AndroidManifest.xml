@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="hepta.rxposed.nativeloader">
+
+<!--    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"-->
+<!--        tools:ignore="QueryAllPackagesPermission" />-->
+
 
     <application
         android:allowBackup="true"
@@ -25,6 +30,21 @@
             android:enabled="true"
             android:isolatedProcess="true"
             android:exported="true" />
+
+
+        <meta-data
+            android:name="rxmodule"
+            android:value="true" />
+        <meta-data
+            android:name="rxposed_clsentry"
+            android:value="hepta.rxposed.loadxposed.XposedEntry" />
+
+        <meta-data
+            android:name="rxposed_mtdentry"
+            android:value="Entry" />
     </application>
+
+
+
 
 </manifest>

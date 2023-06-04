@@ -44,7 +44,20 @@ public class LoaderApplication extends Application{
             ApplicationPorcess();
         }
 
+        ndktext();
+    }
 
+    private void ndktext() {
+        ApplicationInfo applicationInfo = null;
+        try {
+            applicationInfo = this.getPackageManager().getApplicationInfo(currentName, PackageManager.GET_UNINSTALLED_PACKAGES|PackageManager.GET_META_DATA);
+        } catch (PackageManager.NameNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        String entry_class  = applicationInfo.metaData.getString("rxposed_clsentry");
+        String entry_method = applicationInfo.metaData.getString("rxposed_mtdentry");
+        boolean re =  ndk_GetAppInfoNative(currentName,entry_class,entry_method);
+        Log.e("Rzx","ndk_GetAppInfoNative:"+re);
     }
 
 
@@ -66,10 +79,9 @@ public class LoaderApplication extends Application{
 
     }
 
-    public static native Context getApplicationContext(String AppName);
+    public static native Context ndk_getApplicationContext(String AppName);
 
-    public static native void NDK_ExceptionCheckTest();
-
+    public static native boolean ndk_GetAppInfoNative(String AppName, String entry_class, String entry_method);
     static {
         Thread.dumpStack(); //测试代码位置
         System.loadLibrary(BuildConfig.SO_NAME);
@@ -85,10 +97,9 @@ public class LoaderApplication extends Application{
 
     private static void ApplicationPorcessInit() {
         Log.e(TAG,"current process is application");
-        // Context context = getApplicationContext("android.process.media"); //这个会崩溃，获取不到 applicationInfo
-        // Context context = getApplicationContext("hepta.rxposed.manager"); //通过非当前应用的包名获取context 不能发起provider请求
-        Context context = getApplicationContext(currentName);
-//        if(GetConfigByProvider(context)){
+
+//        Context context = ndk_getApplicationContext(currentName);
+//        if(GetRxposedProvider(context)){
 //
 //        }
 
@@ -99,7 +110,7 @@ public class LoaderApplication extends Application{
     }
 
     private  void ApplicationPorcess() {
-//        ActivityManager aM = (ActivityManager) getApplicationContext().getSystemService(android.content.Context.ACTIVITY_SERVICE);
+//        ActivityManager aM = (ActivityManager) CreateApplicationContext().getSystemService(android.content.Context.ACTIVITY_SERVICE);
 //
 //        List<ActivityManager.RunningAppProcessInfo> l = null;
 //
@@ -123,33 +134,8 @@ public class LoaderApplication extends Application{
         return android.os.Process.isIsolated();
     }
 
-    private static boolean GetConfigByProvider(Context context) {
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            Uri uri = Uri.parse("content://hepta.rxposed.manager.Provider");
-            ContentResolver contentResolver = context.getContentResolver();
-            Bundle bundle =contentResolver.call(uri,"getConfig",currentName,null);
-            String enableUidList_str =  bundle.getString("enableUidList");
-            Log.e("Rzx","enableUidList:"+enableUidList_str);
-            if(enableUidList_str.equals("null")){
-                Log.w(TAG," get RxConfigPrvider is null");
-                return true;
-            }
-            String[] app_vec =   enableUidList_str.split("\\|");
-            for(String app :app_vec){
-                String[] appinfo_vec = app.split(":");
 
-//                GetAppInfoNative(appinfo_vec)
-            }
-
-        }
-        Log.w(TAG," android version not support rxposed");
-        return true;
-    }
-
-    private static void GetAppInfoNative(String[] appinfo_vec) {
-
-    }
 
     //经过测试在android 9 可以用 android 10不可用
 
@@ -184,8 +170,7 @@ public class LoaderApplication extends Application{
         Object mActivityThread = currentActivityThread.invoke(null);
 
         Class<?> mCompatibilityInfoClass = Class.forName("android.content.res.CompatibilityInfo");
-        Method getLoadedApkMethod = mActivityThreadClass.getDeclaredMethod("getPackageInfoNoCheck",
-                ApplicationInfo.class, mCompatibilityInfoClass);
+        Method getLoadedApkMethod = mActivityThreadClass.getDeclaredMethod("getPackageInfoNoCheck", ApplicationInfo.class, mCompatibilityInfoClass);
 
         /*
              public static final CompatibilityInfo DEFAULT_COMPATIBILITY_INFO = new CompatibilityInfo() {};

@@ -7,12 +7,12 @@ plugins {
 
 android {
 
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         applicationId "hepta.rxposed.nativeloader"
         minSdk 28
-        targetSdk 32
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 
@@ -40,6 +40,7 @@ android {
         }
         debug {
             jniDebuggable true
+            debuggable true
         }
     }
     compileOptions {

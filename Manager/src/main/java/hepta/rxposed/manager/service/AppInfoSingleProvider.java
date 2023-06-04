@@ -30,7 +30,6 @@ public class AppInfoSingleProvider {
         for(PackageInfo info:packageInfos) {
             if(filterApp(info.applicationInfo)){
                 map_user_AppInfos.put(info.applicationInfo.uid,info);
-
             }else{
                 map_System_AppInfos.put(info.applicationInfo.uid,info);
             }

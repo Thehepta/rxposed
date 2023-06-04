@@ -11,8 +11,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.swift.sandhook.xposedcompat.XposedCompat;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,41 +19,40 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import dalvik.system.DexClassLoader;
-import de.robv.android.xposed.IXposedHookLoadPackage;
-import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XposedHelpers;
+import top.canyie.pine.Pine;
+import top.canyie.pine.callback.MethodHook;
+
 
 public class XposedEntry {
 
     private static final String TAG = "XposedEntry";
 
     static void Entry(Context context){
-        XposedCompat.cacheDir = context.getCacheDir();
-        XposedCompat.context = context;
-        XposedCompat.classLoader = context.getClassLoader();
-        Log.e(TAG, "loadxposed Entry");
-        Uri uri = Uri.parse("content://hepta.rxposed.loadxposed.Provider");
-        ContentResolver contentResolver = context.getContentResolver();
-        Bundle bundle =contentResolver.call(uri,"getConfig",context.getPackageName(),null);
-        String enableUidList_str =  bundle.getString("enableUidList");
-        if(enableUidList_str.equals("null")){
-            Log.w(TAG,"getloadxposedPrvider is null");
-            return ;
-        }
-        String[] app_vec = enableUidList_str.split("\\|");
-        for(String app :app_vec){
-            try {
-                ApplicationInfo applicationInfo =  context.getPackageManager().getApplicationInfo(app,0);
-                LoadApk(applicationInfo,context);
-            } catch (PackageManager.NameNotFoundException | IOException | ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
-        try {
-            XposedCompat.callXposedModuleInit();
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
+//        XposedCompat.context = context;
+//        XposedCompat.classLoader = context.getClassLoader();
+//        Log.e(TAG, "loadxposed Entry");
+//        Uri uri = Uri.parse("content://hepta.rxposed.loadxposed.Provider");
+//        ContentResolver contentResolver = context.getContentResolver();
+//        Bundle bundle =contentResolver.call(uri,"getConfig",context.getPackageName(),null);
+//        String enableUidList_str =  bundle.getString("enableUidList");
+//        if(enableUidList_str.equals("null")){
+//            Log.w(TAG,"getloadxposedPrvider is null");
+//            return ;
+//        }
+//        String[] app_vec = enableUidList_str.split("\\|");
+//        for(String app :app_vec){
+//            try {
+//                ApplicationInfo applicationInfo =  context.getPackageManager().getApplicationInfo(app,0);
+//                LoadApk(applicationInfo,context);
+//            } catch (PackageManager.NameNotFoundException | IOException | ClassNotFoundException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        try {
+//            XposedCompat.callXposedModuleInit();
+//        } catch (Throwable e) {
+//            e.printStackTrace();
+//        }
     }
 
     static Boolean LoadApk(ApplicationInfo applicationInfo, Context context) throws IOException, ClassNotFoundException
@@ -77,89 +74,84 @@ public class XposedEntry {
 
         ClassLoader mcl = XposedEntry.class.getClassLoader();  //需要用当前的classloader，不能用context 的classloader
         DexClassLoader XpApkClassLoader = new DexClassLoader(applicationInfo.sourceDir,null,applicationInfo.nativeLibraryDir,mcl);
-        while ((moduleClassName = moduleClassesReader.readLine()) != null) {
-            moduleClassName = moduleClassName.trim();
-            if (moduleClassName.isEmpty() || moduleClassName.startsWith("#"))
-                continue;
-            try {
-                Log.i(TAG, "Loading class " + moduleClassName);
-                Class<?> moduleClass = XpApkClassLoader.loadClass(moduleClassName);
-                final Object moduleInstance = moduleClass.newInstance();
-                if (moduleInstance instanceof IXposedHookLoadPackage) {
-                    Log.i(TAG, "XposedCompat addXposedModuleCallback " + moduleClassName);
-                    XposedCompat.addXposedModuleCallback((IXposedHookLoadPackage) moduleInstance);
-                }
-            }catch (Throwable t) {
-                Log.e(TAG, "    Failed to load class " + moduleClassName, t);
-            }
-        }
+//        while ((moduleClassName = moduleClassesReader.readLine()) != null) {
+//            moduleClassName = moduleClassName.trim();
+//            if (moduleClassName.isEmpty() || moduleClassName.startsWith("#"))
+//                continue;
+//            try {
+//                Log.i(TAG, "Loading class " + moduleClassName);
+//                Class<?> moduleClass = XpApkClassLoader.loadClass(moduleClassName);
+//                final Object moduleInstance = moduleClass.newInstance();
+//                if (moduleInstance instanceof IXposedHookLoadPackage) {
+//                    Log.i(TAG, "XposedCompat addXposedModuleCallback " + moduleClassName);
+//                    XposedCompat.addXposedModuleCallback((IXposedHookLoadPackage) moduleInstance);
+//                }
+//            }catch (Throwable t) {
+//                Log.e(TAG, "    Failed to load class " + moduleClassName, t);
+//            }
+//        }
         return true;
     }
 
     static void hook(Context context){
-        XposedCompat.cacheDir = context.getCacheDir();
-//for load xp module(sandvxp)
-        XposedCompat.context = context;
-        XposedCompat.classLoader = context.getClassLoader();
-//        XposedCompat.isFirstApplication= true;
-        XposedCompat.addXposedModuleCallback(new HookMain());
-        try {
-            Log.e("XposedCompat", "callXposedModuleInit:");
-            XposedCompat.callXposedModuleInit();
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
+//        XposedCompat.cacheDir = context.getCacheDir();
+////for load xp module(sandvxp)
+//        XposedCompat.context = context;
+//        XposedCompat.classLoader = context.getClassLoader();
+////        XposedCompat.isFirstApplication= true;
+//        XposedCompat.addXposedModuleCallback(new HookMain());
+//        try {
+//            Log.e("XposedCompat", "callXposedModuleInit:");
+//            XposedCompat.callXposedModuleInit();
+//        } catch (Throwable e) {
+//            e.printStackTrace();
+//        }
     }
 
     //nativeloader 工程 的activity会加载这个项目的apk，然后调用这个函数测试java hook  建议public，否则java层调用比较麻烦
     public static void LoadApk_text(Context context){
         Log.e("XposedCompat", "XposedEntry text");
 
-        XposedCompat.cacheDir = context.getCacheDir();
-//for load xp module(sandvxp)
-        XposedCompat.context = context;
-        XposedCompat.classLoader = context.getClassLoader();
-        XposedCompat.isFirstApplication= true;
-        XposedHelpers.findAndHookMethod(Activity.class, "onCreate", Bundle.class,new XC_MethodHook() {
-            @Override
-            protected void beforeHookedMethod(XC_MethodHook.MethodHookParam param) throws Throwable {
-                super.beforeHookedMethod(param);
-                Log.e("XposedCompat", "XposedEntry beforeHookedMethod: " + param.method.getName());
-            }
+        try {
+            Pine.hook(Activity.class.getDeclaredMethod("onCreate", Bundle.class),new MethodHook() {
+                @Override public void beforeCall(Pine.CallFrame callFrame) {
+                    Log.i("TAG", "Before " + callFrame.thisObject + " onCreate()");
+                }
 
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                super.afterHookedMethod(param);
-                Log.e("XposedCompat", "XposedEntry afterHookedMethod: " + param.method.getName());
-            }
-        });
+                @Override public void afterCall(Pine.CallFrame callFrame) {
+                    Log.i("TAG", "After " + callFrame.thisObject + " onCreate()");
+                }
+            });
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
     public static void hook_app_class_text(Context context){
         Log.e("XposedCompat", "entry XposedEntry hook_app_class_text");
 
-        XposedCompat.cacheDir = context.getCacheDir();
-//for load xp module(sandvxp)
-        XposedCompat.context = context;
-        XposedCompat.classLoader = context.getClassLoader();
-        XposedCompat.isFirstApplication= true;
-
-        XposedHelpers.findAndHookMethod("com.hepta.theptavpn.TheptaVapApp",context.getClassLoader(), "onCreate", new XC_MethodHook() {
-
-//        XposedHelpers.findAndHookMethod(Application.class, "onCreate",new XC_MethodHook() {
-            @Override
-            protected void beforeHookedMethod(XC_MethodHook.MethodHookParam param) throws Throwable {
-                super.beforeHookedMethod(param);
-                Log.e("XposedCompat", "XposedEntry beforeHookedMethod: " + param.method.getName());
-            }
-
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                super.afterHookedMethod(param);
-                Log.e("XposedCompat", "XposedEntry afterHookedMethod: " + param.method.getName());
-            }
-        });
+//        XposedCompat.cacheDir = context.getCacheDir();
+////for load xp module(sandvxp)
+//        XposedCompat.context = context;
+//        XposedCompat.classLoader = context.getClassLoader();
+//        XposedCompat.isFirstApplication= true;
+//
+//        XposedHelpers.findAndHookMethod("com.hepta.theptavpn.TheptaVapApp",context.getClassLoader(), "onCreate", new XC_MethodHook() {
+//
+////        XposedHelpers.findAndHookMethod(Application.class, "onCreate",new XC_MethodHook() {
+//            @Override
+//            protected void beforeHookedMethod(XC_MethodHook.MethodHookParam param) throws Throwable {
+//                super.beforeHookedMethod(param);
+//                Log.e("XposedCompat", "XposedEntry beforeHookedMethod: " + param.method.getName());
+//            }
+//
+//            @Override
+//            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+//                super.afterHookedMethod(param);
+//                Log.e("XposedCompat", "XposedEntry afterHookedMethod: " + param.method.getName());
+//            }
+//        });
     }
 }
 //D/SandHook: method <public void com.hepta.theptavpn.TheptaVapApp.onCreate()> hook <replacement> success!

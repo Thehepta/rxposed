@@ -8,6 +8,7 @@
 
 
     <LinearLayout
+        android:padding="15dp"
         android:layout_width="match_parent"
         android:orientation="vertical"
         android:layout_height="match_parent">
@@ -29,10 +30,33 @@
             android:text="loadapk" />
 
         <Button
+            android:id="@+id/nativeloadapk"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="nativeloadapk" />
+
+        <Button
+            android:id="@+id/text_rx_provider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="text_rx_provider" />
+
+        <Button
+            android:id="@+id/text_activitymanagle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="text_activitymanagle" />
+        <Button
             android:id="@+id/startact"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="start Activity" />
+
+        <Button
+            android:id="@+id/getnative"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="get java native method" />
     </LinearLayout>
 
 
