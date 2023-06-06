@@ -1,4 +1,4 @@
-package hepta.rxposed.manager.fragment.vpn;
+package hepta.rxposed.manager.fragment.check;
 
 import android.util.Log;
 import android.widget.CheckBox;

@@ -1,17 +1,17 @@
-package hepta.rxposed.manager.fragment.vpn
+package hepta.rxposed.manager.fragment.check
 
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.chad.library.adapter.base.entity.node.BaseNode
 import hepta.rxposed.manager.R
 import hepta.rxposed.manager.util.InjectTool
+import java.lang.reflect.Method
 import java.math.BigInteger
 import java.util.*
 
@@ -22,18 +22,15 @@ class VpnFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_vpn, container, false)
+        return inflater.inflate(R.layout.fragment_check, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val nodeAdapter = NodeAdapter()
-        val recyclerView = view.findViewById<RecyclerView>(R.id.rv_list)
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        recyclerView.adapter = nodeAdapter
-//        nodeAdapter.setList(entity())
-//        entity()
+
+
     }
+
 
 
     fun  entity() : Collection<BaseNode>? {

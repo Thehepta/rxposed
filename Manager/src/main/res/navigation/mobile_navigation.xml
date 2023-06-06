@@ -32,10 +32,10 @@
     </fragment>
 
     <fragment
-        android:id="@+id/vpn_dest"
-        android:name="hepta.rxposed.manager.fragment.vpn.VpnFragment"
-        android:label="@string/vpn"
-        tools:layout="@layout/fragment_vpn" />
+        android:id="@+id/check_dest"
+        android:name="hepta.rxposed.manager.fragment.check.checkFragment"
+        android:label="@string/check"
+        tools:layout="@layout/fragment_check" />
 
     <fragment
         android:id="@+id/processlist_dest"

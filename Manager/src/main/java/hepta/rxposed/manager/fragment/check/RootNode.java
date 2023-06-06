@@ -1,6 +1,5 @@
-package hepta.rxposed.manager.fragment.vpn;
+package hepta.rxposed.manager.fragment.check;
 
-import android.content.pm.ApplicationInfo;
 import android.graphics.drawable.Drawable;
 
 import androidx.annotation.Nullable;

@@ -56,7 +56,7 @@ class MainActivity : AppCompatActivity() {
 //        appBarConfiguration = AppBarConfiguration(navController.graph)
 
         val drawerLayout : DrawerLayout? = findViewById(R.id.drawer_layout)
-        appBarConfiguration = AppBarConfiguration(setOf(R.id.home_dest, R.id.processlist_dest, R.id.vpn_dest), drawerLayout)
+        appBarConfiguration = AppBarConfiguration(setOf(R.id.home_dest, R.id.processlist_dest, R.id.check_dest), drawerLayout)
 
         setupActionBar(navController, appBarConfiguration)
 

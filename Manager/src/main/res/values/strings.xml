@@ -38,7 +38,7 @@
     <string name="send_deep_link_notification_button">Send deep link notification</string>
     <string name="framework_active">Xposed Framework version  is active.</string>
     <string name="nav_header_desc">Navigation header</string>
-    <string name="vpn">vpn</string>
+    <string name="check">check</string>
     <string name="apps">applist</string>
     <string name="proces">process</string>
     <string name="zygote_reboot">zygote重启(root)</string>

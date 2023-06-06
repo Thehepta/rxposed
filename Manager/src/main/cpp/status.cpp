@@ -22,32 +22,6 @@ using namespace std;
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__)
 
 
-//注册函数映射
-JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
-    LOGD("JNI_OnLoad TEXT");
-
-    JNIEnv *pEnv = NULL;
-    //获取环境
-    jint ret = vm->GetEnv((void**) &pEnv, JNI_VERSION_1_6);
-    if (ret != JNI_OK) {
-        LOGE("jni_replace JVM ERROR:GetEnv");
-        return -1;
-    }
-    //返回java版本
-    return JNI_VERSION_1_6;
-}
-
-__unused __attribute__((constructor(101)))
-void constructor_101() { // __attribute__((constructor))修饰 最先执行 one
-    LOGD("constructor_101 TEXT");
-
-}
-
-__unused __attribute__((constructor(102)))
-void constructor_102() { // __attribute__((constructor))修饰 最先执行 two
-    LOGD("constructor_102 TEXT");
-
-}
 
 extern "C"
 JNIEXPORT jboolean JNICALL

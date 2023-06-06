@@ -1,4 +1,4 @@
-package hepta.rxposed.manager.fragment.vpn;
+package hepta.rxposed.manager.fragment.check;
 
 import android.graphics.drawable.Drawable;
 import android.view.View;

@@ -21,7 +21,7 @@
         android:icon="@drawable/ic_android"
         android:title="@string/inject" />
     <item
-        android:id="@id/vpn_dest"
+        android:id="@id/check_dest"
         android:icon="@drawable/ic_android"
-        android:title="@string/vpn" />
+        android:title="@string/check" />
 </menu>
