@@ -14,7 +14,18 @@
 #include <jni.h>
 #include <android/log.h>
 #include "debug.h"
+#include "dlext.h"
 using namespace std;
+
+
+
+static const char *getLibPath() {
+#ifndef __aarch64__
+    return "/system/lib/";
+#else
+    return "/system/lib64/";
+#endif
+}
 
 
 
@@ -56,6 +67,7 @@ AppinfoNative* GetPmAppInfoNative(JNIEnv *env, jobject android_Context, string p
 AppinfoNative* GetRxAppInfoNative(JNIEnv *env, jobject android_Context,string AUTHORITY,string pkgName);
 JNIEnv *Pre_GetEnv() ;
 bool hook_init_and_text(JNIEnv* env);
+void* dlsym_android_dlopen_ext(char* name);
 void * getJmethod_JniFunction(JNIEnv* env,jclass jclass1,jmethodID jmethodId);
 jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,string method ,string processName);
 #endif //RXPOSED_TOOL_H

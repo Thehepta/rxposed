@@ -42,6 +42,7 @@ add_library( # Sets the name of the library.
         tool.cpp
         artmethod_native_hook.cpp
         rprocess.cpp
+        check.cpp
         )
 
 

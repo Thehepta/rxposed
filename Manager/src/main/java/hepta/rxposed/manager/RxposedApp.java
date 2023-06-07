@@ -21,7 +21,7 @@ public class RxposedApp extends Application {
         super.onCreate();
 
         instance = this;
-//        initConfig();
+        initConfig();
 
 //        IntentFilter filter = new IntentFilter();
 //        filter.addAction(Intent.ACTION_PACKAGE_REMOVED);

@@ -103,19 +103,19 @@ int setreuid_hook(gid_t ruid, gid_t euid){
 void zygote_server_init() {
     JNIEnv* env = Pre_GetEnv();
     DEBUG();
-    void *android_os_Process_setArg_addr =  DobbySymbolResolver("","_Z27android_os_Process_setArgV0P7_JNIEnvP8_jobjectP8_jstring");
-    LOGE("android_os_Process_setArg_addr %p",android_os_Process_setArg_addr);
+//    void *android_os_Process_setArg_addr =  DobbySymbolResolver("","_Z27android_os_Process_setArgV0P7_JNIEnvP8_jobjectP8_jstring");
+//    LOGE("android_os_Process_setArg_addr %p",android_os_Process_setArg_addr);
 
-    void * setreuid = DobbySymbolResolver("","setreuid");
-    void * setresuid = DobbySymbolResolver("","setresuid");
-    void * setregid = DobbySymbolResolver("","setregid");
-    void * setresgid = DobbySymbolResolver("","setresgid");
-    fork_addr = DobbySymbolResolver("","fork");
-    DobbyHook(setregid,reinterpret_cast<dobby_dummy_func_t>(setregid_hook),reinterpret_cast<dobby_dummy_func_t *>(&setregid_org));
-    DobbyHook(setresgid,reinterpret_cast<dobby_dummy_func_t>(setregid_hook),reinterpret_cast<dobby_dummy_func_t *>(&setregid_org));
-    DobbyHook(setreuid,reinterpret_cast<dobby_dummy_func_t>(setreuid_hook),reinterpret_cast<dobby_dummy_func_t *>(&setreuid_org));
-    DobbyHook(setresuid,reinterpret_cast<dobby_dummy_func_t>(setreuid_hook),reinterpret_cast<dobby_dummy_func_t *>(&setreuid_org));
-    DobbyHook(fork_addr, reinterpret_cast<dobby_dummy_func_t>(fork_hook),reinterpret_cast<dobby_dummy_func_t *>(&fork_org));
+//    void * setreuid = DobbySymbolResolver("","setreuid");
+//    void * setresuid = DobbySymbolResolver("","setresuid");
+//    void * setregid = DobbySymbolResolver("","setregid");
+//    void * setresgid = DobbySymbolResolver("","setresgid");
+//    fork_addr = DobbySymbolResolver("","fork");
+//    DobbyHook(setregid,reinterpret_cast<dobby_dummy_func_t>(setregid_hook),reinterpret_cast<dobby_dummy_func_t *>(&setregid_org));
+//    DobbyHook(setresgid,reinterpret_cast<dobby_dummy_func_t>(setregid_hook),reinterpret_cast<dobby_dummy_func_t *>(&setregid_org));
+//    DobbyHook(setreuid,reinterpret_cast<dobby_dummy_func_t>(setreuid_hook),reinterpret_cast<dobby_dummy_func_t *>(&setreuid_org));
+//    DobbyHook(setresuid,reinterpret_cast<dobby_dummy_func_t>(setreuid_hook),reinterpret_cast<dobby_dummy_func_t *>(&setreuid_org));
+//    DobbyHook(fork_addr, reinterpret_cast<dobby_dummy_func_t>(fork_hook),reinterpret_cast<dobby_dummy_func_t *>(&fork_org));
 
     if(!hook_init_and_text(env)){
         LOGE("hook_init_and_text failed");

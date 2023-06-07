@@ -3,6 +3,7 @@
 //
 
 
+#include <dlfcn.h>
 #include "include/tool.h"
 #include "include/dobby.h"
 #include "include/artmethod_native_hook.h"
@@ -363,8 +364,11 @@ bool hook_init_and_text(JNIEnv* env){
 
     jclass  Process_cls = env->FindClass("android/os/Process");
     jmethodID javamethod = env->GetStaticMethodID(Process_cls,"getUidForName", "(Ljava/lang/String;)I");
-    jmethodID javamethod_setArgV0 = env->GetStaticMethodID(Process_cls,"setArgV0", "(Ljava/lang/String;)V");
-    void *getUidForName =  DobbySymbolResolver("","_Z32android_os_Process_getUidForNameP7_JNIEnvP8_jobjectP8_jstring");
+    void * libandroid_runtime =  dlopen("libandroid_runtime.so",RTLD_NOW);
+    void *getUidForName = dlsym(libandroid_runtime,"_Z32android_os_Process_getUidForNameP7_JNIEnvP8_jobjectP8_jstring");
+//    void *getUidForName =  DobbySymbolResolver("/system/lib64/libandroid_runtime.so","_Z32android_os_Process_getUidForNameP7_JNIEnvP8_jobjectP8_jstring");
+
+
     INIT_HOOK_PlatformABI(env, nullptr,javamethod,getUidForName,0x109);
 
     uintptr_t * art_javamethod_method = static_cast<uintptr_t *>(GetArtMethod(env, Zygote_cls,javamethod));
@@ -377,6 +381,11 @@ bool hook_init_and_text(JNIEnv* env){
     }
 
 }
+void* dlsym_android_dlopen_ext(char* name){
+
+    return nullptr;
+}
+
 void * getJmethod_JniFunction(JNIEnv* env,jclass jclass1,jmethodID jmethodId){
 
 
@@ -479,6 +488,7 @@ jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,strin
         ret_bundle = env->CallObjectMethod(provider_IContentProviderObj,IContentProvider_call_method, attributionSourceObj,j_AUTHORITY,j_method,j_processName,mExtras_BundleObj);
 
     } else{
+
         auto IContentProvider_call_method = env->GetMethodID(IContentProvider_class,"call","(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroid/os/Bundle;)Landroid/os/Bundle;");
         ret_bundle = env->CallObjectMethod(provider_IContentProviderObj,IContentProvider_call_method, j_callingPkg,
                                                    nullptr,j_AUTHORITY,j_method,j_processName,mExtras_BundleObj);

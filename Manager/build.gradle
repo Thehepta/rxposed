@@ -101,22 +101,21 @@ android {
         enabled = true
     }
 
-//    android.applicationVariants.all { variant ->
-//        variant.outputs.each { variantOutput ->
-//            println("applicationVariants.name----------------${variant.name}")
-////            println("applicationVariants.description----------------${variant.description}")
-////            println("applicationVariants.mergeAssets----------------${variant.mergeAssets}")
-////            println("applicationVariants.name----------------${variant.mergeAssets.name}")
-//
-//            variant.mergeAssetsProvider.get().doLast {
-//                println("mergeAssetsProvider.name----------------${variant.name}")
+    android.applicationVariants.all { variant ->
+        variant.outputs.each { variantOutput ->
+            println("applicationVariants.name----------------${variant.name}")
+//            println("applicationVariants.description----------------${variant.description}")
+//            println("applicationVariants.mergeAssets----------------${variant.mergeAssets}")
+//            println("applicationVariants.name----------------${variant.mergeAssets.name}")
+
+            variant.mergeAssetsProvider.get().doLast {
+                println("mergeAssetsProvider.name----------------${variant.name}")
 //                build_Module_copy_file(variant.name,"nativeloader","${Rxposed_Inject_So_name}")
-//                build_Module_copy_file(variant.name,"Tool","InjectTool")
-//
-//            }
-//
-//        }
-//    }
+                build_Module_copy_file(variant.name,"Tool","InjectTool")
+
+            }
+        }
+    }
 }
 
 

@@ -12,6 +12,7 @@ int (*system_property_get_org)( char*, char *);
 
 int system_property_get_call(char* name , char *value){
     int re;
+    LOGE("system_property_get_call:%s",name);
     if(!strncmp(name,"rxposed_activity", strlen("rxposed_activity"))){
         re = strlen("true");
         memcpy(value, "true", strlen("true"));

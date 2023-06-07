@@ -73,7 +73,6 @@ bool rprocess::InitModuleInfo() {
         LOGE("NativelibPath:%s",NativelibPath.c_str());
         AppinfoNative* appinfoNative = new AppinfoNative(pkgName,source,NativelibPath,Entry_class,Entry_method);
         AppinfoNative_vec.push_back(appinfoNative);
-
     }
     return true;
 }
@@ -119,8 +118,8 @@ bool rprocess::Enable() {
         rprocess::GetInstance()->InitModuleInfo();
         return true;
     } else{
-        void *system_property_get_addr = DobbySymbolResolver (nullptr, "__system_property_get");
-        DobbyHook((void *)system_property_get_addr, (void *)system_property_get_call, (void **)&system_property_get_org);
+//        void *system_property_get_addr = DobbySymbolResolver (nullptr, "__system_property_get");
+//        DobbyHook((void *)system_property_get_addr, (void *)system_property_get_call, (void **)&system_property_get_org);
         return false;
     }
 

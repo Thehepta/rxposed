@@ -102,6 +102,5 @@ Java_hepta_rxposed_nativeloader_MainActivity_getjavaJniMethod(JNIEnv *env, jobje
                                                               jstring appname) {
 
     DEBUG();
-    hookinit(env);
 
 }
