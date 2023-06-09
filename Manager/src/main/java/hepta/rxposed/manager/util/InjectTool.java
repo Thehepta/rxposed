@@ -48,7 +48,7 @@ public  class InjectTool {
     public static int arch_armv7=32;
     public static int arch_armv8=64;
     public static String InjectArg = HostName+":"+HostProviderName;
-    public static Context context = null;
+    public static Context context = RxposedApp.getRxposedContext();
     private static String InjectTool_arm64_path;
     private static String InjectTool_armv7_path;
     private static String InjectSo_arm64_path;
@@ -60,11 +60,9 @@ public  class InjectTool {
 
 
     public static void init(){
-        context = RxposedApp.getInstance().getApplicationContext();
         unziplib(context.getApplicationInfo().sourceDir,context.getFilesDir().getAbsolutePath()+ File.separator);
 
         InjectTool.su_path = context.getSharedPreferences("rxposed",MODE_PRIVATE).getString("supath","su");
-//
         InjectTool_arm64_path = context.getFilesDir().getAbsolutePath()+ File.separator+"assets/"+arm64_InjectTool;
         InjectTool_armv7_path = context.getFilesDir().getAbsolutePath()+ File.separator+"assets/"+armv7_InjectTool;
         InjectSo_arm64_path = context.getFilesDir().getAbsolutePath()+ File.separator+"lib/arm64-v8a/"+arm64_so;
@@ -76,7 +74,6 @@ public  class InjectTool {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
         Log.e("Rzx",InjectTool_arm64_path);
         Log.e("Rzx",InjectTool_armv7_path);
         Log.e("Rzx",InjectSo_armv7_path);
@@ -97,18 +94,11 @@ public  class InjectTool {
     public static boolean zygote_patrace() throws IOException {
         int uid = context.getApplicationInfo().uid;
 
-        //修改函数或者参数，记得修改符号
-//        String cmd = InjectTool_arm64_path+" -n zygote64 -so "+ injectSo+" -symbols _Z9dobby_strPKc com.rxposed.qmulkt:com.rxposed.qmulkt.Provider";
-
         String cmd_arm64 = InjectTool_arm64_path+" -n zygote64 -so "+ InjectSo_arm64_path+" -symbols _Z14Ptrace_ZygotesPKc "+uid+":"+InjectArg;
         String cmd_armv7 = InjectTool_armv7_path+" -n zygote -so "  + InjectSo_armv7_path+" -symbols _Z14Ptrace_ZygotesPKc "+uid+":"+InjectArg;
-        Log.d("rzx",cmd_arm64);
-//        Log.d("rzx",cmd_armv7);
-//        Runtime.getRuntime().exec("su "+cmd_arm64);
-
-//        rootRun("su","top");
         rootRun(cmd_arm64);
-//        rootRun(cmd_armv7);
+        Log.e("inject","----------------------------------------");
+        rootRun(cmd_armv7);
         return  true;
     }
 
@@ -221,80 +211,6 @@ public  class InjectTool {
     }
 
 
-
-
-    public static boolean unzipFile(String zipPath ,String destDir) {
-        try {
-            File file = new File(destDir);
-            // 如果目标目录不存在，则创建
-            if (!file.exists()) {
-                file.mkdirs();
-            }
-            // 打开压缩文件
-            InputStream inputStream = Files.newInputStream(Paths.get(zipPath));
-
-            ZipInputStream zipInputStream = new ZipInputStream(inputStream);
-
-            // 读取一个进入点
-            ZipEntry zipEntry = zipInputStream.getNextEntry();
-            // 使用1Mbuffer
-            byte[] buffer = new byte[1024 * 1024];
-            // 解压时字节计数
-            int count = 0;
-            // 如果进入点为空说明已经遍历完所有压缩包中文件和目录
-            while (zipEntry != null) {
-                if(zipEntry.getName().contains("arm64-v8a/libnativeloader.so")){
-                    Log.e("rzx",zipEntry.getName());
-                    String fileName = zipEntry.getName();
-                    fileName = "arm64-v8a_"+fileName.substring(fileName.lastIndexOf("/") + 1);  //截取文件的名字 去掉原文件夹名字
-                    file = new File(destDir + File.separator + fileName);  //放到新的解压的文件路径
-                    file.createNewFile();
-                    FileOutputStream fileOutputStream = new FileOutputStream(file);
-                    while ((count = zipInputStream.read(buffer)) > 0) {
-                        fileOutputStream.write(buffer, 0, count);
-                    }
-                    fileOutputStream.close();
-
-                }
-//                if(zipEntry.getName().contains("libnativeloader.so")){
-//                    Log.e("rzx",zipEntry.getName());
-//                    String fileName = zipEntry.getName();
-//                    fileName = fileName.substring(fileName.lastIndexOf("/") + 1);  //截取文件的名字 去掉原文件夹名字
-//                }
-//                Log.e("whh0927", "解压文件 入口 1： " + zipEntry);
-//                if (zipEntry.isDirectory()) {  //如果是一个文件
-                    // 如果是文件
-//                    String fileName = zipEntry.getName();
-////                    Log.e("whh0927", "解压文件 原来 文件的位置： " + fileName);
-//                    fileName = fileName.substring(fileName.lastIndexOf("/") + 1);  //截取文件的名字 去掉原文件夹名字
-////                    Log.e("whh0927", "解压文件 的名字： " + fileName);
-//                    file = new File(tempFileName + File.separator + fileName);  //放到新的解压的文件路径
-//
-//                    file.createNewFile();
-//                    FileOutputStream fileOutputStream = new FileOutputStream(file);
-//                    while ((count = zipInputStream.read(buffer)) > 0) {
-//                        fileOutputStream.write(buffer, 0, count);
-//                    }
-//                    fileOutputStream.close();
-
-
-//                }
-
-                // 定位到下一个文件入口
-                zipEntry = zipInputStream.getNextEntry();
-//                Log.e("whh0927", "解压文件 入口 2： " + zipEntry);
-            }
-            zipInputStream.close();
-//            FileUtils.deleteFile(new File(zipPath)); //删除原文件
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            Log.e("whh0927", "unzipFile Exception" + e.toString());
-            return false;
-        }
-
-    }
-
         public static String shell(String cmd){
         try {
             Process process = Runtime.getRuntime().exec(cmd);
@@ -314,7 +230,7 @@ public  class InjectTool {
 
     public static String rootRun(String cmd)
     {
-
+        Log.e("Rzx",cmd);
         String Result  ="";
         try {
             // 申请获取root权限

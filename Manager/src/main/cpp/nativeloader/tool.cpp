@@ -7,6 +7,7 @@
 #include "include/tool.h"
 #include "include/dobby.h"
 #include "include/artmethod_native_hook.h"
+#include "include/FunHook.h"
 
 
 vector<string> string_split(string str,string pattern)
@@ -131,6 +132,62 @@ AppinfoNative* GetPmAppInfoNative(JNIEnv *env, jobject android_Context, string p
 }
 
 
+void load_apk_And_exe_Class_Method_13(JNIEnv *pEnv, jobject android_context,AppinfoNative *appinfoNativeVec) {
+
+    LOGE("enbale pkgName:%s ",appinfoNativeVec->source.c_str());
+    jstring apk = pEnv->NewStringUTF(appinfoNativeVec->source.c_str());
+    jstring nativelib = pEnv->NewStringUTF(appinfoNativeVec->NativelibPath.c_str());
+    jstring class_name = pEnv->NewStringUTF(appinfoNativeVec->Entry_class.c_str());
+    jclass DexClassLoader_cls = pEnv->FindClass("dalvik/system/PathClassLoader");
+    jmethodID init = pEnv->GetMethodID(DexClassLoader_cls, "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/ClassLoader;)V");
+    jclass ClassLoader_cls = pEnv->FindClass("java/lang/ClassLoader");
+    jmethodID ClassLoader_getSystemClassLoader_cls = pEnv->GetStaticMethodID(ClassLoader_cls, "getSystemClassLoader", "()Ljava/lang/ClassLoader;");
+    jmethodID Class_loadClass_method = pEnv->GetMethodID(ClassLoader_cls, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
+    jobject entryClass_obj = nullptr;
+
+
+    jobject SystemClassLoader_obj = pEnv->CallStaticObjectMethod(ClassLoader_cls,ClassLoader_getSystemClassLoader_cls);
+    jobject ApkClassLoader = pEnv->NewObject(DexClassLoader_cls,init,apk,nativelib,SystemClassLoader_obj);
+
+    if(pEnv->ExceptionCheck()){
+//        goto out2;
+    }
+//    Class clazz = dexClassLoader.loadClass(name);
+    LOGE("loadclass Entry_class=%s ",appinfoNativeVec->Entry_class.c_str());
+    entryClass_obj = pEnv->CallObjectMethod(ApkClassLoader, Class_loadClass_method, class_name);
+    if(pEnv->ExceptionCheck()){
+//        goto out2;
+    }
+//    Method native_hook = clazz.getMethod("native_hook");
+    LOGE("invoke method_name=%s ",appinfoNativeVec->Entry_method.c_str());
+    jmethodID call_method_mth = pEnv->GetStaticMethodID(static_cast<jclass>(entryClass_obj), appinfoNativeVec->Entry_method.c_str(), "(Landroid/content/Context;Ljava/lang/String;)V");
+    DEBUG();
+//调用java反射方法进行调用的，但是传参数比较麻烦
+//    entryMethod_obj = pEnv->CallObjectMethod(entryClass_obj, getmethod_method, method_name,JAAR);
+    if(pEnv->ExceptionCheck()){
+        goto out2;
+    }
+    DEBUG();
+
+//    native_hook.invoke(clazz);
+//    pEnv->CallObjectMethod(entryMethod_obj, invoke_met, entryClass_obj,JAAR);
+    pEnv->CallStaticVoidMethod(static_cast<jclass>(entryClass_obj), call_method_mth,android_context,apk);
+    DEBUG();
+    if(pEnv->ExceptionCheck()){
+
+    }
+    DEBUG();
+    out2:
+    pEnv->ExceptionDescribe();
+    pEnv->ExceptionClear();//清除引发的异常，在Java层不会打印异常堆栈信息，如果不清除，后面的调用ThrowNew抛出的异常堆栈信息会
+//    pEnv->DeleteLocalRef(entryMethod_obj);
+    pEnv->DeleteLocalRef(SystemClassLoader_obj);
+    pEnv->DeleteLocalRef(ApkClassLoader);
+    pEnv->DeleteLocalRef(entryClass_obj);
+}
+
+
+
 void load_apk_And_exe_Class_Method(JNIEnv *pEnv, jobject android_context,AppinfoNative *appinfoNativeVec) {
 
     LOGE("enbale pkgName:%s ",appinfoNativeVec->source.c_str());
@@ -250,7 +307,7 @@ jobject GetRxposedProvider(JNIEnv *env, jobject android_Context , string& AUTHOR
 
 
 JNIEnv *Pre_GetEnv() {
-    void*getAndroidRuntimeEnv = DobbySymbolResolver("libandroid_runtime.so", "_ZN7android14AndroidRuntime9getJNIEnvEv");
+    void*getAndroidRuntimeEnv = get_AndroidRuntimeGetEnv_addr();
     return ((JNIEnv*(*)())getAndroidRuntimeEnv)();
 }
 
@@ -364,10 +421,7 @@ bool hook_init_and_text(JNIEnv* env){
 
     jclass  Process_cls = env->FindClass("android/os/Process");
     jmethodID javamethod = env->GetStaticMethodID(Process_cls,"getUidForName", "(Ljava/lang/String;)I");
-    void * libandroid_runtime =  dlopen("libandroid_runtime.so",RTLD_NOW);
-    void *getUidForName = dlsym(libandroid_runtime,"_Z32android_os_Process_getUidForNameP7_JNIEnvP8_jobjectP8_jstring");
-//    void *getUidForName =  DobbySymbolResolver("/system/lib64/libandroid_runtime.so","_Z32android_os_Process_getUidForNameP7_JNIEnvP8_jobjectP8_jstring");
-
+    void *getUidForName =  get_getUidForName_addr();
 
     INIT_HOOK_PlatformABI(env, nullptr,javamethod,getUidForName,0x109);
 
@@ -380,10 +434,6 @@ bool hook_init_and_text(JNIEnv* env){
         return false;
     }
 
-}
-void* dlsym_android_dlopen_ext(char* name){
-
-    return nullptr;
 }
 
 void * getJmethod_JniFunction(JNIEnv* env,jclass jclass1,jmethodID jmethodId){
@@ -438,7 +488,7 @@ void find_class_method(JNIEnv* env){
 
 
 
-jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,string method ,string processName){
+jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,string method ,string uid){
 //    JNIEnv* env = Pre_GetEnv();
     jclass ServiceManager_cls = env->FindClass("android/app/ActivityManager");
     auto IActivityManager_class = env->FindClass("android/app/IActivityManager");
@@ -462,7 +512,7 @@ jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,strin
     jstring tag_jstring = env->NewStringUTF("*cmd*");
     jstring j_callingPkg = env->NewStringUTF(callName.c_str());
     jstring j_method = env->NewStringUTF(method.c_str());
-    jstring j_processName = env->NewStringUTF(processName.c_str());
+    jstring j_uid = env->NewStringUTF(uid.c_str());
     auto token_ibinderObj = env->NewObject(Binder_class,Binder_init);
     auto mExtras_BundleObj = env->NewObject(Bundle_class,Bundle_init);
 
@@ -485,13 +535,13 @@ jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,strin
         auto  attributionSourceObj = env->NewObject(AttributionSource_class,AttributionSource_init,uid,j_callingPkg,nullptr);
 
         auto IContentProvider_call_method = env->GetMethodID(IContentProvider_class,"call","(Landroid/content/AttributionSource;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroid/os/Bundle;)Landroid/os/Bundle;");
-        ret_bundle = env->CallObjectMethod(provider_IContentProviderObj,IContentProvider_call_method, attributionSourceObj,j_AUTHORITY,j_method,j_processName,mExtras_BundleObj);
+        ret_bundle = env->CallObjectMethod(provider_IContentProviderObj, IContentProvider_call_method, attributionSourceObj, j_AUTHORITY, j_method, j_uid, mExtras_BundleObj);
 
     } else{
 
         auto IContentProvider_call_method = env->GetMethodID(IContentProvider_class,"call","(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroid/os/Bundle;)Landroid/os/Bundle;");
-        ret_bundle = env->CallObjectMethod(provider_IContentProviderObj,IContentProvider_call_method, j_callingPkg,
-                                                   nullptr,j_AUTHORITY,j_method,j_processName,mExtras_BundleObj);
+        ret_bundle = env->CallObjectMethod(provider_IContentProviderObj, IContentProvider_call_method, j_callingPkg,
+                                           nullptr, j_AUTHORITY, j_method, j_uid, mExtras_BundleObj);
     }
 
 //    jstring config = static_cast<jstring>(env->CallObjectMethod(ret_bundle, Bundle_getString_method,j_key));
@@ -526,7 +576,7 @@ jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,strin
     env->DeleteLocalRef(j_method);
 
     DEBUG()
-    env->DeleteLocalRef(j_processName);
+    env->DeleteLocalRef(j_uid);
     DEBUG()
 
     return ret_bundle;

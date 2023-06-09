@@ -82,16 +82,17 @@ public class RxConfigProvider extends ContentProvider {
 
     @Nullable
     @Override
-    public Bundle call(@NonNull String method, @Nullable String ProcessName, @Nullable Bundle extras) {
+    public Bundle call(@NonNull String method, @Nullable String arg_uid, @Nullable Bundle extras) {
         Bundle bundle = new Bundle();
-        Log.e("getRxConfig","method:"+method);
-        Log.e("getRxConfig","ProcessName:"+ProcessName);
+        Log.e("RxConfigProvider","method:"+method);
+        Log.e("RxConfigProvider","arg_uid:"+arg_uid);
 
-        List<Integer> uidList = ExtenInfoProvider.getInstance().getConfigToUidList(ProcessName,getContext().getPackageManager());
+        List<Integer> uidList = ExtenInfoProvider.getInstance().getConfigToUidList(arg_uid,getContext().getPackageManager());
         ArrayList<String> stringList = new ArrayList<>();
-        PackageManager pm = RxposedApp.getInstance().getBaseContext().getPackageManager();
+        PackageManager pm = RxposedApp.getRxposedContext().getPackageManager();
         for(int uid:uidList ){
             try {
+                Log.e("RxConfigProvider","enable:"+uid);
                 String nameForUid =  pm.getNameForUid(uid);
                 ApplicationInfo applicationInfo = pm.getApplicationInfo(nameForUid,PackageManager.GET_META_DATA);
                 String apk_path = applicationInfo.sourceDir;

@@ -63,7 +63,6 @@ bool INIT_HOOK_PlatformABI(JNIEnv *env, jclass clazz, jmethodID methodId, void *
         field_art_method = getArtMethod_filed(env);
         CHECK(field_art_method);
     }
-
     uintptr_t *artMethod = static_cast<uintptr_t *>(GetArtMethod(env, clazz, methodId));
 
     bool success = false;
@@ -72,7 +71,6 @@ bool INIT_HOOK_PlatformABI(JNIEnv *env, jclass clazz, jmethodID methodId, void *
         if (reinterpret_cast<void *>(artMethod[i]) == native) {
             jni_offset = i;
             success = true;
-            LOGE("found art method entrypoint jni offset: %d", i);
             break;
         }
     }
@@ -87,7 +85,6 @@ bool INIT_HOOK_PlatformABI(JNIEnv *env, jclass clazz, jmethodID methodId, void *
         uint32_t value = *(uint32_t *)(start + i * 4);
         if (value == flags) {
             access_flags_art_method_offset = i * 4;
-            LOGE("found art method match access flags offset: %d", i * 4);
             success &= true;
             break;
         }

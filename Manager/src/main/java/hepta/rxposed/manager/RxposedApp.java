@@ -2,6 +2,7 @@ package hepta.rxposed.manager;
 
 
 import android.app.Application;
+import android.content.Context;
 
 import hepta.rxposed.manager.fragment.LoadExten.ExtenInfoProvider;
 import hepta.rxposed.manager.fragment.PlugInject.SupportInfoProvider;
@@ -16,13 +17,18 @@ public class RxposedApp extends Application {
     public static  RxposedApp getInstance(){
         return instance;
     }
+
+
+    public static Context getRxposedContext(){
+        return instance.getApplicationContext();
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
 
         instance = this;
         initConfig();
-
 //        IntentFilter filter = new IntentFilter();
 //        filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
 //        filter.addAction(Intent.ACTION_PACKAGE_REPLACED);
@@ -39,13 +45,12 @@ public class RxposedApp extends Application {
             public void run() {
                 SupportInfoProvider.getInstance().init();
                 ExtenInfoProvider.getInstance().init();
-                InjectTool.init();
             }
         }.start();
     }
 
     static {
-            System.loadLibrary("status");
+        System.loadLibrary("status");
 
 
     }

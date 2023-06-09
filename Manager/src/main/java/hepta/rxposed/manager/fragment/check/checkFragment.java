@@ -1,6 +1,9 @@
 package hepta.rxposed.manager.fragment.check;
 
 import android.content.AttributionSource;
+import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -18,11 +21,15 @@ import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseSectionQuickAdapter;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 
 import hepta.rxposed.manager.R;
+import hepta.rxposed.manager.fragment.LoadExten.ExtenInfoProvider;
+import hepta.rxposed.manager.fragment.PlugInject.SupportInfoProvider;
+import hepta.rxposed.manager.util.InjectTool;
 
 public class checkFragment extends Fragment {
 
@@ -42,13 +49,10 @@ public class checkFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         all_check();
         RecyclerView recyclerView = view.findViewById(R.id.rv_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(new RecyclerViewAdapter(R.layout.item_check_status,itemBeans));
-
-
     }
 
     private void all_check() {
@@ -65,8 +69,21 @@ public class checkFragment extends Fragment {
         }
 
         itemBeans.add(new ItemBean("chekc_PreGetenv",chekc_PreGetenv()));
+        itemBeans.add(new ItemBean("check_inline_hook",check_inline_hook()));
         chekc_java_method();
+        check_file();
+    }
 
+    private boolean check_file(){
+        new Thread(){
+            @Override
+            public void run() {
+
+                InjectTool.init();
+            }
+        }.start();
+
+        return true;
     }
 
     private void chekc_java_method(){
@@ -103,6 +120,9 @@ public class checkFragment extends Fragment {
                 String.class,int.class,IBinder.class,String.class
         };
         itemBeans.add(Found_javaMethod("android.app.IActivityManager","getContentProviderExternal",getContentProviderExternal_parameter));
+
+
+        itemBeans.add(Java_CreateApplicationContext());
 
 
 
@@ -206,8 +226,77 @@ public class checkFragment extends Fragment {
 
     }
 
+
+    public  ItemBean Java_CreateApplicationContext() {
+        //获取 ActivityThread 类
+        Class<?> mActivityThreadClass = null;
+        String currentAppName = getContext().getPackageName();
+        ItemBean itemBean = new ItemBean("Java_CreateApplicationContext",true);
+        try {
+            mActivityThreadClass = Class.forName("android.app.ActivityThread");
+
+            //获取 ActivityThread 类
+            Class<?> mLoadedApkClass = Class.forName("android.app.LoadedApk");
+            //获取 ActivityThread 的 currentActivityThread() 方法
+            Method currentActivityThread = mActivityThreadClass.getDeclaredMethod("currentActivityThread");
+            currentActivityThread.setAccessible(true);
+            //获取 ActivityThread 实例
+            Object mActivityThread = currentActivityThread.invoke(null);
+
+            Class<?> mCompatibilityInfoClass = Class.forName("android.content.res.CompatibilityInfo");
+            Method getLoadedApkMethod = mActivityThreadClass.getDeclaredMethod("getPackageInfoNoCheck", ApplicationInfo.class, mCompatibilityInfoClass);
+
+        /*
+             public static final CompatibilityInfo DEFAULT_COMPATIBILITY_INFO = new CompatibilityInfo() {};
+         */
+            //以上注释是获取默认的 CompatibilityInfo 实例
+            Field mCompatibilityInfoDefaultField = mCompatibilityInfoClass.getDeclaredField("DEFAULT_COMPATIBILITY_INFO");
+            Object mCompatibilityInfo = mCompatibilityInfoDefaultField.get(null);
+
+            //获取一个 ApplicationInfo实例
+            ApplicationInfo applicationInfo = getSystemContext().getPackageManager().getApplicationInfo(currentAppName,0);
+            //执行此方法，获取一个 LoadedApk
+            Object mLoadedApk = getLoadedApkMethod.invoke(mActivityThread, applicationInfo, mCompatibilityInfo);
+            Class<?> mContextImplClass = Class.forName("android.app.ContextImpl");
+            Method createAppContext = mContextImplClass.getDeclaredMethod("createAppContext",mActivityThreadClass,mLoadedApkClass);
+            createAppContext.setAccessible(true);
+            Object context =  createAppContext.invoke(null,mActivityThread,mLoadedApk);
+
+            return itemBean;
+
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e("check","getApplicationInfoAsUser NOT FOUND,return getSystemContext");
+            itemBean.setMsg(e.getMessage());
+            itemBean.setStatus(false);
+            return itemBean;
+        }catch (Exception e){
+            itemBean.setMsg(e.getMessage());
+            itemBean.setStatus(false);
+            return itemBean;
+        }
+    }
+
+
+
+    private static Context getSystemContext() {
+        Context context = null;
+        try {
+            Method method = Class.forName("android.app.ActivityThread").getMethod("currentActivityThread");
+            method.setAccessible(true);
+            Object activityThread = method.invoke(null);
+            context = (Context) activityThread.getClass().getMethod("getSystemContext").invoke(activityThread);
+
+        } catch (final Exception e) {
+            e.printStackTrace();
+            Log.e("check", "getSystemContext:"+e.toString());
+        }
+        return context;
+    }
+
+
     public native boolean  chekc_android_os_Process_setArgV0();
     public native boolean  chekc_PreGetenv();
+    public native boolean  check_inline_hook();
 
 
 

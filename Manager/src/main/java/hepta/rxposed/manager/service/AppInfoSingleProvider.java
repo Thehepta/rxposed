@@ -22,7 +22,7 @@ public class AppInfoSingleProvider {
     private PackageManager packageManager;
     //获取一个包管理器
     public AppInfoSingleProvider(){
-        initAppList(RxposedApp.getInstance().getPackageManager());
+        initAppList(RxposedApp.getRxposedContext().getPackageManager());
     }
 
     private void initAppList(PackageManager packageManager) {

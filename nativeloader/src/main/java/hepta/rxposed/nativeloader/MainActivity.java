@@ -18,13 +18,18 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.util.ArrayMap;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+
+import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import dalvik.system.DexClassLoader;
+import dalvik.system.PathClassLoader;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -49,19 +54,24 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 try {
                     Log.e("RZX", "btn_loadapk");
-//                    ApplicationInfo applicationInfo = CreateApplicationContext().getPackageManager().getApplicationInfo("hepta.rxposed.loadxposed",0);
-//                    String sourceDir = applicationInfo.sourceDir;
-//                    String nativelib = applicationInfo.nativeLibraryDir;
-//                    Log.e("rzx",sourceDir);
-//                    Log.e("rzx",nativelib);
-                    String sourceapk = "/data/app/~~TdAzolTNGEKIp-LgVPI_GQ==/hepta.rxposed.loadxposed-X06YxjQ6nfbdXzbRgGNq2A==/base.apk";
-                    String nativedir = "/data/app/~~TdAzolTNGEKIp-LgVPI_GQ==/hepta.rxposed.loadxposed-X06YxjQ6nfbdXzbRgGNq2A==/lib/arm64";
-                    ClassLoader classLoader =  ClassLoader.getSystemClassLoader();
-                    DexClassLoader dexClassLoader = new DexClassLoader(sourceapk,null,nativedir,classLoader);
+                    ApplicationInfo applicationInfo = null;
+                    try {
+                        applicationInfo = getPackageManager().getApplicationInfo("com.hepta.pinedemo",0);
+                    } catch (PackageManager.NameNotFoundException e) {
+                        throw new RuntimeException(e);
+                    }
+                    String sourceDir = applicationInfo.sourceDir;
+                    String nativelib = applicationInfo.nativeLibraryDir;
+                    Log.e("rzx",sourceDir);
+                    Log.e("rzx",nativelib);
+//                    String sourceapk = "/data/app/~~TdAzolTNGEKIp-LgVPI_GQ==/hepta.rxposed.loadxposed-X06YxjQ6nfbdXzbRgGNq2A==/base.apk";
+//                    String nativedir = "/data/app/~~TdAzolTNGEKIp-LgVPI_GQ==/hepta.rxposed.loadxposed-X06YxjQ6nfbdXzbRgGNq2A==/lib/arm64";
 
-                    Class<?> XposedEntry =  dexClassLoader.loadClass("hepta.rxposed.loadxposed.XposedEntry");
+                    PathClassLoader classloader = new PathClassLoader(sourceDir,nativelib,MainActivity.class.getClassLoader());
+
+                    Class<?> XposedEntry =  classloader.loadClass("com.hepta.pinedemo.hookEntry");
                     Log.e("Rzx", "dexclassLoader compiler");
-                    Method text =  XposedEntry.getMethod("LoadApk_text", Context.class);
+                    Method text =  XposedEntry.getMethod("Entry", Context.class);
                     text.invoke(XposedEntry,getApplicationContext());
                 } catch ( ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
                     Log.e("Rzx", "btn_loadapk error");

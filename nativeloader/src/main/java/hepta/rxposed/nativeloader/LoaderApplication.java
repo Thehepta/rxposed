@@ -56,8 +56,8 @@ public class LoaderApplication extends Application{
         }
         String entry_class  = applicationInfo.metaData.getString("rxposed_clsentry");
         String entry_method = applicationInfo.metaData.getString("rxposed_mtdentry");
-        boolean re =  ndk_GetAppInfoNative(currentName,entry_class,entry_method);
-        Log.e("Rzx","ndk_GetAppInfoNative:"+re);
+//        boolean re =  ndk_GetAppInfoNative(currentName,entry_class,entry_method);
+//        Log.e("Rzx","ndk_GetAppInfoNative:"+re);
     }
 
 

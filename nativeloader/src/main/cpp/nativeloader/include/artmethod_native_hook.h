@@ -10,13 +10,13 @@
 #include "jni.h"
 #include <cstdlib>
 #include "android/log.h"
-#define LOG_TAG "RxposedHOOK"
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+#define LOG_TAG1 "RxposedHOOK"
+#define LOGE1(...) __android_log_print(ANDROID_LOG_ERROR,LOG_TAG1,__VA_ARGS__)
 
 
 #define async_safe_fatal(...)                                                                                          \
   do {                                                                                                                 \
-    LOGE(__VA_ARGS__);                                                                                                 \
+    LOGE1(__VA_ARGS__);                                                                                                 \
     abort();                                                                                                           \
   } while (0)
 

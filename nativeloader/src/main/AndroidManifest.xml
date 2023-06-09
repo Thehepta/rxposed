@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="hepta.rxposed.nativeloader">
 
-<!--    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"-->
-<!--        tools:ignore="QueryAllPackagesPermission" />-->
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
 
 
     <application

@@ -5,7 +5,8 @@
 #include <sys/mman.h>
 #include "include/rprocess.h"
 #include "include/InjectApp.h"
-
+#include "include/And64InlineHook.h"
+#include "include/FunHook.h"
 
 void application_hook_init();
 
@@ -50,16 +51,16 @@ void nativeSpecializeAppProcess_hook(JNIEnv* env, jclass clazz, jint uid, jint g
                                          jobjectArray allowlisted_data_info_list, jboolean mount_data_dirs,
                                          jboolean mount_storage_dirs){
 
-//    LOGE("nativeSpecializeAppProcess_hook uid = %d currentuid = %d ",uid,getuid());
-//    char * pkgName = const_cast<char *>(env->GetStringUTFChars(nice_name, nullptr));
-//    rprocess::GetInstance()->Init(pkgName,uid,gid);
-//    if (rprocess::GetInstance()->Enable()) {
-//            application_hook_init();
-//    }
+    LOGE("nativeSpecializeAppProcess_hook uid = %d currentuid = %d ",uid,getuid());
+    char * pkgName = const_cast<char *>(env->GetStringUTFChars(nice_name, nullptr));
+    rprocess::GetInstance()->Init(pkgName,uid,gid);
+    if (rprocess::GetInstance()->Enable()) {
+            application_hook_init();
+    }
     nativeSpecializeAppProcess_org( env,  clazz,  uid,  gid,  gids,  runtime_flags,rlimits,  mount_external,  se_info,  nice_name,is_child_zygote,
                                     instruction_set,  app_data_dir,is_top_app,  pkg_data_info_list,allowlisted_data_info_list,  mount_data_dirs,mount_storage_dirs);
 
-//    DobbyDestroy((void *)nativeForkAndSpecialize_addr);
+    DobbyDestroy((void *)nativeForkAndSpecialize_addr);
 
     return;
 };
@@ -101,29 +102,11 @@ int setreuid_hook(gid_t ruid, gid_t euid){
 
 void zygote_server_init() {
     JNIEnv* env = Pre_GetEnv();
-
-//    void * setreuid = DobbySymbolResolver("","setreuid");
-//    void * setresuid = DobbySymbolResolver("","setresuid");
-//    void * setregid = DobbySymbolResolver("","setregid");
-//    void * setresgid = DobbySymbolResolver("","setresgid");
-//    fork_addr = DobbySymbolResolver("","fork");
-//    DobbyHook(setregid,reinterpret_cast<dobby_dummy_func_t>(setregid_hook),reinterpret_cast<dobby_dummy_func_t *>(&setregid_org));
-//    DobbyHook(setresgid,reinterpret_cast<dobby_dummy_func_t>(setregid_hook),reinterpret_cast<dobby_dummy_func_t *>(&setregid_org));
-//    DobbyHook(setreuid,reinterpret_cast<dobby_dummy_func_t>(setreuid_hook),reinterpret_cast<dobby_dummy_func_t *>(&setreuid_org));
-//    DobbyHook(setresuid,reinterpret_cast<dobby_dummy_func_t>(setreuid_hook),reinterpret_cast<dobby_dummy_func_t *>(&setreuid_org));
-//    DobbyHook(fork_addr, reinterpret_cast<dobby_dummy_func_t>(fork_hook),reinterpret_cast<dobby_dummy_func_t *>(&fork_org));
-
+    
     if(!hook_init_and_text(env)){
         LOGE("hook_init_and_text failed");
     }
     jclass Zygote_cls =  env->FindClass("com/android/internal/os/Zygote");                        //                    "(II[II[[IILjava/lang/String;Ljava/lang/String;[I[IZLjava/lang/String;Ljava/lang/String;Z[Ljava/lang/String;[Ljava/lang/String;ZZ)I"
-//    jmethodID nativeForkAndSpecialize_method = env->GetStaticMethodID(Zygote_cls,"nativeForkAndSpecialize", "(II[II[[IILjava/lang/String;Ljava/lang/String;[I[IZLjava/lang/String;Ljava/lang/String;Z[Ljava/lang/String;[Ljava/lang/String;ZZ)I");
-//    nativeForkAndSpecialize_addr = getJmethod_JniFunction(env,Zygote_cls,nativeForkAndSpecialize_method);
-//    LOGE("get nativeForkAndSpecialize_addr %p",nativeForkAndSpecialize_addr);
-//    DobbyHook(nativeForkAndSpecialize_addr,reinterpret_cast<dobby_dummy_func_t>(nativeForkAndSpecialize_hook),reinterpret_cast<dobby_dummy_func_t *>(&nativeForkAndSpecialize_org));
-
-
-
     jmethodID nativeSpecializeAppProcess_method = env->GetStaticMethodID(Zygote_cls,"nativeSpecializeAppProcess",  "(II[II[[IILjava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;Z[Ljava/lang/String;[Ljava/lang/String;ZZ)V");
     nativeSpecializeAppProcess_addr = getJmethod_JniFunction(env,Zygote_cls,nativeSpecializeAppProcess_method);
     LOGE("get nativeSpecializeAppProcess_addr %p",nativeSpecializeAppProcess_addr);
@@ -142,7 +125,7 @@ void (*android_os_Process_setArg_org)(JNIEnv* env, jobject clazz, jstring name);
 void android_os_Process_setArg_call(JNIEnv* env, jobject clazz, jstring name){
     char * pkgName = const_cast<char *>(env->GetStringUTFChars(name, nullptr));
     if(rprocess::GetInstance()->is_Load(env,pkgName)){
-//        rprocess::GetInstance()->LoadModule(env);
+        rprocess::GetInstance()->LoadModule(env);
         DEBUG();
         android_os_Process_setArg_org(env,clazz,name);
         DobbyDestroy(android_os_Process_setArg_addr);
@@ -151,8 +134,6 @@ void android_os_Process_setArg_call(JNIEnv* env, jobject clazz, jstring name){
         android_os_Process_setArg_org(env,clazz,name);
 
     }
-
-
 
 }
 
@@ -167,11 +148,8 @@ int selinux_android_setcontext_call(uid_t uid , bool isSystemServer , char* sein
 }
 
 void application_hook_init() {
-    //hook selinux_android_setcontext，获取进程安全上下文
-//    selinux_android_setcontext_addr = (int (*)(uid_t,bool,const char*,const char *))DobbySymbolResolver ("libandroid_runtime.so", "selinux_android_setcontext");
-//    DobbyHook((void *)selinux_android_setcontext_addr, (void *)selinux_android_setcontext_call, (void **)&selinux_android_setcontext_org);
 
-    android_os_Process_setArg_addr = DobbySymbolResolver("libandroid_runtime.so","_Z27android_os_Process_setArgV0P7_JNIEnvP8_jobjectP8_jstring");
+    android_os_Process_setArg_addr = get_android_os_Process_setArgV0_addr();
     DobbyHook(android_os_Process_setArg_addr, (void *) android_os_Process_setArg_call, (void **) &android_os_Process_setArg_org);
 }
 

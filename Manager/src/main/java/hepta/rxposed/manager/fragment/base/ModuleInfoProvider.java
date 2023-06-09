@@ -45,6 +45,8 @@ public abstract class ModuleInfoProvider<T extends ModuleInfo> {
     public abstract Map<Integer, T>  initModuelList();
 
     public List<T> getModuleList(){
+
+
         List<T> result = new ArrayList(map_modules.values());
         return result;
     }

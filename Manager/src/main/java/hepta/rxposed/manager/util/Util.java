@@ -33,7 +33,7 @@ public class Util {
        resolveIntent.addCategory(Intent.CATEGORY_LAUNCHER);
        resolveIntent.setPackage(packageName);
 
-       Context context = RxposedApp.getInstance().getApplicationContext();
+       Context context = RxposedApp.getRxposedContext();
        PackageManager pm =  context.getPackageManager();
        List<ResolveInfo> apps = pm.queryIntentActivities(resolveIntent, 0);
        if (apps.iterator().hasNext()) {

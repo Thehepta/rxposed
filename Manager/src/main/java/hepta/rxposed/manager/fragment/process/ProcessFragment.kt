@@ -107,16 +107,16 @@ class ProcessFragment : Fragment() {
             list = entity();
             withContext(Dispatchers.Main) {
                 processListAdapter?.setList(list)
-                Toast.makeText(RxposedApp.getInstance().applicationContext, "加载完成", Toast.LENGTH_LONG).show()
+                Toast.makeText(RxposedApp.getRxposedContext(), "加载完成", Toast.LENGTH_LONG).show()
 
             }
         }
-        Toast.makeText(RxposedApp.getInstance().applicationContext, "加载时间较慢，请等待", Toast.LENGTH_LONG).show()
+        Toast.makeText(RxposedApp.getRxposedContext(), "加载时间较慢，请等待", Toast.LENGTH_LONG).show()
     }
 
     fun  entity() : MutableCollection<UIDPorcessNode>? {
         val processList = InjectTool.rootRun("ps -ef | awk '{print $1, $2, $8}'").split("\n")
-        val pm = RxposedApp.getInstance().applicationContext.packageManager
+        val pm = RxposedApp.getRxposedContext().packageManager
         val list = mutableListOf<UIDPorcessNode>()
         for (process in processList.drop(1)) {
             if (process.isEmpty()) {
@@ -159,7 +159,7 @@ class ProcessFragment : Fragment() {
                     val seNode = UIDPorcessNode.subprocess(pid, processName)
                     secondNodeList.add(seNode)
                     if(icon == null){
-                        icon = RxposedApp.getInstance().applicationContext.getResources().getDrawable(R.drawable.ic_settings);
+                        icon = RxposedApp.getRxposedContext().getResources().getDrawable(R.drawable.ic_settings);
                     }
                     var entity = UIDPorcessNode(secondNodeList, UserName, uid,AppName,icon)
                     list.add(entity)

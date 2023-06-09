@@ -83,39 +83,36 @@ public class ExtenInfoProvider extends ModuleInfoProvider<ExtenInfoProvider.Exte
         return map_modules;
     }
 
-    public List<Integer>  getConfigToUidList(String ProcessName,PackageManager pm){
+    public List<Integer>  getConfigToUidList(String Uid,PackageManager pm){
 
 
         String json = readerJson();
         List<Integer> uidlist = new ArrayList<>();
-        try {
-            ApplicationInfo info = pm.getApplicationInfo(ProcessName, PackageManager.GET_UNINSTALLED_PACKAGES);
-            if(json !=null) {
-                try {
-                    JSONObject parseobj = new JSONObject(json);
-                    Iterator<String> iterator = parseobj.keys();
-                    while(iterator.hasNext()){
-                        String key =  iterator.next();
-                        JSONObject value = parseobj.getJSONObject(key);
-                        boolean enable = value.getBoolean("enable");
-                        if(!enable){
-                            continue;
-                        }
-                        JSONArray EnableProcUidList = value.getJSONArray("EnableProcUid");
-                        for(int i = 0; i < EnableProcUidList.length(); i ++) {
-                            int enableAppUid= EnableProcUidList.getInt(i);
-                            if (enableAppUid == info.uid){
-                                uidlist.add(Integer.valueOf(key));
-                            }
+        int uid = Integer.parseInt(Uid);
+        if(json !=null) {
+            try {
+                JSONObject parseobj = new JSONObject(json);
+                Iterator<String> iterator = parseobj.keys();
+                while(iterator.hasNext()){
+                    String key =  iterator.next();
+                    JSONObject value = parseobj.getJSONObject(key);
+                    boolean enable = value.getBoolean("enable");
+                    if(!enable){
+                        continue;
+                    }
+                    JSONArray EnableProcUidList = value.getJSONArray("EnableProcUid");
+                    for(int i = 0; i < EnableProcUidList.length(); i ++) {
+                        int enableAppUid= EnableProcUidList.getInt(i);
+                        if (enableAppUid == uid){
+                            uidlist.add(Integer.valueOf(key));
                         }
                     }
-                } catch (JSONException e) {
-                    e.printStackTrace();
                 }
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
         }
+
 
         return uidlist;
     }

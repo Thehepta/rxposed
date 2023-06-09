@@ -28,21 +28,24 @@ add_library(libdobby STATIC IMPORTED)
 set_target_properties(libdobby PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/libs/${ANDROID_ABI}/libdobby.a)
 
 
-include_directories(${CMAKE_SOURCE_DIR}/include)
+#include_directories(${CMAKE_SOURCE_DIR}/include)
 
 
 
 add_library( # Sets the name of the library.
         nativeloader
-             # Sets the library as a shared library.
+        # Sets the library as a shared library.
         SHARED
-             # Provides a relative path to your source file(s).
+        # Provides a relative path to your source file(s).
         zygote_hook.cpp
         InjectApp.cpp
         tool.cpp
+        elf_symbol_resolver.cpp
+        And64InlineHook.cpp
         artmethod_native_hook.cpp
         rprocess.cpp
         check.cpp
+        FunHook.cpp
         )
 
 
@@ -54,11 +57,11 @@ add_library( # Sets the name of the library.
 # completing its build.
 
 find_library( # Sets the name of the path variable.
-              log-lib
+        log-lib
 
-              # Specifies the name of the NDK library that
-              # you want CMake to locate.
-              log )
+        # Specifies the name of the NDK library that
+        # you want CMake to locate.
+        log )
 
 
 # Specifies libraries CMake should link to your target library. You

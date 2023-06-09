@@ -14,6 +14,8 @@
 #include "include/artmethod_native_hook.h"
 #include "include/dobby.h"
 #include "include/tool.h"
+#include "include/And64InlineHook.h"
+#include "include/FunHook.h"
 
 using namespace std;
 
@@ -29,6 +31,7 @@ Java_hepta_rxposed_manager_fragment_check_checkFragment_chekc_1GetArtmethodNativ
     void *native_addr = (void *)Java_hepta_rxposed_manager_fragment_check_checkFragment_chekc_1GetArtmethodNative_1init;
     INIT_HOOK_PlatformABI(env, cls,javamethod,native_addr,109);
     void* native_get_addr = getJmethod_JniFunction(env,cls,javamethod);
+
     if(native_get_addr == native_addr){
         return true;
     } else{
@@ -40,39 +43,6 @@ Java_hepta_rxposed_manager_fragment_check_checkFragment_chekc_1GetArtmethodNativ
 
 
 
-
-
-void * custom_dlopen(){
-    struct android_namespace_t *ns = NULL;
-
-
-    struct android_namespace_t* (* dlsym_android_create_namespace)(const char* name,
-                                                                   const char* ld_library_path,
-                                                                   const char* default_library_path,
-                                                                   uint64_t type,
-                                                                   const char* permitted_when_isolated_path,
-                                                                   struct android_namespace_t* parent);
-
-    void* dl_so = dlopen("libdl.so",RTLD_NOW);
-    dlsym_android_create_namespace = (android_namespace_t* (*)(const char* ,const char* ,const char* ,uint64_t ,const char* ,struct android_namespace_t*  )) dlsym(dl_so,"__loader_android_create_namespace");
-
-    const char *lib_path = getLibPath();
-    ns = dlsym_android_create_namespace(
-            "trustme",
-            lib_path,
-            lib_path,
-            ANDROID_NAMESPACE_TYPE_SHARED |
-            ANDROID_NAMESPACE_TYPE_ISOLATED,
-            "/system/lib64/:/vendor/",
-            NULL);
-
-    const android_dlextinfo dlextinfo = {
-            .flags = ANDROID_DLEXT_USE_NAMESPACE,
-            .library_namespace = ns,
-    };}
-
-
-
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_hepta_rxposed_manager_fragment_check_checkFragment_chekc_1android_1os_1Process_1getUidForName(JNIEnv *env, jobject thiz) {
@@ -80,11 +50,8 @@ Java_hepta_rxposed_manager_fragment_check_checkFragment_chekc_1android_1os_1Proc
     jclass  Process_cls = env->FindClass("android/os/Process");
     jmethodID javamethod = env->GetStaticMethodID(Process_cls,"getUidForName", "(Ljava/lang/String;)I");
 
-    void *getUidForName =  DobbySymbolResolver("/system/lib64/libandroid_runtime.so","_Z32android_os_Process_getUidForNameP7_JNIEnvP8_jobjectP8_jstring");
-
-
-
-
+    void *getUidForName =  get_getUidForName_addr();
+    LOGE("getUidForName = %p",getUidForName);
 
     void * native_get_addr = getJmethod_JniFunction(env,Process_cls,javamethod);
 
@@ -99,11 +66,14 @@ JNIEXPORT jboolean JNICALL
 Java_hepta_rxposed_manager_fragment_check_checkFragment_chekc_1android_1os_1Process_1setArgV0(
         JNIEnv *env, jobject thiz) {
 
-    void *getUidForName =  DobbySymbolResolver("/system/lib64/libandroid_runtime.so","_Z27android_os_Process_setArgV0P7_JNIEnvP8_jobjectP8_jstring");
-    if(getUidForName != nullptr){
+    void *setArgV0 =  get_android_os_Process_setArgV0_addr();
+    if(setArgV0 != nullptr){
         return true;
     }
-    return false;}
+    return false;
+}
+
+
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_hepta_rxposed_manager_fragment_check_checkFragment_chekc_1PreGetenv(JNIEnv *env,
@@ -113,4 +83,50 @@ Java_hepta_rxposed_manager_fragment_check_checkFragment_chekc_1PreGetenv(JNIEnv 
         return true;
     }
     return false;
+}
+
+
+
+
+
+
+int (*text_system_property_get_org)( char*, char *);
+
+int text_system_property_get_call(char* name , char *value){
+    int re;
+    if(!strncmp(name,"rxposed_activity", strlen("rxposed_activity"))){
+        re = strlen("true");
+        memcpy(value, "true", strlen("true"));
+    } else{
+        re = text_system_property_get_org(name,value);
+    }
+    return re;
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_hepta_rxposed_manager_fragment_check_checkFragment_check_1inline_1hook(JNIEnv *env,
+                                                                            jobject thiz) {
+
+    jboolean re = false;
+    char sdk_ver[32];
+    __system_property_get("rxposed_activity", sdk_ver);
+    if(!strncmp(sdk_ver,"true", strlen("true"))){
+        re = true;
+        return true;
+    }
+
+
+
+    void *system_property_get_addr = get__system_property_get_addr();
+    DobbyHook((void *)system_property_get_addr, (void *)text_system_property_get_call, (void **)&text_system_property_get_org);
+    LOGE("system_property_get_addr = %p",system_property_get_addr);
+
+    memset(sdk_ver,0,32);
+    __system_property_get("rxposed_activity", sdk_ver);
+    if(!strncmp(sdk_ver,"true", strlen("true"))){
+        re = true;
+    }
+    DobbyDestroy(system_property_get_addr);
+    return re;
 }
