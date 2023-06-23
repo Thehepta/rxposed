@@ -104,13 +104,15 @@ object MmkvManager {
         return modules.contains(ModuleName)
     }
 
-    fun getAppEnableModuleList(appName:String):MutableList<String>{
+    fun getAppEnableModuleList(appName:String): MutableList<String>? {
         val module_map: Map<String, Boolean> = getModuleList()
         var enableModuleList :MutableList<String> = mutableListOf()
         var modules = setStorage.decodeStringSet(appName)
-        for(module in modules!!){
-            if(module_map.get(module) == true){
-                enableModuleList.add(module)
+        if (modules != null) {
+            for(module in modules){
+                if(module_map.get(module) == true){
+                    enableModuleList.add(module)
+                }
             }
         }
         return enableModuleList

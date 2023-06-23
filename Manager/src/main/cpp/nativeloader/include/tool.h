@@ -13,10 +13,25 @@
 #include <unistd.h>
 #include <jni.h>
 #include <android/log.h>
-#include "debug.h"
-#include "dlext.h"
 using namespace std;
 
+
+
+#define LOG_TAG "RxposedInject"
+#if 1
+// 调用 debug 版本方法
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+#define DEBUG(...) __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,"[file %s],[line %d],[function:%s]",__FILE__, __LINE__,__func__);
+#define LOGD(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+#define LOGF(...) __android_log_print(ANDROID_LOG_FATAL, LOG_TAG, __VA_ARGS__)
+
+
+
+#else
+#define LOGE(...)
+#define LOGD(...)
+#define DEBUG(...)
+#endif
 
 
 static const char *getLibPath() {
@@ -62,7 +77,7 @@ jobject getSystemContext(JNIEnv *env);
 jobject getContext(JNIEnv *env);
 void load_apk_And_exe_Class_Method(JNIEnv *pEnv, jobject android_context,AppinfoNative *appinfoNativeVec) ;
 void load_apk_And_exe_Class_Method_13(JNIEnv *pEnv, jobject android_context,AppinfoNative *appinfoNativeVec);
-jobject CreateApplicationContext(JNIEnv *env, string pkgName);
+jobject CreateApplicationContext(JNIEnv *env, string pkgName,uid_t currentUid);
 jobject GetRxposedProvider(JNIEnv *env, jobject android_Context , string& AUTHORITY, const string& Provider_call_method, const string& Provider_call_arg);
 AppinfoNative* GetPmAppInfoNative(JNIEnv *env, jobject android_Context, string pkgName);
 AppinfoNative* GetRxAppInfoNative(JNIEnv *env, jobject android_Context,string AUTHORITY,string pkgName);

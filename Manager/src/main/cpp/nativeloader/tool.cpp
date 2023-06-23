@@ -366,7 +366,7 @@ jobject getContext(JNIEnv *env)
 
 
 
-jobject CreateApplicationContext(JNIEnv *env, string pkgName) {
+jobject CreateApplicationContext(JNIEnv *env, string pkgName,uid_t currentUid) {
 
     jobject ApplicationContext = nullptr;
     //获取Activity Thread的实例对象
@@ -397,13 +397,21 @@ jobject CreateApplicationContext(JNIEnv *env, string pkgName) {
     jmethodID getPackageManager_method = env->GetMethodID(mContextImplClass, "getPackageManager", "()Landroid/content/pm/PackageManager;");
     jclass PackageManager_cls = env->FindClass("android/content/pm/PackageManager");
     jmethodID pm_getApplicationInfo_method = env->GetMethodID(PackageManager_cls, "getApplicationInfo", "(Ljava/lang/String;I)Landroid/content/pm/ApplicationInfo;");
+    jmethodID pm_getPackagesForUid_method = env->GetMethodID(PackageManager_cls, "getPackagesForUid", "(I)[Ljava/lang/String;");
     jobject PackageManager = env->CallObjectMethod(SystemContext, getPackageManager_method);
-    jobject java_pkaName = env->NewStringUTF(pkgName.c_str());
-    jobject applicationInfo = env->CallObjectMethod(PackageManager,pm_getApplicationInfo_method,java_pkaName,0);
-    string err_message = "processName:"+pkgName+" getApplicationInfo not found,return SystemContext";
+
+    jobjectArray packageNameArray = static_cast<jobjectArray>(env->CallObjectMethod(PackageManager,pm_getPackagesForUid_method,(jint) currentUid));
+    jstring jstrPackageName;
+    if (packageNameArray != nullptr && env->GetArrayLength(packageNameArray) > 0) {
+        jstrPackageName = (jstring) env->GetObjectArrayElement(packageNameArray, 0);
+    } else{
+        return nullptr;
+    }
+    jobject applicationInfo = env->CallObjectMethod(PackageManager,pm_getApplicationInfo_method,jstrPackageName,0);
+    string err_message = " getApplicationInfo not found,return SystemContext,uid = "+currentUid;
     if(NDK_ExceptionCheck(env,(char *)err_message.c_str())){
-        ApplicationContext = SystemContext;
-        return ApplicationContext;
+//        int version = android_get_device_api_level()
+        return nullptr;
     }
     jfieldID mCompatibilityInfoDefaultField = env->GetStaticFieldID(mCompatibilityInfoClass,"DEFAULT_COMPATIBILITY_INFO","Landroid/content/res/CompatibilityInfo;");
     jobject mCompatibilityInfo = env->GetStaticObjectField(mCompatibilityInfoClass,mCompatibilityInfoDefaultField);
@@ -492,7 +500,7 @@ void find_class_method(JNIEnv* env){
 
 
 jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,string method ,string uid_str){
-//    JNIEnv* env = Pre_GetEnv();
+    DEBUG()
     jclass ServiceManager_cls = env->FindClass("android/app/ActivityManager");
     auto IActivityManager_class = env->FindClass("android/app/IActivityManager");
     auto IActivityManager_getContentProviderExternal_method = env->GetMethodID(IActivityManager_class,"getContentProviderExternal","(Ljava/lang/String;ILandroid/os/IBinder;Ljava/lang/String;)Landroid/app/ContentProviderHolder;");
@@ -515,7 +523,8 @@ jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,strin
     jstring tag_jstring = env->NewStringUTF("*cmd*");
     jstring j_callingPkg = env->NewStringUTF(callName.c_str());
     jstring j_method = env->NewStringUTF(method.c_str());
-    jstring j_processName = env->NewStringUTF(uid_str.c_str());
+    jstring j_uid = env->NewStringUTF(uid_str.c_str());
+
     auto token_ibinderObj = env->NewObject(Binder_class,Binder_init);
     auto mExtras_BundleObj = env->NewObject(Bundle_class,Bundle_init);
 
@@ -524,10 +533,6 @@ jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,strin
     jobject holder_ContentProviderHolderObj = env->CallObjectMethod(IActivityManager_Obj,IActivityManager_getContentProviderExternal_method,j_AUTHORITY,0,token_ibinderObj,tag_jstring);
     DEBUG()
     jobject  provider_IContentProviderObj = env->GetObjectField(holder_ContentProviderHolderObj,ContentProviderHolder_provider_filed);
-    DEBUG()
-
-//    jstring j_key = env->NewStringUTF(key.c_str());
-
     DEBUG()
     jobject ret_bundle;
     if(android_get_device_api_level() == 33){

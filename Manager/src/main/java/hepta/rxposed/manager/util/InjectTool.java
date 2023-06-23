@@ -69,7 +69,7 @@ public  class InjectTool {
         InjectSo_armv7_path = context.getFilesDir().getAbsolutePath()+ File.separator+"lib/armeabi-v7a/"+armv7_so;
         try {
             Runtime.getRuntime().exec("chmod +x "+InjectTool_arm64_path);
-            Runtime.getRuntime().exec("chmod +x "+InjectTool_armv7_path);
+//            Runtime.getRuntime().exec("chmod +x "+InjectTool_armv7_path);
 
         } catch (IOException e) {
             throw new RuntimeException(e);

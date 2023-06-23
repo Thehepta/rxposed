@@ -55,6 +55,9 @@ bool rprocess::InitModuleInfo() {
     jmethodID ArrayList_size_method = env->GetMethodID(ArrayList_cls, "size","()I");
     jmethodID ArrayList_get_method = env->GetMethodID(ArrayList_cls, "get","(I)Ljava/lang/Object;");
     jobject config = env->CallObjectMethod(obj_bundle, Bundle_getStringArrayList_method,key);
+    if(config == nullptr){
+        return true;
+    }
     string bask = "base.apk";
     jint size = env->CallIntMethod(config,ArrayList_size_method);
     for(int i=0;i<size;i++){
@@ -95,7 +98,7 @@ bool rprocess::LoadModule(JNIEnv *env){
     DEBUG();
     for (auto appinfoNativeVec : AppinfoNative_vec)
     {
-        load_apk_And_exe_Class_Method(env, RxposedContext, appinfoNativeVec);
+        load_apk_And_exe_Class_Method_13(env, RxposedContext, appinfoNativeVec);
     }
 
     return true;
@@ -104,7 +107,6 @@ bool rprocess::LoadModule(JNIEnv *env){
 
 bool rprocess::is_isIsolatedProcess() {
     DEBUG();
-
     return (currentUid >= 99000 && currentUid <= 99999)|| (currentUid >= 90000 && currentUid <= 98999);
 }
 
@@ -120,8 +122,8 @@ bool rprocess::Enable() {
         rprocess::GetInstance()->InitModuleInfo();
         return true;
     } else{
-//        void *system_property_get_addr = DobbySymbolResolver (nullptr, "__system_property_get");
-//        DobbyHook((void *)system_property_get_addr, (void *)system_property_get_call, (void **)&system_property_get_org);
+        void *system_property_get_addr = DobbySymbolResolver (nullptr, "__system_property_get");
+        DobbyHook((void *)system_property_get_addr, (void *)system_property_get_call, (void **)&system_property_get_org);
         return false;
     }
 
@@ -130,7 +132,7 @@ bool rprocess::Enable() {
 
 bool rprocess::is_Load(JNIEnv* env,char * name) {
     DEBUG();
-    RxposedContext = CreateApplicationContext(env, processName);
+    RxposedContext = CreateApplicationContext(env, processName,currentUid);
     if(RxposedContext != nullptr){
         LoadModule(env);
         return true;
