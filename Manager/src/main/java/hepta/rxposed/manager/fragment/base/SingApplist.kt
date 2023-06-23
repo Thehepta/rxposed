@@ -1,4 +1,4 @@
-package hepta.rxposed.manager.fragment.LoadModule
+package hepta.rxposed.manager.fragment.base
 
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -28,7 +28,7 @@ class SingApplist {
     }
 
 
-    public var global_applist:List<ItemInfo>? = null
+    public var global_applist:List<AppItemInfo>? = null
         get(){
             if (field == null) {
                 field = getallapp()
@@ -37,8 +37,8 @@ class SingApplist {
         }
 
 
-    private fun getallapp(): List<ItemInfo>? {
-        var applist = mutableListOf<ItemInfo>()
+    private fun getallapp(): List<AppItemInfo>? {
+        var applist = mutableListOf<AppItemInfo>()
         var mPm = RxposedApp.getInstance().packageManager
         val intent = Intent()
         intent.action = Intent.ACTION_MAIN
@@ -46,7 +46,11 @@ class SingApplist {
 
         val resolveInfos: List<ResolveInfo> = mPm.queryIntentActivities(intent, PackageManager.MATCH_ALL)
         for (info in resolveInfos) {
-            applist.add(ItemInfo(info.activityInfo.applicationInfo, mPm)
+            applist.add(
+                AppItemInfo(
+                    info.activityInfo.applicationInfo,
+                    mPm
+                )
             )
         }
         return applist
@@ -54,12 +58,16 @@ class SingApplist {
     }
 
     public fun updateApps(){
-        var applist = mutableListOf<ItemInfo>()
+        var applist = mutableListOf<AppItemInfo>()
         val intent = Intent()
         var mPm = RxposedApp.getInstance().packageManager
         val resolveInfos: List<ResolveInfo> = mPm.queryIntentActivities(intent, PackageManager.MATCH_ALL)
         for (info in resolveInfos) {
-            applist.add(ItemInfo(info.activityInfo.applicationInfo, mPm)
+            applist.add(
+                AppItemInfo(
+                    info.activityInfo.applicationInfo,
+                    mPm
+                )
             )
         }
         global_applist = applist

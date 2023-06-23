@@ -1,6 +1,7 @@
 package hepta.rxposed.manager.util
 
 import android.content.pm.PackageManager
+import android.util.Log
 import com.google.gson.Gson
 import com.tencent.mmkv.MMKV
 import hepta.rxposed.manager.RxposedApp
@@ -16,6 +17,7 @@ object MmkvManager {
     const val KEY_SELECTED_SERVER = "SELECTED_SERVER"
     const val KEY_ANG_CONFIGS = "ANG_CONFIGS"
     const val KEY_MOD_CONFIGS = "MOD_CONFIGS"
+    const val KEY_PLUG_CONFIGS = "PLUG_CONFIGS"
 
     const val KEY_APP_ALLWO_NONE = 0
     const val KEY_APP_ADD_ALLOW = 1
@@ -29,6 +31,34 @@ object MmkvManager {
     private val serverStorage by lazy { MMKV.mmkvWithID(ID_SERVER_CONFIG, MMKV.MULTI_PROCESS_MODE) }
     private val serverAffStorage by lazy { MMKV.mmkvWithID(ID_SERVER_AFF, MMKV.MULTI_PROCESS_MODE) }
     private val setStorage by lazy { MMKV.mmkvWithID(ID_SETTING, MMKV.MULTI_PROCESS_MODE) }
+
+
+
+
+    fun getPLugList() : MutableMap<String, Boolean> {
+        val json = setStorage?.decodeString(KEY_PLUG_CONFIGS)
+        return if (json.isNullOrBlank()) {
+            InitPlugList()
+        } else {
+            var tmp = Gson().fromJson(json, Map::class.java)
+            return tmp as MutableMap<String, Boolean>
+        }
+    }
+
+    fun InitPlugList() :MutableMap<String,Boolean> {
+        var list = mutableMapOf<String,Boolean>()
+        for (pkg in RxposedApp.getInstance().packageManager.getInstalledPackages(PackageManager.GET_META_DATA)) {
+            val app = pkg.applicationInfo
+            if (app.metaData != null && app.metaData.containsKey("rxposed_support")) {
+                list.put(app.packageName,false)
+            }
+        }
+        return list;
+    }
+
+
+
+
 
 
     fun getModuleStatus(pkgName:String):Boolean{
@@ -57,11 +87,15 @@ object MmkvManager {
     }
 
     fun updataModuleList() :MutableMap<String, Boolean>{
-        var tmp = getModuleList()
+        var tmp = mutableMapOf<String,Boolean>();
+        var old = getModuleList()
         for (pkg in RxposedApp.getInstance().packageManager.getInstalledPackages(PackageManager.GET_META_DATA)) {
             val app = pkg.applicationInfo
             if (app.metaData != null && app.metaData.containsKey("rxmodule")) {
-                if(!tmp.containsKey(app.packageName)){
+                Log.e("Rzx","rxmodule:"+app.packageName)
+                if(old.containsKey(app.packageName)){
+                    tmp.put(app.packageName,true)
+                }else{
                     tmp.put(app.packageName,false)
                 }
             }

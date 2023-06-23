@@ -1,12 +1,10 @@
-package hepta.rxposed.manager.fragment.LoadModule;
+package hepta.rxposed.manager.fragment.base;
 
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 
-import java.util.Set;
-
-public class ItemInfo {
+public class AppItemInfo {
 
     private Drawable icon;
     private ApplicationInfo app;
@@ -16,7 +14,7 @@ public class ItemInfo {
     private  String appName;
     public boolean enable;
     public ApplicationInfo applicationInfo;
-    public ItemInfo(ApplicationInfo applicationInfo, PackageManager mPm){
+    public AppItemInfo(ApplicationInfo applicationInfo, PackageManager mPm){
         this.applicationInfo = applicationInfo;
         this.packageName = applicationInfo.packageName;
         this.icon = applicationInfo.loadIcon(mPm);

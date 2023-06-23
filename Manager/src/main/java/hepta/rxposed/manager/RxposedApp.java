@@ -3,13 +3,10 @@ package hepta.rxposed.manager;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 
 import com.tencent.mmkv.MMKV;
-
-import hepta.rxposed.manager.fragment.LoadExten.ExtenInfoProvider;
-import hepta.rxposed.manager.fragment.PlugInject.SupportInfoProvider;
-import hepta.rxposed.manager.util.InjectTool;
-import hepta.rxposed.manager.util.MmkvManager;
 
 
 public class RxposedApp extends Application {
@@ -30,35 +27,21 @@ public class RxposedApp extends Application {
     public void onCreate() {
         super.onCreate();
         MMKV.initialize(this);
-
         instance = this;
-//        initConfig();
 
-//        IntentFilter filter = new IntentFilter();
-//        filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
-//        filter.addAction(Intent.ACTION_PACKAGE_REPLACED);
-//        filter.addAction(Intent.ACTION_PACKAGE_ADDED);
-//        filter.addAction(Intent.ACTION_PACKAGE_CHANGED);
-//        filter.addDataScheme("package");
-//        PackageChangeReceiver packageChangeReceiver = new PackageChangeReceiver();
-//        registerReceiver(packageChangeReceiver, filter);
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
+        filter.addAction(Intent.ACTION_PACKAGE_REPLACED);
+        filter.addAction(Intent.ACTION_PACKAGE_ADDED);
+        filter.addAction(Intent.ACTION_PACKAGE_CHANGED);
+        filter.addDataScheme("package");
+        PackageChangeReceiver packageChangeReceiver = new PackageChangeReceiver();
+        registerReceiver(packageChangeReceiver, filter);
     }
 
-//    private void initConfig() {
-//        new Thread(){
-//            @Override
-//            public void run() {
-//                SupportInfoProvider.getInstance().init();
-//                ExtenInfoProvider.getInstance().init();
-//                InjectTool.init();
-//            }
-//        }.start();
-//    }
 
     static {
             System.loadLibrary("status");
-
-
     }
 
 }

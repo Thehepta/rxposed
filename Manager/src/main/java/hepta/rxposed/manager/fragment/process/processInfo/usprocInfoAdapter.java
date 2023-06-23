@@ -9,9 +9,9 @@ import com.chad.library.adapter.base.module.LoadMoreModule;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 
 import hepta.rxposed.manager.R;
-import hepta.rxposed.manager.fragment.process.UIDPorcessNode;
+import hepta.rxposed.manager.fragment.process.UIDPorcessItem;
 
-public class usprocInfoAdapter  extends BaseQuickAdapter<UIDPorcessNode.subprocess, BaseViewHolder> implements LoadMoreModule {
+public class usprocInfoAdapter  extends BaseQuickAdapter<UIDPorcessItem.subprocessItem, BaseViewHolder> implements LoadMoreModule {
 
 
     private OnClickInjectListener onClickInjectListener = null;
@@ -27,7 +27,7 @@ public class usprocInfoAdapter  extends BaseQuickAdapter<UIDPorcessNode.subproce
 
 
     @Override
-    protected void convert(@NonNull BaseViewHolder baseViewHolder, UIDPorcessNode.subprocess subprocess) {
+    protected void convert(@NonNull BaseViewHolder baseViewHolder, UIDPorcessItem.subprocessItem subprocess) {
         baseViewHolder.setText(R.id.proacee_pid,subprocess.getPid());
         baseViewHolder.setText(R.id.process_name,subprocess.getProcessName());
         baseViewHolder.findView(R.id.injectButton).setOnClickListener(new View.OnClickListener() {
@@ -44,6 +44,6 @@ public class usprocInfoAdapter  extends BaseQuickAdapter<UIDPorcessNode.subproce
 
 
     public interface OnClickInjectListener {
-        void onClick(UIDPorcessNode.subprocess item);
+        void onClick(UIDPorcessItem.subprocessItem item);
     }
 }

@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 
 import hepta.rxposed.manager.RxposedApp;
-import hepta.rxposed.manager.fragment.LoadExten.ExtenInfoProvider;
 import hepta.rxposed.manager.util.MmkvManager;
 
 public class RxConfigProvider extends ContentProvider {

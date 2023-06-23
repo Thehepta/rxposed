@@ -6,8 +6,9 @@ import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 
 import hepta.rxposed.manager.R;
+import hepta.rxposed.manager.fragment.base.AppItemInfo;
 
-public class ModuleListAdapter extends BaseQuickAdapter<ItemInfo, BaseViewHolder>  {
+public class ModuleListAdapter extends BaseQuickAdapter<AppItemInfo, BaseViewHolder>  {
 
 
 
@@ -18,7 +19,7 @@ public class ModuleListAdapter extends BaseQuickAdapter<ItemInfo, BaseViewHolder
 
 
     @Override
-    protected void convert(@NonNull BaseViewHolder baseViewHolder, ItemInfo item) {
+    protected void convert(@NonNull BaseViewHolder baseViewHolder, AppItemInfo item) {
         if (item == null) {
             return;
         }

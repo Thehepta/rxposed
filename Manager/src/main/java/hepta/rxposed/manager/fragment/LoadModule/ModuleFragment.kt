@@ -1,17 +1,23 @@
 package hepta.rxposed.manager.fragment.LoadModule
 
+import android.content.pm.PackageManager
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.util.Log
+import android.view.*
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.chad.library.adapter.base.listener.OnItemClickListener
+import com.tencent.mmkv.MMKV
 import hepta.rxposed.manager.R
 import hepta.rxposed.manager.databinding.FragmentModulesBinding
+import hepta.rxposed.manager.fragment.base.AppItemInfo
+import hepta.rxposed.manager.util.Consts
 import hepta.rxposed.manager.util.MmkvManager
 
 class ModuleFragment : Fragment() {
@@ -32,8 +38,26 @@ class ModuleFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initData()
         initRecycleView()
+
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.sync, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                when(menuItem.itemId){
+                    R.id.id_toolbar_sync->{
+                        updateData()
+                    }
+                }
+                return false
+            }
+        },viewLifecycleOwner, Lifecycle.State.RESUMED)
+
+
+
     }
 
     private fun initRecycleView() {
@@ -46,7 +70,7 @@ class ModuleFragment : Fragment() {
         appListAdapter!!.setList(initData())
         appListAdapter!!.setOnItemClickListener(OnItemClickListener { adapter, view, position ->
 
-            var tmpappinfo = adapter.data.get(position) as ItemInfo
+            var tmpappinfo = adapter.data.get(position) as AppItemInfo
             val controller: NavController = findNavController()
             val bundle1:Bundle  =  Bundle();
             bundle1.putInt("uid",tmpappinfo.applicationInfo.uid);
@@ -56,22 +80,27 @@ class ModuleFragment : Fragment() {
         })
     }
 
-    private fun initData(): MutableList<ItemInfo> {
-        var launcherIconPackageList = mutableListOf<ItemInfo>()
+    private fun initData(): MutableList<AppItemInfo> {
+        var PackageList = mutableListOf<AppItemInfo>()
         var pKgList =  MmkvManager.getModuleList()
         var mPm = requireContext().packageManager;
         for(name in pKgList.keys){
-            var pkgInfo = mPm.getApplicationInfo(name,0)
-            var tmpappinfo: ItemInfo = ItemInfo(pkgInfo, mPm)
-            launcherIconPackageList.add(tmpappinfo)
+            try {
+                var pkgInfo = mPm.getApplicationInfo(name,0)
+                var tmpappinfo: AppItemInfo = AppItemInfo(pkgInfo, mPm)
+                PackageList.add(tmpappinfo)
+            }catch (e: PackageManager.NameNotFoundException){
+                Log.e("Rzx",name+": not found")
+                continue
+            }
         }
-        return launcherIconPackageList
+        return PackageList
     }
 
     fun updateData(){
-        var launcherIconPackageList = mutableListOf<ItemInfo>()
-        var pKgList =  MmkvManager.updataModuleList()
-        appListAdapter!!.setList(launcherIconPackageList)
+        MmkvManager.updataModuleList()
+        appListAdapter!!.setList(initData())
+        appListAdapter!!.notifyDataSetChanged()
     }
 }
 

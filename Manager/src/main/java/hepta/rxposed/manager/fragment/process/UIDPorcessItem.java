@@ -2,24 +2,19 @@ package hepta.rxposed.manager.fragment.process;
 
 import android.graphics.drawable.Drawable;
 
-import androidx.annotation.Nullable;
-
-import com.chad.library.adapter.base.entity.node.BaseExpandNode;
-import com.chad.library.adapter.base.entity.node.BaseNode;
-
 import java.io.Serializable;
 import java.util.List;
 
-public class UIDPorcessNode  implements Serializable {
+public class UIDPorcessItem implements Serializable {
 
 
-    private List<subprocess> childNode;
+    private List<subprocessItem> childNode;
     private int Uid;
     Drawable icon;
     private String UserName;
     private String AppName;
     private String pkgName;
-    public UIDPorcessNode(List<subprocess> childNode, String UserName, int Uid,String AppName,Drawable icon) {
+    public UIDPorcessItem(List<subprocessItem> childNode, String UserName, int Uid, String AppName, Drawable icon) {
         // 默认不展开
         this.childNode = childNode;
         this.UserName = UserName;
@@ -66,19 +61,19 @@ public class UIDPorcessNode  implements Serializable {
         this.icon = icon;
     }
 
-    public List<subprocess> getChildNode() {
+    public List<subprocessItem> getChildNode() {
         return childNode;
     }
 
-    public void setChildNode(List<subprocess> childNode) {
+    public void setChildNode(List<subprocessItem> childNode) {
         this.childNode = childNode;
     }
 
 
 
-    public static class subprocess{
+    public static class subprocessItem {
         String pid, processName;
-        subprocess(String str,String str2){
+        subprocessItem(String str, String str2){
             pid= str;
             processName=str2;
         }

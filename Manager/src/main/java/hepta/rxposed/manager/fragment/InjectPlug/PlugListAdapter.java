@@ -1,6 +1,5 @@
-package hepta.rxposed.manager.fragment.PlugInject;
+package hepta.rxposed.manager.fragment.InjectPlug;
 
-import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -12,26 +11,21 @@ import com.chad.library.adapter.base.module.LoadMoreModule;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 
 import hepta.rxposed.manager.R;
+import hepta.rxposed.manager.fragment.base.AppItemInfo;
 
 
-public class SupportListAdapter extends BaseQuickAdapter<SupportInfoProvider.SupportInfo, BaseViewHolder> implements LoadMoreModule {
+public class PlugListAdapter extends BaseQuickAdapter<AppItemInfo, BaseViewHolder> implements LoadMoreModule {
 
     public Boolean SELECT = false;
 
-    public SupportListAdapter(int layoutResId,Boolean inject) {
+    public PlugListAdapter(int layoutResId, Boolean inject) {
         super(layoutResId);
         SELECT = inject;
     }
 
-//    @Override
-//    protected void onItemViewHolderCreated(@NotNull BaseViewHolder viewHolder, int viewType) {
-//        // 绑定 view
-//        DataBindingUtil.bind(viewHolder.itemView);
-//    }
-
 
     @Override
-    protected void convert(@NonNull BaseViewHolder baseViewHolder, SupportInfoProvider.SupportInfo item) {
+    protected void convert(@NonNull BaseViewHolder baseViewHolder,AppItemInfo item) {
         if (item == null) {
             return;
         }

@@ -62,7 +62,7 @@ class ProcessFragment : Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = processListAdapter
         processListAdapter?.setOnClickListener(object :ProcessListAdapter.OnClickListener{
-            override fun onClick( item: UIDPorcessNode) {
+            override fun onClick( item: UIDPorcessItem) {
                 val controller: NavController = findNavController()
                 val bundle1:Bundle  =  Bundle();
                 bundle1.putSerializable("item",item);
@@ -114,10 +114,10 @@ class ProcessFragment : Fragment() {
         Toast.makeText(RxposedApp.getRxposedContext(), "加载时间较慢，请等待", Toast.LENGTH_LONG).show()
     }
 
-    fun  entity() : MutableCollection<UIDPorcessNode>? {
+    fun  entity() : MutableCollection<UIDPorcessItem>? {
         val processList = InjectTool.rootRun("ps -ef | awk '{print $1, $2, $8}'").split("\n")
         val pm = RxposedApp.getRxposedContext().packageManager
-        val list = mutableListOf<UIDPorcessNode>()
+        val list = mutableListOf<UIDPorcessItem>()
         for (process in processList.drop(1)) {
             if (process.isEmpty()) {
                 continue
@@ -143,25 +143,40 @@ class ProcessFragment : Fragment() {
                 }
 
             }
-            var currentRootNode: MutableList<UIDPorcessNode.subprocess>? = null
+            var currentRootNode: MutableList<UIDPorcessItem.subprocessItem>? = null
             list.forEach {
-                var porcessNode =  it as UIDPorcessNode
+                var porcessNode =  it as UIDPorcessItem
                 if(porcessNode.uid == uid){
                     currentRootNode = it.childNode
                 }
             }
             currentRootNode.let {
                 if (it != null) {
-                    val seNode = UIDPorcessNode.subprocess(pid, processName)
+                    val seNode =
+                        UIDPorcessItem.subprocessItem(
+                            pid,
+                            processName
+                        )
                     it.add(seNode)
                 }else{
-                    val secondNodeList: MutableList<UIDPorcessNode.subprocess> = ArrayList()
-                    val seNode = UIDPorcessNode.subprocess(pid, processName)
+                    val secondNodeList: MutableList<UIDPorcessItem.subprocessItem> = ArrayList()
+                    val seNode =
+                        UIDPorcessItem.subprocessItem(
+                            pid,
+                            processName
+                        )
                     secondNodeList.add(seNode)
                     if(icon == null){
                         icon = RxposedApp.getRxposedContext().getResources().getDrawable(R.drawable.ic_settings);
                     }
-                    var entity = UIDPorcessNode(secondNodeList, UserName, uid,AppName,icon)
+                    var entity =
+                        UIDPorcessItem(
+                            secondNodeList,
+                            UserName,
+                            uid,
+                            AppName,
+                            icon
+                        )
                     list.add(entity)
                 }
             }
@@ -171,7 +186,7 @@ class ProcessFragment : Fragment() {
 
 
     companion object{
-        var list :MutableCollection<UIDPorcessNode>?= null
+        var list :MutableCollection<UIDPorcessItem>?= null
     }
 
 }

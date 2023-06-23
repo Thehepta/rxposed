@@ -58,11 +58,11 @@ public  class InjectTool {
         rootRun("killall zygote");
     }
 
-
+    static {
+        InjectTool.su_path = context.getSharedPreferences("rxposed",MODE_PRIVATE).getString("supath","su");
+    }
     public static void init(){
         unziplib(context.getApplicationInfo().sourceDir,context.getFilesDir().getAbsolutePath()+ File.separator);
-
-        InjectTool.su_path = context.getSharedPreferences("rxposed",MODE_PRIVATE).getString("supath","su");
         InjectTool_arm64_path = context.getFilesDir().getAbsolutePath()+ File.separator+"assets/"+arm64_InjectTool;
         InjectTool_armv7_path = context.getFilesDir().getAbsolutePath()+ File.separator+"assets/"+armv7_InjectTool;
         InjectSo_arm64_path = context.getFilesDir().getAbsolutePath()+ File.separator+"lib/arm64-v8a/"+arm64_so;

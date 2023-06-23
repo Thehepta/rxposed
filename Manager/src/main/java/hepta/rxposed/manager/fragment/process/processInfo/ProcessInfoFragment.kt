@@ -17,7 +17,6 @@
 package hepta.rxposed.manager.fragment.process.processInfo
 
 import android.annotation.SuppressLint
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.text.InputType
 import android.util.Log
@@ -36,9 +35,8 @@ import com.afollestad.materialdialogs.input.input
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import hepta.rxposed.manager.MainActivity
 import hepta.rxposed.manager.R
-import hepta.rxposed.manager.RxposedApp
-import hepta.rxposed.manager.fragment.base.AppInfoNode
-import hepta.rxposed.manager.fragment.process.UIDPorcessNode
+import hepta.rxposed.manager.fragment.base.AppItemInfo
+import hepta.rxposed.manager.fragment.process.UIDPorcessItem
 import hepta.rxposed.manager.util.Consts.INJECTLIST_FRAGMENT_ARGE
 import hepta.rxposed.manager.util.Consts.INJECT_FRAGMENT_ARGE
 import hepta.rxposed.manager.util.InjectTool
@@ -53,8 +51,8 @@ import kotlinx.coroutines.launch
 class ProcessInfoFragment : Fragment() {
 
     private var appsAdapter: usprocInfoAdapter? = null
-    private val filterListApp: MutableList<AppInfoNode> = mutableListOf()
-    val Datalist: MutableList<UIDPorcessNode.subprocess> = ArrayList()
+    private val filterListApp: MutableList<AppItemInfo> = mutableListOf()
+    val Datalist: MutableList<UIDPorcessItem.subprocessItem> = ArrayList()
 
     private var toolbar: Toolbar? = null
     private var recyclerView:RecyclerView? = null
@@ -81,7 +79,7 @@ class ProcessInfoFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val parcelable = arguments?.getSerializable("item") as UIDPorcessNode
+        val parcelable = arguments?.getSerializable("item") as UIDPorcessItem
         toolbar = view.findViewById<Toolbar>(R.id.toolbar)
         recyclerView = view.findViewById(R.id.recyclerView)
         toolbar?.setTitle(parcelable.appName)
@@ -94,7 +92,7 @@ class ProcessInfoFragment : Fragment() {
         recyclerView?.setAdapter(appsAdapter)
         appsAdapter?.setList(parcelable.childNode)
         appsAdapter?.setOnClickInjectListener(object :usprocInfoAdapter.OnClickInjectListener{
-            override fun onClick(item: UIDPorcessNode.subprocess?) {
+            override fun onClick(item: UIDPorcessItem.subprocessItem?) {
                 if (item != null) {
                     inject_pid = item.pid;
                     val bundle1:Bundle  =  Bundle();

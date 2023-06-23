@@ -31,9 +31,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.*
 import com.google.android.material.navigation.NavigationView
-import hepta.rxposed.manager.fragment.LoadExten.ExtenInfoProvider
-import hepta.rxposed.manager.fragment.PlugInject.SupportInfoProvider
-import hepta.rxposed.manager.util.InjectTool
+
 
 /**
  * A simple activity demonstrating use of a NavHostFragment with a navigation drawer.

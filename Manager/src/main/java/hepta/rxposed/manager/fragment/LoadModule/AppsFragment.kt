@@ -19,6 +19,7 @@ package hepta.rxposed.manager.fragment.LoadModule
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.InputType
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CompoundButton
@@ -31,22 +32,37 @@ import com.afollestad.materialdialogs.bottomsheets.BottomSheet
 import com.afollestad.materialdialogs.input.input
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import com.chad.library.adapter.base.entity.node.BaseNode
+import hepta.rxposed.manager.MainActivity
 import hepta.rxposed.manager.R
-import hepta.rxposed.manager.fragment.base.AppInfoNode
-import hepta.rxposed.manager.fragment.base.baseCollToolbarFragment
+import hepta.rxposed.manager.databinding.FragmentApplistBinding
+import hepta.rxposed.manager.fragment.base.AppItemInfo
+import hepta.rxposed.manager.fragment.base.SingApplist
 import hepta.rxposed.manager.util.MmkvManager
 
 
 /**
  * A simple [Fragment] subclass.
  */
-class ExtenAppFragment : baseCollToolbarFragment() {
+class AppsFragment : Fragment() {
 
     private var appsAdapter: AppInfoAdapter? = null
-    private val filterListApp: MutableList<AppInfoNode> = mutableListOf()
+    private val filterListApp: MutableList<AppItemInfo> = mutableListOf()
     val Datalist: MutableList<BaseNode> = ArrayList()
+    lateinit var binding: FragmentApplistBinding
 
     lateinit var moduleName:String
+
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        binding = FragmentApplistBinding.inflate(getLayoutInflater())
+        var mainActivity = requireActivity() as MainActivity
+        mainActivity.DisableToolBar();  //主动调用activity的方法，隐藏toolbar
+        return binding.root
+    }
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -56,6 +72,9 @@ class ExtenAppFragment : baseCollToolbarFragment() {
         initRecycleView();
         initSwitchBar()
         initToolbar();
+
+
+
     }
 
 
@@ -87,8 +106,8 @@ class ExtenAppFragment : baseCollToolbarFragment() {
             MmkvManager.setAppEnableModuleStatus(AppName,moduleName,status)
         })
     }
-    fun initData(): Collection<ItemInfo>? {
-        var applist: MutableList<ItemInfo> = mutableListOf()
+    fun initData(): Collection<AppItemInfo>? {
+        var applist: MutableList<AppItemInfo> = mutableListOf()
         SingApplist.get().global_applist?.forEach{
             it.setEnable(MmkvManager.getAppEnableModuleStatus(it.packageName,moduleName))
             applist.add(it)
@@ -125,21 +144,21 @@ class ExtenAppFragment : baseCollToolbarFragment() {
             dialog.negativeButton {
                 filterListApp.clear()
 
-                moduleInfo?.getAppInfoList()?.forEach {
+                appsAdapter?.data?.forEach {
 
                     if(current_index == 0){
                         filterListApp.add(it)
                     }
 
-                    if (it.isSystemApp){
-                        if(current_index == 1){
-                            filterListApp.add(it)
-                        }
-                    }else{
-                        if(current_index == 2){
-                            filterListApp.add(it)
-                        }
-                    }
+//                    if (it.isSystemApp){
+//                        if(current_index == 1){
+//                            filterListApp.add(it)
+//                        }
+//                    }else{
+//                        if(current_index == 2){
+//                            filterListApp.add(it)
+//                        }
+//                    }
                 }
 //                appsAdapter?.setList(filterListApp)
             }
@@ -164,7 +183,7 @@ class ExtenAppFragment : baseCollToolbarFragment() {
             }
             dialog.positiveButton {
                 filterListApp.clear()
-                moduleInfo?.getAppInfoList()?.forEach {
+                appsAdapter?.data?.forEach {
 
                     if (it.appName.contains(search.toString())||it.packageName.contains(search.toString())){
                         filterListApp.add(it)
@@ -181,5 +200,10 @@ class ExtenAppFragment : baseCollToolbarFragment() {
     }
 
 
+    override fun onDestroy() {
+        super.onDestroy()
+        var mainActivity = requireActivity() as MainActivity
+        mainActivity.EnableToolBar()
+    }
 
 }

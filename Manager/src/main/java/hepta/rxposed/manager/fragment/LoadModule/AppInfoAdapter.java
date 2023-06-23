@@ -1,6 +1,5 @@
 package hepta.rxposed.manager.fragment.LoadModule;
 
-import android.util.Log;
 import android.widget.CompoundButton;
 
 import androidx.annotation.NonNull;
@@ -10,8 +9,9 @@ import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 
 import hepta.rxposed.manager.R;
+import hepta.rxposed.manager.fragment.base.AppItemInfo;
 
-public class AppInfoAdapter extends BaseQuickAdapter<ItemInfo, BaseViewHolder > {
+public class AppInfoAdapter extends BaseQuickAdapter<AppItemInfo, BaseViewHolder > {
 
     public  AppInfoAdapter(int layoutResId) {
         super(layoutResId);
@@ -25,7 +25,7 @@ public class AppInfoAdapter extends BaseQuickAdapter<ItemInfo, BaseViewHolder > 
 
 
 
-    protected void convert(@NonNull BaseViewHolder baseViewHolder, ItemInfo item) {
+    protected void convert(@NonNull BaseViewHolder baseViewHolder, AppItemInfo item) {
         if (item == null) {
             return;
         }

@@ -27,8 +27,7 @@ import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 
 import hepta.rxposed.manager.R;
-import hepta.rxposed.manager.fragment.LoadExten.ExtenInfoProvider;
-import hepta.rxposed.manager.fragment.PlugInject.SupportInfoProvider;
+
 import hepta.rxposed.manager.util.InjectTool;
 
 public class checkFragment extends Fragment {
@@ -71,19 +70,7 @@ public class checkFragment extends Fragment {
         itemBeans.add(new ItemBean("chekc_PreGetenv",chekc_PreGetenv()));
         itemBeans.add(new ItemBean("check_inline_hook",check_inline_hook()));
         chekc_java_method();
-        check_file();
-    }
 
-    private boolean check_file(){
-        new Thread(){
-            @Override
-            public void run() {
-
-                InjectTool.init();
-            }
-        }.start();
-
-        return true;
     }
 
     private void chekc_java_method(){

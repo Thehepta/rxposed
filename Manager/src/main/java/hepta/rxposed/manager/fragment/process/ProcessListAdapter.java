@@ -12,7 +12,7 @@ import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 import hepta.rxposed.manager.R;
 
 
-public class ProcessListAdapter extends BaseQuickAdapter<UIDPorcessNode, BaseViewHolder> implements LoadMoreModule {
+public class ProcessListAdapter extends BaseQuickAdapter<UIDPorcessItem, BaseViewHolder> implements LoadMoreModule {
 
     private OnClickListener onClickListener = null;
 
@@ -26,7 +26,7 @@ public class ProcessListAdapter extends BaseQuickAdapter<UIDPorcessNode, BaseVie
     }
 
     @Override
-    protected void convert(@NonNull BaseViewHolder baseViewHolder, UIDPorcessNode item) {
+    protected void convert(@NonNull BaseViewHolder baseViewHolder, UIDPorcessItem item) {
         if (item == null) {
             return;
         }
@@ -48,6 +48,6 @@ public class ProcessListAdapter extends BaseQuickAdapter<UIDPorcessNode, BaseVie
     }
 
     public interface OnClickListener{
-        void onClick(UIDPorcessNode item);
+        void onClick(UIDPorcessItem item);
     }
 }

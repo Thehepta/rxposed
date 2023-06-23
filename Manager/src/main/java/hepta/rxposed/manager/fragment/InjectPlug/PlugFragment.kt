@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package hepta.rxposed.manager.fragment.PlugInject
+package hepta.rxposed.manager.fragment.InjectPlug
 
 import android.os.Bundle
 import android.view.*
@@ -27,20 +27,18 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import hepta.rxposed.manager.MainActivity
 import hepta.rxposed.manager.R
 import hepta.rxposed.manager.databinding.FragmentFrameworksBinding
+import hepta.rxposed.manager.fragment.base.AppItemInfo
 import hepta.rxposed.manager.util.Consts.INJECTLIST_FRAGMENT_ARGE
 import hepta.rxposed.manager.util.Consts.INJECT_FRAGMENT_ARGE
+import hepta.rxposed.manager.util.MmkvManager
 
 
-/**
- * A simple [Fragment] subclass.
- */
-class SupportFragment : Fragment() {
+class PlugFragment : Fragment() {
 
 
-    private var moduleListAdapter: SupportListAdapter? = null
-    private val filterModuleInfo: List<SupportInfoProvider.SupportInfo> = ArrayList()
+    private var moduleListAdapter: PlugListAdapter? = null
     private lateinit var binding: FragmentFrameworksBinding
-    private lateinit var listPlug:  List<SupportInfoProvider.SupportInfo>
+    private lateinit var listPlug:  List<AppItemInfo>
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -81,22 +79,30 @@ class SupportFragment : Fragment() {
                     return false
                 }
             },viewLifecycleOwner, Lifecycle.State.RESUMED)
-
         }
-        moduleListAdapter = SupportListAdapter(R.layout.item_module,inject)
+        moduleListAdapter = PlugListAdapter(R.layout.item_module, inject)
         val layoutManager = LinearLayoutManager(requireContext())
         layoutManager.orientation = LinearLayoutManager.VERTICAL
         binding.recyclerView.setLayoutManager(layoutManager)
         binding.recyclerView.setAdapter(moduleListAdapter)
-        listPlug = SupportInfoProvider.getInstance().moduleList
-        moduleListAdapter!!.setList(listPlug)
+//        listPlug = SupportInfoProvider.getInstance().moduleList
+        moduleListAdapter!!.setList(initData())
 
     }
 
-
-
-//    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-//        inflater.inflate(R.menu.main_menu, menu)
-//    }
-
+    private fun initData(): Collection<AppItemInfo>? {
+        var PackageList = mutableListOf<AppItemInfo>()
+        var pKgList =  MmkvManager.getPLugList()
+        var mPm = requireContext().packageManager;
+        for(name in pKgList.keys){
+            var pkgInfo = mPm.getApplicationInfo(name,0)
+            var tmpappinfo: AppItemInfo =
+                AppItemInfo(
+                    pkgInfo,
+                    mPm
+                )
+            PackageList.add(tmpappinfo)
+        }
+        return PackageList
+    }
 }
