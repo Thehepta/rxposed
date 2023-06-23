@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package hepta.rxposed.manager.fragment.LoadExten.apps
+package hepta.rxposed.manager.fragment.LoadExten
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -31,12 +31,10 @@ import com.afollestad.materialdialogs.bottomsheets.BottomSheet
 import com.afollestad.materialdialogs.input.input
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import com.chad.library.adapter.base.entity.node.BaseNode
-import hepta.rxposed.manager.MainActivity
 import hepta.rxposed.manager.R
-import hepta.rxposed.manager.fragment.LoadExten.ExtenInfoProvider
 import hepta.rxposed.manager.fragment.base.AppInfoNode
-import hepta.rxposed.manager.fragment.base.ModuleInfo
 import hepta.rxposed.manager.fragment.base.baseCollToolbarFragment
+import hepta.rxposed.manager.util.MmkvManager
 
 
 /**
@@ -49,14 +47,14 @@ class ExtenAppFragment : baseCollToolbarFragment() {
     val Datalist: MutableList<BaseNode> = ArrayList()
 
 
-    override fun getModuleInfo(): ModuleInfo {
-        return ExtenInfoProvider.getInstance().ByUidGetModuleInfo(arguments?.getInt("Key")!!)
-    }
+//    override fun getModuleInfo(): ModuleInfo {
+//        return ExtenInfoProvider.getInstance().ByUidGetModuleInfo(!!)
+//    }
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initData();
+//        initData();
         initRecycleView();
         initSwitchBar()
         initToolbar();
@@ -64,19 +62,19 @@ class ExtenAppFragment : baseCollToolbarFragment() {
 
 
 //初始化多级列表数据
-    private fun initData() {
-//        val secondSectionBar = SectionBarNode(moduleInfo?.appInfoList as List<BaseNode>?, "应用列表")
-//        Datalist.add(secondSectionBar)
 
-    }
 
     private fun initSwitchBar() {
         // recycleview 添加toolbar
+        var pkgName = arguments?.getString("packageName")
+        requireContext().packageManager.getApplicationInfo(pkgName!!,0)
+
         val headerView: View = layoutInflater.inflate(R.layout.recycle_head_switchbar, null)
         headerView.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
         var switchCompat = headerView.findViewById<SwitchCompat>(R.id.switch_enable)
-        switchCompat.isChecked = moduleInfo!!.getEnable()
+        switchCompat.isChecked = MmkvManager.getModuleStatus(pkgName!!)
         switchCompat.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
+            MmkvManager.setModuleStatus(pkgName,isChecked)
             moduleInfo?.setEnable(isChecked)
         })
         appsAdapter?.addHeaderView(headerView);
@@ -84,20 +82,24 @@ class ExtenAppFragment : baseCollToolbarFragment() {
 
     @SuppressLint("CheckResult")
     private fun initRecycleView() {
-        appsAdapter = AppInfoAdapter()
+        appsAdapter =
+            AppInfoAdapter(R.layout.item_module)
         val layoutManager = LinearLayoutManager(requireContext())
         layoutManager.orientation = LinearLayoutManager.VERTICAL
-        binding.recyclerView.setLayoutManager(layoutManager)
-        binding.recyclerView.setAdapter(appsAdapter)
+        binding.recyclerView.layoutManager = layoutManager
+        binding.recyclerView.adapter = appsAdapter
+        appsAdapter!!.setList(SingApplist.get().global_applist)
 
-//        appsAdapter!!.setOnItemClickListener { adapter, view, position ->
-//            val appInfo = adapter.data[position] as AppModuleInfo
-//            LogUtil.LogD(appInfo.appName)
-//        }
-//        appsAdapter?.setList(Datalist)
-        appsAdapter?.setList(moduleInfo?.appInfoList)
-        //绑定数据
-        binding.modInfo = moduleInfo
+//        appsAdapter!!.setOnItemClickListener(OnItemClickListener { adapter, view, position ->
+//            var tmpappinfo = launcherIconPackageList[position]
+//            Log.e("rzx",""+tmpappinfo.applicationInfo.uid)
+//            Log.e("rzx",""+tmpappinfo.applicationInfo.packageName)
+//            val controller: NavController = findNavController()
+//            val bundle1:Bundle  =  Bundle();
+//            bundle1.putInt("Key",tmpappinfo.applicationInfo.uid);
+//
+//            controller.navigate(R.id.extend_apps_dest, bundle1)
+//        })
     }
 
     @SuppressLint("CheckResult")
@@ -107,6 +109,10 @@ class ExtenAppFragment : baseCollToolbarFragment() {
         binding.toolbar.setNavigationOnClickListener {
             requireActivity().onBackPressed()
         }
+        var pkgName = arguments?.getString("packageName")
+        var appname = arguments?.getString("appname")
+        binding.toolbar.subtitle = pkgName
+        binding.toolbar.title = appname
 
         binding.toolbar.menu.findItem(R.id.id_toolbar_option).setOnMenuItemClickListener {
             var current_index: Int = 0
@@ -136,7 +142,7 @@ class ExtenAppFragment : baseCollToolbarFragment() {
                         }
                     }
                 }
-                appsAdapter?.setList(filterListApp)
+//                appsAdapter?.setList(filterListApp)
             }
 
             dialog.positiveButton {
@@ -165,7 +171,7 @@ class ExtenAppFragment : baseCollToolbarFragment() {
                         filterListApp.add(it)
                     }
                 }
-                appsAdapter?.setList(filterListApp)
+//                appsAdapter?.setList(filterListApp)
             }
             dialog.negativeButton {
 
@@ -175,10 +181,6 @@ class ExtenAppFragment : baseCollToolbarFragment() {
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        var mainActivity = requireActivity() as MainActivity
-        mainActivity.EnableToolBar()
-    }
+
 
 }
