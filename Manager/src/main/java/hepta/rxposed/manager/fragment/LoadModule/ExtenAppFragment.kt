@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package hepta.rxposed.manager.fragment.LoadExten
+package hepta.rxposed.manager.fragment.LoadModule
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -46,15 +46,13 @@ class ExtenAppFragment : baseCollToolbarFragment() {
     private val filterListApp: MutableList<AppInfoNode> = mutableListOf()
     val Datalist: MutableList<BaseNode> = ArrayList()
 
-
-//    override fun getModuleInfo(): ModuleInfo {
-//        return ExtenInfoProvider.getInstance().ByUidGetModuleInfo(!!)
-//    }
+    lateinit var moduleName:String
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-//        initData();
+        moduleName = arguments?.getString("packageName")!!
+
         initRecycleView();
         initSwitchBar()
         initToolbar();
@@ -65,42 +63,44 @@ class ExtenAppFragment : baseCollToolbarFragment() {
 
 
     private fun initSwitchBar() {
-        // recycleview 添加toolbar
         var pkgName = arguments?.getString("packageName")
         requireContext().packageManager.getApplicationInfo(pkgName!!,0)
-
         val headerView: View = layoutInflater.inflate(R.layout.recycle_head_switchbar, null)
         headerView.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
         var switchCompat = headerView.findViewById<SwitchCompat>(R.id.switch_enable)
-        switchCompat.isChecked = MmkvManager.getModuleStatus(pkgName!!)
+        switchCompat.isChecked = MmkvManager.getModuleStatus(pkgName)
         switchCompat.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
             MmkvManager.setModuleStatus(pkgName,isChecked)
-            moduleInfo?.setEnable(isChecked)
         })
         appsAdapter?.addHeaderView(headerView);
     }
 
     @SuppressLint("CheckResult")
     private fun initRecycleView() {
-        appsAdapter =
-            AppInfoAdapter(R.layout.item_module)
+        appsAdapter = AppInfoAdapter(R.layout.item_application)
         val layoutManager = LinearLayoutManager(requireContext())
         layoutManager.orientation = LinearLayoutManager.VERTICAL
         binding.recyclerView.layoutManager = layoutManager
         binding.recyclerView.adapter = appsAdapter
-        appsAdapter!!.setList(SingApplist.get().global_applist)
-
-//        appsAdapter!!.setOnItemClickListener(OnItemClickListener { adapter, view, position ->
-//            var tmpappinfo = launcherIconPackageList[position]
-//            Log.e("rzx",""+tmpappinfo.applicationInfo.uid)
-//            Log.e("rzx",""+tmpappinfo.applicationInfo.packageName)
-//            val controller: NavController = findNavController()
-//            val bundle1:Bundle  =  Bundle();
-//            bundle1.putInt("Key",tmpappinfo.applicationInfo.uid);
-//
-//            controller.navigate(R.id.extend_apps_dest, bundle1)
-//        })
+        appsAdapter!!.setList(initData())
+        appsAdapter!!.setOnCheckedChangeListener(AppInfoAdapter.onListener { status, AppName ->
+            MmkvManager.setAppEnableModuleStatus(AppName,moduleName,status)
+        })
     }
+    fun initData(): Collection<ItemInfo>? {
+        var applist: MutableList<ItemInfo> = mutableListOf()
+        SingApplist.get().global_applist?.forEach{
+            it.setEnable(MmkvManager.getAppEnableModuleStatus(it.packageName,moduleName))
+            applist.add(it)
+        }
+        return applist
+    }
+
+    fun updateData(){
+        SingApplist.get().updateApps();
+        appsAdapter!!.setList(initData())
+    }
+
 
     @SuppressLint("CheckResult")
     private fun initToolbar() {
@@ -109,9 +109,8 @@ class ExtenAppFragment : baseCollToolbarFragment() {
         binding.toolbar.setNavigationOnClickListener {
             requireActivity().onBackPressed()
         }
-        var pkgName = arguments?.getString("packageName")
         var appname = arguments?.getString("appname")
-        binding.toolbar.subtitle = pkgName
+        binding.toolbar.subtitle = moduleName
         binding.toolbar.title = appname
 
         binding.toolbar.menu.findItem(R.id.id_toolbar_option).setOnMenuItemClickListener {

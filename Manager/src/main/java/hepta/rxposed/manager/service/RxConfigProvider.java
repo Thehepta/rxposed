@@ -18,9 +18,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import hepta.rxposed.manager.RxposedApp;
 import hepta.rxposed.manager.fragment.LoadExten.ExtenInfoProvider;
+import hepta.rxposed.manager.util.MmkvManager;
 
 public class RxConfigProvider extends ContentProvider {
 
@@ -82,26 +84,24 @@ public class RxConfigProvider extends ContentProvider {
 
     @Nullable
     @Override
-    public Bundle call(@NonNull String method, @Nullable String arg_uid, @Nullable Bundle extras) {
+    public Bundle call(@NonNull String method, @Nullable String uid, @Nullable Bundle extras) {
         Bundle bundle = new Bundle();
-        Log.e("RxConfigProvider","method:"+method);
-        Log.e("RxConfigProvider","arg_uid:"+arg_uid);
+        Log.e("getRxConfig","method:"+method);
+        Log.e("getRxConfig","ProcessName:"+uid);
 
-        List<Integer> uidList = ExtenInfoProvider.getInstance().getConfigToUidList(arg_uid,getContext().getPackageManager());
+        String req_packageName = getContext().getPackageManager().getNameForUid(new Integer(uid));
+        List<String> enableModuleList = MmkvManager.INSTANCE.getAppEnableModuleList(req_packageName);
         ArrayList<String> stringList = new ArrayList<>();
-        PackageManager pm = RxposedApp.getRxposedContext().getPackageManager();
-        for(int uid:uidList ){
+        PackageManager pm = RxposedApp.getInstance().getBaseContext().getPackageManager();
+        for(String pkgName:enableModuleList ){
             try {
-                Log.e("RxConfigProvider","enable:"+uid);
-                String nameForUid =  pm.getNameForUid(uid);
-                ApplicationInfo applicationInfo = pm.getApplicationInfo(nameForUid,PackageManager.GET_META_DATA);
+                ApplicationInfo applicationInfo = pm.getApplicationInfo(pkgName,PackageManager.GET_META_DATA);
                 String apk_path = applicationInfo.sourceDir;
                 String entry_class = applicationInfo.metaData.getString("rxposed_clsentry");
                 String entry_method = applicationInfo.metaData.getString("rxposed_mtdentry");
                 stringList.add(apk_path+":"+entry_class+":"+entry_method);
             } catch (PackageManager.NameNotFoundException e) {
-//                throw new RuntimeException(e);
-                Log.e("getRxConfig","uid PackageManager$NameNotFoundException ");
+                Log.e("getRxConfig","PackageManager$NameNotFoundException ");
             }
         }
         bundle.putStringArrayList("ModuleList", stringList);

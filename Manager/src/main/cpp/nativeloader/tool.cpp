@@ -307,7 +307,7 @@ jobject GetRxposedProvider(JNIEnv *env, jobject android_Context , string& AUTHOR
 
 
 JNIEnv *Pre_GetEnv() {
-    void*getAndroidRuntimeEnv = get_AndroidRuntimeGetEnv_addr();
+    void*getAndroidRuntimeEnv = DobbySymbolResolver("libandroid_runtime.so", "_ZN7android14AndroidRuntime9getJNIEnvEv");
     return ((JNIEnv*(*)())getAndroidRuntimeEnv)();
 }
 
@@ -421,7 +421,10 @@ bool hook_init_and_text(JNIEnv* env){
 
     jclass  Process_cls = env->FindClass("android/os/Process");
     jmethodID javamethod = env->GetStaticMethodID(Process_cls,"getUidForName", "(Ljava/lang/String;)I");
-    void *getUidForName =  get_getUidForName_addr();
+    void * libandroid_runtime =  dlopen("libandroid_runtime.so",RTLD_NOW);
+    void *getUidForName = dlsym(libandroid_runtime,"_Z32android_os_Process_getUidForNameP7_JNIEnvP8_jobjectP8_jstring");
+//    void *getUidForName =  DobbySymbolResolver("/system/lib64/libandroid_runtime.so","_Z32android_os_Process_getUidForNameP7_JNIEnvP8_jobjectP8_jstring");
+
 
     INIT_HOOK_PlatformABI(env, nullptr,javamethod,getUidForName,0x109);
 
@@ -488,7 +491,7 @@ void find_class_method(JNIEnv* env){
 
 
 
-jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,string method ,string uid){
+jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,string method ,string uid_str){
 //    JNIEnv* env = Pre_GetEnv();
     jclass ServiceManager_cls = env->FindClass("android/app/ActivityManager");
     auto IActivityManager_class = env->FindClass("android/app/IActivityManager");
@@ -512,7 +515,7 @@ jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,strin
     jstring tag_jstring = env->NewStringUTF("*cmd*");
     jstring j_callingPkg = env->NewStringUTF(callName.c_str());
     jstring j_method = env->NewStringUTF(method.c_str());
-    jstring j_uid = env->NewStringUTF(uid.c_str());
+    jstring j_processName = env->NewStringUTF(uid_str.c_str());
     auto token_ibinderObj = env->NewObject(Binder_class,Binder_init);
     auto mExtras_BundleObj = env->NewObject(Bundle_class,Bundle_init);
 

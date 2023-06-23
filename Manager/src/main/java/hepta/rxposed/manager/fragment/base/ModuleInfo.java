@@ -65,7 +65,6 @@ public class ModuleInfo extends BaseNode {
 
     public void setEnable(boolean enable) {
         this.enable = enable;
-        return;
     }
     public List<AppInfoNode> getAppInfoList() {
         List<AppInfoNode> result = new ArrayList(AppInfoMaps.values());

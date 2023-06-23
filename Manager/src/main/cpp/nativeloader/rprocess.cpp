@@ -5,7 +5,7 @@
 #include "jni.h"
 #include "include/rprocess.h"
 #include "android/log.h"
-#include "include/FunHook.h"
+
 
 
 int (*system_property_get_org)( char*, char *);
@@ -47,9 +47,8 @@ bool rprocess::InitModuleInfo() {
     string Provider_call_method = "getConfig";
     string Provider_call_arg = "null";
     jstring key = env->NewStringUTF("ModuleList");
-    char uid[10];
-    sprintf(uid, "%d", currentUid);
-    jobject obj_bundle = getConfigByProvider(env,  AUTHORITY,processName  ,Provider_call_method,uid);
+    string uid_str = std::to_string(currentUid);
+    jobject obj_bundle = getConfigByProvider(env,  AUTHORITY,processName  ,Provider_call_method,uid_str);
     jclass Bundle_cls = env->FindClass("android/os/Bundle");
     jmethodID Bundle_getStringArrayList_method = env->GetMethodID(Bundle_cls, "getStringArrayList","(Ljava/lang/String;)Ljava/util/ArrayList;");
     jclass ArrayList_cls = env->FindClass("java/util/ArrayList");
@@ -96,7 +95,7 @@ bool rprocess::LoadModule(JNIEnv *env){
     DEBUG();
     for (auto appinfoNativeVec : AppinfoNative_vec)
     {
-        load_apk_And_exe_Class_Method_13(env, RxposedContext, appinfoNativeVec);
+        load_apk_And_exe_Class_Method(env, RxposedContext, appinfoNativeVec);
     }
 
     return true;
@@ -121,8 +120,8 @@ bool rprocess::Enable() {
         rprocess::GetInstance()->InitModuleInfo();
         return true;
     } else{
-        void *system_property_get_addr = get__system_property_get_addr();
-        DobbyHook((void *)system_property_get_addr, (void *)system_property_get_call, (void **)&system_property_get_org);
+//        void *system_property_get_addr = DobbySymbolResolver (nullptr, "__system_property_get");
+//        DobbyHook((void *)system_property_get_addr, (void *)system_property_get_call, (void **)&system_property_get_org);
         return false;
     }
 
@@ -133,9 +132,9 @@ bool rprocess::is_Load(JNIEnv* env,char * name) {
     DEBUG();
     RxposedContext = CreateApplicationContext(env, processName);
     if(RxposedContext != nullptr){
+        LoadModule(env);
         return true;
     }
     return false;
 
 }
-

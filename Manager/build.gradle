@@ -84,6 +84,10 @@ android {
                 //                cppFlags "-frtti -fexceptions -Wpointer-arith"
                 abiFilters 'armeabi-v7a', 'arm64-v8a'
             }
+
+            ndk {
+                abiFilters 'armeabi-v7a','arm64-v8a'           //写在这里
+            }
         }
         buildConfigField "String", "Rxposed_Inject_So", "\"${Rxposed_Inject_So}\""
 
@@ -157,6 +161,11 @@ dependencies {
     //dialogs
     implementation 'com.afollestad.material-dialogs:bottomsheets:3.3.0'
     implementation 'com.afollestad.material-dialogs:input:3.3.0'
+
+
+    implementation 'com.tencent:mmkv:1.2.15'
+    implementation 'com.google.code.gson:gson:2.10.1'
+
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'

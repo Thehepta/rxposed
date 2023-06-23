@@ -1,20 +1,10 @@
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout android:id="@+id/coordinatorLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-
-    <data>
-        <import  type="hepta.rxposed.manager.fragment.base.ModuleInfo" />
-        <variable
-            name="modInfo"
-            type="hepta.rxposed.manager.fragment.base.ModuleInfo" />
-    </data>
-
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
-        android:id="@+id/coordinatorLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:fitsSystemWindows="true">
-
 
             <com.google.android.material.appbar.AppBarLayout
                 android:id="@+id/appbar"
@@ -35,26 +25,15 @@
                     app:layout_scrollFlags="scroll|exitUntilCollapsed"
                     app:titleCollapseMode="scale">
 
-                    <!--                <View-->
-                    <!--                    android:id="@+id/click_view"-->
-                    <!--                    android:layout_width="match_parent"-->
-                    <!--                    android:layout_height="match_parent" />-->
-
                     <com.google.android.material.appbar.MaterialToolbar
                         android:id="@+id/toolbar"
                         app:menu="@menu/applist_main_menu"
                         android:layout_width="match_parent"
                         android:layout_height="?actionBarSize"
-                        app:layout_collapseMode="pin"
-                        app:subtitle="@{modInfo.packageName}"
-                        app:title="@{modInfo.appName}" />
-
+                        app:layout_collapseMode="pin" />
                 </com.google.android.material.appbar.SubtitleCollapsingToolbarLayout>
 
-
             </com.google.android.material.appbar.AppBarLayout>
-
-
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerView"
@@ -63,4 +42,3 @@
                 android:layout_height="match_parent"/>
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
-</layout>

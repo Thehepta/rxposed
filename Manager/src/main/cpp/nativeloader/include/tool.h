@@ -13,28 +13,19 @@
 #include <unistd.h>
 #include <jni.h>
 #include <android/log.h>
-#include "elf_symbol_resolver.h"
+#include "debug.h"
+#include "dlext.h"
 using namespace std;
 
 
 
-//#if 1
-
-#define RxposedTag "rxposed"
-// 调用 debug 版本方法
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,RxposedTag,__VA_ARGS__)
-#define DEBUG(...) __android_log_print(ANDROID_LOG_ERROR,RxposedTag,"[file %s],[line %d],[function:%s]",__FILE__, __LINE__,__func__);
-#define LOGD(...)  __android_log_print(ANDROID_LOG_ERROR,RxposedTag,__VA_ARGS__)
-#define LOGF(...) __android_log_print(ANDROID_LOG_FATAL, RxposedTag, __VA_ARGS__)
-
-
-
-//#else
-//#define LOGE(...)
-//#define LOGD(...)
-//#define DEBUG(...)
-//#endif
-
+static const char *getLibPath() {
+#ifndef __aarch64__
+    return "/system/lib/";
+#else
+    return "/system/lib64/";
+#endif
+}
 
 
 
@@ -77,7 +68,7 @@ AppinfoNative* GetPmAppInfoNative(JNIEnv *env, jobject android_Context, string p
 AppinfoNative* GetRxAppInfoNative(JNIEnv *env, jobject android_Context,string AUTHORITY,string pkgName);
 JNIEnv *Pre_GetEnv() ;
 bool hook_init_and_text(JNIEnv* env);
+void* dlsym_android_dlopen_ext(char* name);
 void * getJmethod_JniFunction(JNIEnv* env,jclass jclass1,jmethodID jmethodId);
-jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,string method ,string uid);
-
+jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,string method ,string uid_str);
 #endif //RXPOSED_TOOL_H

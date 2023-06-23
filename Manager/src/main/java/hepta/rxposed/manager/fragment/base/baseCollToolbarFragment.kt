@@ -27,14 +27,19 @@ abstract class baseCollToolbarFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_applist, container, false)
+        binding = FragmentApplistBinding.inflate(getLayoutInflater())
         var mainActivity = requireActivity() as MainActivity
         mainActivity.DisableToolBar();  //主动调用activity的方法，隐藏toolbar
-        baseCollToolbarFragment.moduleInfo = getModuleInfo()
+//        baseCollToolbarFragment.moduleInfo = getModuleInfo()
         return binding.root
     }
 
-    abstract fun getModuleInfo(): ModuleInfo;
+    //    abstract fun getModuleInfo(): ModuleInfo;
+    override fun onDestroy() {
+        super.onDestroy()
+        var mainActivity = requireActivity() as MainActivity
+        mainActivity.EnableToolBar()
+    }
 
 
 }

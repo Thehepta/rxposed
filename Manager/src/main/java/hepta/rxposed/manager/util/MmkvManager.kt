@@ -1,8 +1,10 @@
 package hepta.rxposed.manager.util
 
+import android.content.pm.PackageManager
 import com.google.gson.Gson
 import com.tencent.mmkv.MMKV
-import java.util.*
+import hepta.rxposed.manager.RxposedApp
+
 
 object MmkvManager {
 
@@ -13,6 +15,7 @@ object MmkvManager {
     const val ID_SETTING = "SETTING"
     const val KEY_SELECTED_SERVER = "SELECTED_SERVER"
     const val KEY_ANG_CONFIGS = "ANG_CONFIGS"
+    const val KEY_MOD_CONFIGS = "MOD_CONFIGS"
 
     const val KEY_APP_ALLWO_NONE = 0
     const val KEY_APP_ADD_ALLOW = 1
@@ -28,116 +31,89 @@ object MmkvManager {
     private val setStorage by lazy { MMKV.mmkvWithID(ID_SETTING, MMKV.MULTI_PROCESS_MODE) }
 
 
-    fun decodeServerList(): MutableList<String> {
-        val json = mainStorage?.decodeString(KEY_ANG_CONFIGS)
+    fun getModuleStatus(pkgName:String):Boolean{
+        var tmp = getModuleList()
+        return tmp.getOrDefault(pkgName,false)
+    }
+    fun setModuleStatus(pkgName:String,boolean: Boolean) {
+        var tmp = getModuleList()
+        tmp.replace(pkgName,boolean)
+        setModuleList(tmp)
+    }
+
+    fun getModuleList() : MutableMap<String, Boolean> {
+        val json = setStorage?.decodeString(KEY_MOD_CONFIGS)
         return if (json.isNullOrBlank()) {
-            mutableListOf()
+            InitModuleList()
         } else {
-            Gson().fromJson(json, Array<String>::class.java).toMutableList()
+            var tmp = Gson().fromJson(json, Map::class.java)
+            return tmp as MutableMap<String, Boolean>
         }
     }
 
-    fun decodeServerConfig(guid: String): ServerConfig? {
-        if (guid.isBlank()) {
-            return null
-        }
-        val json = serverStorage?.decodeString(guid)
-        if (json.isNullOrBlank()) {
-            return null
-        }
-        return Gson().fromJson(json, ServerConfig::class.java)
+    fun setModuleList(list :MutableMap<String,Boolean>) {
+        val json = Gson().toJson(list)
+        setStorage?.encode(KEY_MOD_CONFIGS,json)
     }
 
-    fun encodeServerConfig(guid: String, config: ServerConfig): String {
-        val key = guid.ifBlank { getUuid() }
-        serverStorage?.encode(key, Gson().toJson(config))
-        val serverList = decodeServerList()
-        if (!serverList.contains(key)) {
-            serverList.add(0, key)
-            mainStorage?.encode(KEY_ANG_CONFIGS, Gson().toJson(serverList))
-            if (mainStorage?.decodeString(KEY_SELECTED_SERVER).isNullOrBlank()) {
-                mainStorage?.encode(KEY_SELECTED_SERVER, key)
+    fun updataModuleList() :MutableMap<String, Boolean>{
+        var tmp = getModuleList()
+        for (pkg in RxposedApp.getInstance().packageManager.getInstalledPackages(PackageManager.GET_META_DATA)) {
+            val app = pkg.applicationInfo
+            if (app.metaData != null && app.metaData.containsKey("rxmodule")) {
+                if(!tmp.containsKey(app.packageName)){
+                    tmp.put(app.packageName,false)
+                }
             }
         }
-        return key
-    }
-    private fun getUuid() :String{
-        return try {
-            UUID.randomUUID().toString().replace("-", "")
-        } catch (e: Exception) {
-            e.printStackTrace()
-            ""
-        }
+        setModuleList(tmp)
+        return tmp
     }
 
-    fun removeServer(guid: String) {
-        if (guid.isBlank()) {
-            return
+    fun InitModuleList() :MutableMap<String,Boolean> {
+        var list = mutableMapOf<String,Boolean>()
+        for (pkg in RxposedApp.getInstance().packageManager.getInstalledPackages(PackageManager.GET_META_DATA)) {
+            val app = pkg.applicationInfo
+            if (app.metaData != null && app.metaData.containsKey("rxmodule")) {
+                list.put(app.packageName,false)
+            }
         }
-        if (mainStorage?.decodeString(KEY_SELECTED_SERVER) == guid) {
-            mainStorage?.remove(KEY_SELECTED_SERVER)
-        }
-        val serverList = decodeServerList()
-        serverList.remove(guid)
-        mainStorage?.encode(KEY_ANG_CONFIGS, Gson().toJson(serverList))
-        serverStorage?.remove(guid)
-        serverAffStorage?.remove(guid)
+        return list;
     }
 
-
-
-    fun decodeApplicationList(type: Int): MutableList<String> {
-        val json = if (type==KEY_APP_ADD_ALLOW){
-            setStorage?.decodeString(KEY_APP_ADD_ALLOW_LIST)
+    fun setAppEnableModuleStatus(appName:String, mooduleName:String, boolean: Boolean){
+        var modules = setStorage.decodeStringSet(appName)
+        if( modules== null)
+        {
+            modules = mutableSetOf<String>()
+        }
+        if(boolean){
+            modules.add(mooduleName)
         }else{
-            setStorage?.decodeString(KEY_APP_ADD_DIS_ALLOW_LIST)
+            modules.remove(mooduleName)
         }
-        return if (json.isNullOrBlank()) {
-            mutableListOf()
-        } else {
-            Gson().fromJson(json, Array<String>::class.java).toMutableList()
+        setStorage.encode(appName,modules)
+    }
+
+
+    fun getAppEnableModuleStatus(appName:String, ModuleName:String):Boolean{
+         var modules = setStorage.decodeStringSet(appName)
+        if(modules == null){
+            return false
         }
+        return modules.contains(ModuleName)
     }
 
-    fun encodeApplicationList( list :MutableList<String>,type: Int) {
-        val json = Gson().toJson(list)
-        if (type==KEY_APP_ADD_ALLOW){
-            setStorage?.encode(KEY_APP_ADD_ALLOW_LIST,json)
-        }else{
-            setStorage?.encode(KEY_APP_ADD_DIS_ALLOW_LIST,json)
+    fun getAppEnableModuleList(appName:String):MutableList<String>{
+        val module_map: Map<String, Boolean> = getModuleList()
+        var enableModuleList :MutableList<String> = mutableListOf()
+        var modules = setStorage.decodeStringSet(appName)
+        for(module in modules!!){
+            if(module_map.get(module) == true){
+                enableModuleList.add(module)
+            }
         }
+        return enableModuleList
     }
 
-    fun getAllowType() :Int {
-        return setStorage.decodeInt("Type",0)
-    }
-
-    fun setAllowType(type:Int) {
-        setStorage.encode("Type", type)
-    }
-
-
-    fun getAddress():String{
-        return setStorage.decodeString("address","10.0.0.2")!!
-
-    }
-    fun setAddress(address:String) {
-        setStorage.encode("address",address)
-    }
-
-    fun getnetMask():String{
-        return setStorage.decodeString("netmask","255.255.255.252")!!
-
-    }
-    fun setnetMask(address:String) {
-        setStorage.encode("netmask",address)
-    }
-
-    fun getMtu():Int{
-        return setStorage.decodeInt("mtu",1400)!!
-
-    }
-    fun setMtu(Mtu:Int) {
-        setStorage.encode("mtu",Mtu)
-    }
 }
