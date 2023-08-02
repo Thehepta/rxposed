@@ -5,7 +5,6 @@
 #include <cstring>
 #include "include/FunHook.h"
 #include "include/elf_symbol_resolver.h"
-#include "include/dobby.h"
 
 
 #if defined(__aarch64__) // 真机64位

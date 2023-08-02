@@ -43,17 +43,29 @@ def build_Module_copy_file(type,taskname,file_name){
         Asset_dir = "mergeReleaseAssets"
         command = "../${gradlew} -p ../${taskname} externalNativeBuildRelease"
     }
+    try {
 
-    exec {
-        try {
-            executable  sh
-            args '-c', command
-            println("the command is execute success")
-        } catch (GradleException e) {
-            println("the command is execute failed")
+        def process = new ProcessBuilder(sh, "-c", command).redirectErrorStream(true).start()
+        def output = new StringBuilder()
+        process.inputStream.eachLine { line ->
+            output.append(line).append('\n')
         }
+        process.waitFor()
+        println output.toString()
+    } catch (IOException e) {
+        e.printStackTrace()
     }
 
+
+//    exec {
+//        try {
+//            executable  sh
+//            args '-c', command
+//            println("the command is execute success")
+//        } catch (GradleException e) {
+//            println("the command is execute failed")
+//        }
+//    }
 
 
     def arch_arm64 = "arm64-v8a"
