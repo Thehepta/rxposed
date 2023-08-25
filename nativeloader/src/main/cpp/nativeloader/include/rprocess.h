@@ -28,7 +28,7 @@ public:
     {
     }
 
-    void Init(char* nice_name,uid_t uid,gid_t gid);
+    void SetProcessInfo(char* nice_name, uid_t uid, gid_t gid);
     bool LoadModule(JNIEnv *env);
     bool InitModuleInfo();
     bool is_Load(JNIEnv* env,char * name);

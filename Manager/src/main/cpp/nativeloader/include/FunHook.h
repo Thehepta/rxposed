@@ -12,4 +12,5 @@ void * get__system_property_get_addr();
 void * get_AndroidRuntimeGetEnv_addr();
 void * get_getUidForName_addr();
 void * get_android_os_Process_setArgV0_addr();
+void * get_selinux_android_setcontext_addr();
 #endif //RXPOSED_FUNHOOK_H

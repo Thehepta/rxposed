@@ -51,6 +51,10 @@ public  class InjectTool {
     public static Context context = RxposedApp.getRxposedContext();
     private static String InjectTool_arm64_path;
     private static String InjectTool_armv7_path;
+    private static String policy_path;
+
+    public static String policy_tool = "magiskpolicy";
+
     private static String InjectSo_arm64_path;
     private static String InjectSo_armv7_path;
 
@@ -64,12 +68,15 @@ public  class InjectTool {
     public static void init(){
         unziplib(context.getApplicationInfo().sourceDir,context.getFilesDir().getAbsolutePath()+ File.separator);
         InjectTool_arm64_path = context.getFilesDir().getAbsolutePath()+ File.separator+"assets/"+arm64_InjectTool;
+        policy_path = context.getFilesDir().getAbsolutePath()+ File.separator+"assets/"+policy_tool;
         InjectTool_armv7_path = context.getFilesDir().getAbsolutePath()+ File.separator+"assets/"+armv7_InjectTool;
         InjectSo_arm64_path = context.getFilesDir().getAbsolutePath()+ File.separator+"lib/arm64-v8a/"+arm64_so;
         InjectSo_armv7_path = context.getFilesDir().getAbsolutePath()+ File.separator+"lib/armeabi-v7a/"+armv7_so;
         try {
             Runtime.getRuntime().exec("chmod +x "+InjectTool_arm64_path);
-//            Runtime.getRuntime().exec("chmod +x "+InjectTool_armv7_path);
+            Runtime.getRuntime().exec("chmod +x "+InjectTool_armv7_path);
+            Runtime.getRuntime().exec("chmod +x "+policy_path);
+
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -96,6 +103,7 @@ public  class InjectTool {
 
         String cmd_arm64 = InjectTool_arm64_path+" -n zygote64 -so "+ InjectSo_arm64_path+" -symbols _Z14Ptrace_ZygotesPKc "+uid+":"+InjectArg;
         String cmd_armv7 = InjectTool_armv7_path+" -n zygote -so "  + InjectSo_armv7_path+" -symbols _Z14Ptrace_ZygotesPKc "+uid+":"+InjectArg;
+
         rootRun(cmd_arm64);
         Log.e("inject","----------------------------------------");
         rootRun(cmd_armv7);

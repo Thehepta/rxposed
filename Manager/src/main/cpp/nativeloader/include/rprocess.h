@@ -28,9 +28,11 @@ public:
     {
     }
 
-    void Init(char* nice_name,uid_t uid,gid_t gid);
+    void SetProcessInfo(char* nice_name, uid_t uid, gid_t gid);
+    void SetUUID(char* nice_name);
     bool LoadModule(JNIEnv *env);
     bool InitModuleInfo();
+    bool getModuleInfo();
     bool is_Load(JNIEnv* env,char * name);
     bool is_isIsolatedProcess();
     void setAUTHORITY(char* arg_tmp);
@@ -51,6 +53,7 @@ private:
     uid_t currentUid;
     string AUTHORITY;
     string providerHost_pkgName;
+    string UUID;
 };
 
 

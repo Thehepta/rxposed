@@ -2,6 +2,7 @@
 // Created by Intel on 2022/4/5.
 //
 
+#include <sys/wait.h>
 #include "jni.h"
 #include "include/rprocess.h"
 #include "android/log.h"
@@ -33,16 +34,13 @@ rprocess::rprocess() {
 
 rprocess * rprocess::instance_ =nullptr;
 
-void rprocess::Init(char* nice_name,uid_t uid,gid_t gid) {
+void rprocess::SetProcessInfo(char* nice_name, uid_t uid, gid_t gid) {
     currentUid = uid;
     processName = strdup(nice_name);
     this->gid = gid;
 }
 
-
-
-
-bool rprocess::InitModuleInfo() {
+bool rprocess::getModuleInfo() {
     JNIEnv *env = Pre_GetEnv();
     string Provider_call_method = "getConfig";
     string Provider_call_arg = "null";
@@ -79,7 +77,24 @@ bool rprocess::InitModuleInfo() {
         AppinfoNative* appinfoNative = new AppinfoNative(pkgName,source,NativelibPath,Entry_class,Entry_method);
         AppinfoNative_vec.push_back(appinfoNative);
     }
-    return true;
+    return true;}
+
+
+
+bool rprocess::InitModuleInfo() {
+
+    pid_t pid;
+    pid = fork();
+    if(pid < 0 ){}
+    else if(pid == 0){
+        DEBUG()
+        getModuleInfo();
+        _exit(0);
+    }
+    wait(NULL);
+    DEBUG()
+
+
 }
 
 void rprocess::setAUTHORITY(char* arg_tmp){
@@ -120,6 +135,8 @@ bool rprocess::Enable() {
             return false;
         }
         rprocess::GetInstance()->InitModuleInfo();
+
+
         return true;
     } else{
         void *system_property_get_addr = DobbySymbolResolver (nullptr, "__system_property_get");
@@ -140,3 +157,8 @@ bool rprocess::is_Load(JNIEnv* env,char * name) {
     return false;
 
 }
+
+void rprocess::SetUUID(char *nice_name) {
+    UUID = nice_name;
+}
+

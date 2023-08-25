@@ -21,6 +21,15 @@ static def isWindows() {
     return org.gradle.internal.os.OperatingSystem.current().isWindows()
 }
 
+task myTask {
+    doLast {
+        exec {
+            commandLine 'powershell', '-c', 'echo Hello, World!'
+        }
+    }
+}
+
+
 def build_Module_copy_file(type,taskname,file_name){
     def command
     def Asset_dir
@@ -32,28 +41,32 @@ def build_Module_copy_file(type,taskname,file_name){
 
     }
 
-
     if(type.equals("debug")){
-        command = "../${gradlew} -p ../${taskname} externalNativeBuildDebug"
-        Asset_dir = "mergeDebugAssets"
         println("rxposed gradle:"+"externalNativeBuildDebug")
+        Asset_dir = "mergeDebugAssets"
+        command = "../${gradlew} -p ../${taskname} externalNativeBuildDebug"
+
     }
     if(type.equals("release")){
         println("rxposed gradle:"+"externalNativeBuildRelease")
         Asset_dir = "mergeReleaseAssets"
         command = "../${gradlew} -p ../${taskname} externalNativeBuildRelease"
     }
-    try {
+//    try {
+//        def process = new ProcessBuilder(sh, "-c", command).redirectErrorStream(true).start()
+//        def output = new StringBuilder()
+//        process.inputStream.eachLine { line ->
+//            output.append(line).append('\n')
+//        }
+//        process.waitFor()
+//        println output.toString()
+//    } catch (IOException e) {
+//        e.printStackTrace()
+//    }
 
-        def process = new ProcessBuilder(sh, "-c", command).redirectErrorStream(true).start()
-        def output = new StringBuilder()
-        process.inputStream.eachLine { line ->
-            output.append(line).append('\n')
-        }
-        process.waitFor()
-        println output.toString()
-    } catch (IOException e) {
-        e.printStackTrace()
+    exec {
+        commandLine sh ,command
+        ignoreExitValue true
     }
 
 

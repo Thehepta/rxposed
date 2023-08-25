@@ -33,6 +33,12 @@ void * get_android_os_Process_setArgV0_addr(){
     return android_os_Process_setArg_addr;
 }
 
+void * get_selinux_android_setcontext_addr(){
+    void *selinux_android_setcontext_addr = rxposed::resolve_elf_internal_symbol("/system/lib64/libselinux.so","selinux_android_setcontext");
+
+    return selinux_android_setcontext_addr;
+
+}
 #else
 
 
@@ -56,5 +62,10 @@ void * get_android_os_Process_setArgV0_addr(){
 
     void *android_os_Process_setArg_addr = rxposed::resolve_elf_internal_symbol("/system/lib/libandroid_runtime.so","_Z27android_os_Process_setArgV0P7_JNIEnvP8_jobjectP8_jstring");
     return android_os_Process_setArg_addr;
+}
+
+void * get_selinux_android_setcontext_addr(){
+    void *selinux_android_setcontext_addr = rxposed::resolve_elf_internal_symbol("/system/lib/libselinux.so","selinux_android_setcontext");
+    return selinux_android_setcontext_addr;
 }
 #endif

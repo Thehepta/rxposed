@@ -504,6 +504,7 @@ jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,strin
     jclass ServiceManager_cls = env->FindClass("android/app/ActivityManager");
     auto IActivityManager_class = env->FindClass("android/app/IActivityManager");
     auto IActivityManager_getContentProviderExternal_method = env->GetMethodID(IActivityManager_class,"getContentProviderExternal","(Ljava/lang/String;ILandroid/os/IBinder;Ljava/lang/String;)Landroid/app/ContentProviderHolder;");
+    auto IActivityManager_removeContentProviderExternalAsUser_method = env->GetMethodID(IActivityManager_class,"removeContentProviderExternalAsUser","(Ljava/lang/String;Landroid/os/IBinder;I)V");
     auto ContentProviderHolder_class = env->FindClass("android/app/ContentProviderHolder");
     auto Binder_class = env->FindClass("android/os/Binder");
     auto Bundle_class = env->FindClass("android/os/Bundle");
@@ -513,7 +514,7 @@ jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,strin
     jmethodID Bundle_getString_method = env->GetMethodID(Bundle_class, "getString","(Ljava/lang/String;)Ljava/lang/String;");
     auto IContentProvider_class = env->FindClass("android/content/IContentProvider");
     auto ContentProviderHolder_provider_filed = env->GetFieldID(ContentProviderHolder_class,"provider","Landroid/content/IContentProvider;");
-    jmethodID ActivityManager_getservice_method_ = env->GetStaticMethodID(ServiceManager_cls, "getService", "()Landroid/app/IActivityManager;");
+        jmethodID ActivityManager_getservice_method_ = env->GetStaticMethodID(ServiceManager_cls, "getService", "()Landroid/app/IActivityManager;");
     jobject IActivityManager_Obj = env->CallStaticObjectMethod(ServiceManager_cls, ActivityManager_getservice_method_);
     if(IActivityManager_Obj == nullptr){
         NDK_ExceptionCheck(env,"ActivityManager_getservice_method_ is null");
@@ -544,6 +545,9 @@ jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,strin
 
         auto IContentProvider_call_method = env->GetMethodID(IContentProvider_class,"call","(Landroid/content/AttributionSource;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroid/os/Bundle;)Landroid/os/Bundle;");
         ret_bundle = env->CallObjectMethod(provider_IContentProviderObj, IContentProvider_call_method, attributionSourceObj, j_AUTHORITY, j_method, j_uid, mExtras_BundleObj);
+        env->CallObjectMethod(IActivityManager_Obj,IActivityManager_removeContentProviderExternalAsUser_method,j_AUTHORITY,token_ibinderObj,0);
+
+
 
     } else{
 
