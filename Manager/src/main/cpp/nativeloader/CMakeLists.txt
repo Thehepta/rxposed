@@ -46,7 +46,6 @@ add_library( # Sets the name of the library.
         rprocess.cpp
         check.cpp
         FunHook.cpp
-        service.cpp
         android_shm.cpp
         )
 
