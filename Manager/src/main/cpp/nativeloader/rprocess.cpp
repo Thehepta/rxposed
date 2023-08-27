@@ -4,10 +4,12 @@
 
 #include <sys/wait.h>
 #include "jni.h"
+#include <sys/ipc.h>
+#include <sys/shm.h>
 #include "include/rprocess.h"
 #include "android/log.h"
-
-
+#include "include/service.h"
+#include "include/android_shm.h"
 
 int (*system_property_get_org)( char*, char *);
 
@@ -34,67 +36,60 @@ rprocess::rprocess() {
 
 rprocess * rprocess::instance_ =nullptr;
 
-void rprocess::SetProcessInfo(char* nice_name, uid_t uid, gid_t gid) {
+void rprocess::setProcessInfo(char* nice_name, uid_t uid, gid_t gid) {
     currentUid = uid;
     processName = strdup(nice_name);
     this->gid = gid;
 }
 
-bool rprocess::getModuleInfo() {
-    JNIEnv *env = Pre_GetEnv();
-    string Provider_call_method = "getConfig";
-    string Provider_call_arg = "null";
-    jstring key = env->NewStringUTF("ModuleList");
-    string uid_str = std::to_string(currentUid);
-    jobject obj_bundle = getConfigByProvider(env,  AUTHORITY,processName  ,Provider_call_method,uid_str);
-    jclass Bundle_cls = env->FindClass("android/os/Bundle");
-    jmethodID Bundle_getStringArrayList_method = env->GetMethodID(Bundle_cls, "getStringArrayList","(Ljava/lang/String;)Ljava/util/ArrayList;");
-    jclass ArrayList_cls = env->FindClass("java/util/ArrayList");
-    jmethodID ArrayList_size_method = env->GetMethodID(ArrayList_cls, "size","()I");
-    jmethodID ArrayList_get_method = env->GetMethodID(ArrayList_cls, "get","(I)Ljava/lang/Object;");
-    jobject config = env->CallObjectMethod(obj_bundle, Bundle_getStringArrayList_method,key);
-    if(config == nullptr){
-        return true;
-    }
-    string bask = "base.apk";
-    jint size = env->CallIntMethod(config,ArrayList_size_method);
-    for(int i=0;i<size;i++){
-        jstring element = static_cast<jstring>(env->CallObjectMethod(config, ArrayList_get_method,i));
-        string appinfo = env->GetStringUTFChars(element,0);
-        vector<string> vectorApp = string_split(appinfo,":");
-        string source(vectorApp[0]);
-        string pkgName = "";
-        string Entry_class = vectorApp[1];
-        string Entry_method = vectorApp[2];
-        size_t startPost = source.find(bask);
-#ifdef __aarch64__
-        string NativelibPath = vectorApp[0].replace(startPost,bask.length(),"lib/arm64");
-#else
-        string NativelibPath = vectorApp[0].replace(startPost,bask.length(),"lib/arm");
-#endif
-        LOGE("source:%s",source.c_str());
-        LOGE("NativelibPath:%s",NativelibPath.c_str());
-        AppinfoNative* appinfoNative = new AppinfoNative(pkgName,source,NativelibPath,Entry_class,Entry_method);
-        AppinfoNative_vec.push_back(appinfoNative);
-    }
-    return true;}
-
-
-
 bool rprocess::InitModuleInfo() {
 
-    pid_t pid;
-    pid = fork();
-    if(pid < 0 ){}
-    else if(pid == 0){
-        DEBUG()
-        getModuleInfo();
+    char* buf;
+    U64 ufd = 0;
+    int ret = create_shared_memory("rxposed",4096,-1,buf,ufd);
+
+    pid_t pid = fork();
+
+    if (pid == 0) {
+        // 子进程读取数据
+        JNIEnv *env = Pre_GetEnv();
+        std::string Provider_call_method = "getConfig";
+        std::string appinfoList = getCurrentAppRxposedConfig(env,  AUTHORITY,processName  ,Provider_call_method,currentUid);
+        LOGE("appinfoList:%s len:%d",appinfoList.c_str(),appinfoList.length());
+        memcpy(buf,appinfoList.c_str(),appinfoList.length());
         _exit(0);
+    }else if (pid > 0) {
+        // 等待子进程结束
+        wait(NULL);
+        LOGE("buf:%s len:%d",buf, strlen(buf));
+        vector<string> vectorApp = string_split(buf,"|");
+        string bask = "base.apk";
+
+        for(int i=0;i<vectorApp.size();i++){
+            string appinfo = vectorApp[i];
+            if(appinfo.empty()){
+                continue;
+            }
+            vector<string> info = string_split(appinfo,":");
+            string source(info[0]);
+            string pkgName = "";
+            string Entry_class = info[1];
+            string Entry_method = info[2];
+            size_t startPost = source.find(bask);
+#ifdef __aarch64__
+            string NativelibPath = info[0].replace(startPost,bask.length(),"lib/arm64");
+#else
+            string NativelibPath = vectorApp[0].replace(startPost,bask.length(),"lib/arm");
+#endif
+            LOGE("source:%s",source.c_str());
+            LOGE("NativelibPath:%s",NativelibPath.c_str());
+            AppinfoNative* appinfoNative = new AppinfoNative(pkgName,source,NativelibPath,Entry_class,Entry_method);
+            AppinfoNative_vec.push_back(appinfoNative);
+        }
     }
-    wait(NULL);
+    close_shared_memory(ufd,buf);
     DEBUG()
-
-
+    return true;
 }
 
 void rprocess::setAUTHORITY(char* arg_tmp){
@@ -135,8 +130,6 @@ bool rprocess::Enable() {
             return false;
         }
         rprocess::GetInstance()->InitModuleInfo();
-
-
         return true;
     } else{
         void *system_property_get_addr = DobbySymbolResolver (nullptr, "__system_property_get");
@@ -151,14 +144,13 @@ bool rprocess::is_Load(JNIEnv* env,char * name) {
     DEBUG();
     RxposedContext = CreateApplicationContext(env, processName,currentUid);
     if(RxposedContext != nullptr){
-        LoadModule(env);
         return true;
     }
     return false;
 
 }
 
-void rprocess::SetUUID(char *nice_name) {
+void rprocess::setUUID(char *nice_name) {
     UUID = nice_name;
 }
 

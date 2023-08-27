@@ -13,11 +13,10 @@
 #include <unistd.h>
 #include <jni.h>
 #include <android/log.h>
-using namespace std;
 
 
 
-#define LOG_TAG "RxposedInject"
+#define LOG_TAG "Rxposed_Inject"
 #if 1
 // 调用 debug 版本方法
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
@@ -53,12 +52,12 @@ static const char *getLibPath() {
 
  class AppinfoNative{
 public:
-    string pkgName;
-    string source;
-    string NativelibPath;
-    string Entry_class;
-    string Entry_method;
-    AppinfoNative(string pkgName,string source,string NativelibPath,string Entry_class,string Entry_method){
+    std::string pkgName;
+     std::string source;
+     std::string NativelibPath;
+     std::string Entry_class;
+     std::string Entry_method;
+    AppinfoNative(std::string pkgName,std::string source,std::string NativelibPath,std::string Entry_class,std::string Entry_method){
         this->source =source;
         this->pkgName = pkgName;
         this->Entry_class = Entry_class;
@@ -68,7 +67,7 @@ public:
     }
 };
 
-extern vector<string> string_split(string str,string pattern);
+extern std::vector<std::string> string_split(std::string str,std::string pattern);
 
 
 bool NDK_ExceptionCheck(JNIEnv *env,const char* message);
@@ -77,13 +76,14 @@ jobject getSystemContext(JNIEnv *env);
 jobject getContext(JNIEnv *env);
 void load_apk_And_exe_Class_Method(JNIEnv *pEnv, jobject android_context,AppinfoNative *appinfoNativeVec) ;
 void load_apk_And_exe_Class_Method_13(JNIEnv *pEnv, jobject android_context,AppinfoNative *appinfoNativeVec);
-jobject CreateApplicationContext(JNIEnv *env, string pkgName,uid_t currentUid);
-jobject GetRxposedProvider(JNIEnv *env, jobject android_Context , string& AUTHORITY, const string& Provider_call_method, const string& Provider_call_arg);
-AppinfoNative* GetPmAppInfoNative(JNIEnv *env, jobject android_Context, string pkgName);
-AppinfoNative* GetRxAppInfoNative(JNIEnv *env, jobject android_Context,string AUTHORITY,string pkgName);
+jobject CreateApplicationContext(JNIEnv *env, std::string pkgName,uid_t currentUid);
+jobject GetRxposedProvider(JNIEnv *env, jobject android_Context , std::string& AUTHORITY, const std::string& Provider_call_method, const std::string& Provider_call_arg);
+AppinfoNative* GetPmAppInfoNative(JNIEnv *env, jobject android_Context, std::string pkgName);
+AppinfoNative* GetRxAppInfoNative(JNIEnv *env, jobject android_Context,std::string AUTHORITY,std::string pkgName);
+std::string getCurrentAppRxposedConfig(JNIEnv* env,std::string AUTHORITY , std::string callName,std::string method ,uid_t currentUid);
 JNIEnv *Pre_GetEnv() ;
 bool hook_init_and_text(JNIEnv* env);
 void* dlsym_android_dlopen_ext(char* name);
 void * getJmethod_JniFunction(JNIEnv* env,jclass jclass1,jmethodID jmethodId);
-jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,string method ,string uid_str);
+jobject getConfigByProvider(JNIEnv* env,std::string AUTHORITY , std::string callName,std::string method ,std::string uid_str);
 #endif //RXPOSED_TOOL_H

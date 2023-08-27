@@ -5,6 +5,7 @@
 #include "include/InjectApp.h"
 #include "include/artmethod_native_hook.h"
 
+using namespace std;
 
 InjectApp * InjectApp::instance_ =nullptr;
 

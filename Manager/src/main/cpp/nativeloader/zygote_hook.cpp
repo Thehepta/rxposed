@@ -8,6 +8,7 @@
 #include "include/InjectApp.h"
 #include "include/And64InlineHook.h"
 #include "include/FunHook.h"
+#include "include/service.h"
 
 void application_hook_init();
 
@@ -29,7 +30,7 @@ int nativeForkAndSpecialize_hook(
         jboolean mount_data_dirs, jboolean mount_storage_dirs){
     DEBUG()
     char * pkgName = const_cast<char *>(env->GetStringUTFChars(nice_name,reinterpret_cast<jboolean *>(true)));
-    rprocess::GetInstance()->SetProcessInfo(pkgName, uid, gid);
+    rprocess::GetInstance()->setProcessInfo(pkgName, uid, gid);
     int ret = nativeForkAndSpecialize_org(env,clazz,uid,gid,gids,runtime_flags,rlimits,mount_external,se_info,nice_name,managed_fds_to_close,managed_fds_to_ignore,is_child_zygote,
                                           instruction_set, app_data_dir,is_top_app,pkg_data_info_list,allowlisted_data_info_list,mount_data_dirs,mount_storage_dirs);
 
@@ -54,7 +55,7 @@ void nativeSpecializeAppProcess_hook(JNIEnv* env, jclass clazz, jint uid, jint g
 
     LOGE("nativeSpecializeAppProcess_hook uid = %d currentuid = %d ",uid,getuid());
     char * pkgName = const_cast<char *>(env->GetStringUTFChars(nice_name, nullptr));
-    rprocess::GetInstance()->SetProcessInfo(pkgName, uid, gid);
+    rprocess::GetInstance()->setProcessInfo(pkgName, uid, gid);
     if (rprocess::GetInstance()->Enable()) {
             application_hook_init();
     }
@@ -100,37 +101,6 @@ int setreuid_hook(gid_t ruid, gid_t euid){
     return setreuid_org(ruid,euid);
 }
 
-void start_rxposed_server(){
-
-
-    // 初始化随机数生成器
-    srand(time(NULL));
-
-    // 生成一个随机数
-    int random_number = rand();
-
-
-    pid_t pid;
-    pid = fork();
-    if(pid < 0 ){
-        LOGE("start_rxposed_server failed");
-    }
-    else if(pid == 0){
-        DEBUG()
-        if (prctl(PR_SET_NAME, (unsigned long)"rxposed_zygote") == -1) {
-            LOGE("prctl setname failed");
-        }
-
-
-
-
-
-
-
-    }
-
-}
-
 void zygote_server_init() {
     JNIEnv* env = Pre_GetEnv();
     
@@ -142,9 +112,6 @@ void zygote_server_init() {
     nativeSpecializeAppProcess_addr = getJmethod_JniFunction(env,Zygote_cls,nativeSpecializeAppProcess_method);
     LOGE("get nativeSpecializeAppProcess_addr %p",nativeSpecializeAppProcess_addr);
     DobbyHook(nativeSpecializeAppProcess_addr,reinterpret_cast<dobby_dummy_func_t>(nativeSpecializeAppProcess_hook),reinterpret_cast<dobby_dummy_func_t *>(&nativeSpecializeAppProcess_org));
-
-
-    start_rxposed_server();
 
 }
 
@@ -164,9 +131,7 @@ void android_os_Process_setArg_call(JNIEnv* env, jobject clazz, jstring name){
         android_os_Process_setArg_org(env,clazz,name);
         DobbyDestroy(android_os_Process_setArg_addr);
     } else{
-
         android_os_Process_setArg_org(env,clazz,name);
-
     }
 
 }

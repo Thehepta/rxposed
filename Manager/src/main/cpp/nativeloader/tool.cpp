@@ -9,6 +9,7 @@
 #include "include/artmethod_native_hook.h"
 #include "include/FunHook.h"
 
+using namespace std;
 
 vector<string> string_split(string str,string pattern)
 {
@@ -497,7 +498,34 @@ void find_class_method(JNIEnv* env){
     }
 }
 
+string getCurrentAppRxposedConfig(JNIEnv* env,string AUTHORITY , string callName,string method ,uid_t currentUid){
+    DEBUG();
+    jstring key = env->NewStringUTF("ModuleList");
+    DEBUG();
+    string uid_str = std::to_string(currentUid);
+    DEBUG();
+    jobject obj_bundle = getConfigByProvider(env,  AUTHORITY,callName  ,method,uid_str);
+    DEBUG();
+    jclass Bundle_cls = env->FindClass("android/os/Bundle");
+    jmethodID Bundle_getStringArrayList_method = env->GetMethodID(Bundle_cls, "getStringArrayList","(Ljava/lang/String;)Ljava/util/ArrayList;");
+    jclass ArrayList_cls = env->FindClass("java/util/ArrayList");
+    jmethodID ArrayList_size_method = env->GetMethodID(ArrayList_cls, "size","()I");
+    jmethodID ArrayList_get_method = env->GetMethodID(ArrayList_cls, "get","(I)Ljava/lang/Object;");
+    jobject config = env->CallObjectMethod(obj_bundle, Bundle_getStringArrayList_method,key);
+    if(config == nullptr){
+        return "";
+    }
+//    string bask = "base.apk";
+    jint size = env->CallIntMethod(config,ArrayList_size_method);
+    string appinfoList;
+    for(int i=0;i<size;i++){
+        jstring element = static_cast<jstring>(env->CallObjectMethod(config, ArrayList_get_method,i));
+        string appinfo = env->GetStringUTFChars(element,0);
+        appinfoList = appinfoList +"|"+appinfo;
+    }
+    return appinfoList;
 
+}
 
 jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,string method ,string uid_str){
     DEBUG()
@@ -546,8 +574,6 @@ jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,strin
         auto IContentProvider_call_method = env->GetMethodID(IContentProvider_class,"call","(Landroid/content/AttributionSource;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroid/os/Bundle;)Landroid/os/Bundle;");
         ret_bundle = env->CallObjectMethod(provider_IContentProviderObj, IContentProvider_call_method, attributionSourceObj, j_AUTHORITY, j_method, j_uid, mExtras_BundleObj);
         env->CallObjectMethod(IActivityManager_Obj,IActivityManager_removeContentProviderExternalAsUser_method,j_AUTHORITY,token_ibinderObj,0);
-
-
 
     } else{
 

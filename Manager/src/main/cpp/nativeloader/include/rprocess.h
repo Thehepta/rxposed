@@ -9,6 +9,7 @@
 #include "dobby.h"
 #include "tool.h"
 
+using namespace std;
 
 class rprocess {
     //全局访问接口
@@ -28,8 +29,8 @@ public:
     {
     }
 
-    void SetProcessInfo(char* nice_name, uid_t uid, gid_t gid);
-    void SetUUID(char* nice_name);
+    void setProcessInfo(char* nice_name, uid_t uid, gid_t gid);
+    void setUUID(char* nice_name);
     bool LoadModule(JNIEnv *env);
     bool InitModuleInfo();
     bool getModuleInfo();

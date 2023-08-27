@@ -33,7 +33,7 @@ rprocess::rprocess() {
 
 rprocess * rprocess::instance_ =nullptr;
 
-void rprocess::SetProcessInfo(char* nice_name, uid_t uid, gid_t gid) {
+void rprocess::setProcessInfo(char* nice_name, uid_t uid, gid_t gid) {
     currentUid = uid;
     processName = strdup(nice_name);
     this->gid = gid;
