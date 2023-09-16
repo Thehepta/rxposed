@@ -51,4 +51,9 @@ public class ModuleListAdapter extends BaseQuickAdapter<AppItemInfo, BaseViewHol
         //这样绑定的好处是，不用手工写代码设置数据了，直接在xml文件中设置数据就可以了
     }
 
+    @Override
+    protected int getDefItemViewType(int position) {   //不写这个容易导致item混乱
+        return position;
+    }
+
 }

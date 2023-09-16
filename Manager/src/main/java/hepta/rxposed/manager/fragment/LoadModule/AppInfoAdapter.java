@@ -1,5 +1,6 @@
 package hepta.rxposed.manager.fragment.LoadModule;
 
+import android.util.Log;
 import android.widget.CompoundButton;
 
 import androidx.annotation.NonNull;
@@ -35,11 +36,14 @@ public class AppInfoAdapter extends BaseQuickAdapter<AppItemInfo, BaseViewHolder
         baseViewHolder.setText(R.id.app_packageName, app_packageName);
         baseViewHolder.setImageDrawable(R.id.app_icon, item.getIcon());
         SwitchCompat switchCompat = baseViewHolder.findView(R.id.switcher);
+        if(item.getEnable() == true){
+            Log.e("Rzxconvert",app_packageName);
+        }
         switchCompat.setChecked(item.getEnable());
         switchCompat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-
+                item.setEnable(isChecked);
                     if(listener!=null){
                         listener.OnListener(isChecked,app_packageName);
                     }
@@ -47,6 +51,11 @@ public class AppInfoAdapter extends BaseQuickAdapter<AppItemInfo, BaseViewHolder
         });
     }
 
+
+    @Override
+    protected int getDefItemViewType(int position) {   //不写这个容易导致item混乱
+        return position;
+    }
 
     public interface  onListener{
         void OnListener(boolean status,String pKgName);

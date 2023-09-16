@@ -43,6 +43,11 @@ public class usprocInfoAdapter  extends BaseQuickAdapter<UIDPorcessItem.subproce
     }
 
 
+    @Override
+    protected int getDefItemViewType(int position) {   //不写这个容易导致item混乱
+        return position;
+    }
+
     public interface OnClickInjectListener {
         void onClick(UIDPorcessItem.subprocessItem item);
     }

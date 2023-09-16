@@ -48,4 +48,10 @@ public class PlugListAdapter extends BaseQuickAdapter<AppItemInfo, BaseViewHolde
             baseViewHolder.findView(R.id.btn_open_app).setVisibility(View.VISIBLE);
         }
     }
+
+    @Override
+    protected int getDefItemViewType(int position) {   //不写这个容易导致item混乱
+        return position;
+    }
+
 }

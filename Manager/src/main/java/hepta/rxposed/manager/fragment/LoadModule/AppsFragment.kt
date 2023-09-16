@@ -19,6 +19,7 @@ package hepta.rxposed.manager.fragment.LoadModule
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -104,12 +105,15 @@ class AppsFragment : Fragment() {
         appsAdapter!!.setList(initData())
         appsAdapter!!.setOnCheckedChangeListener(AppInfoAdapter.onListener { status, AppName ->
             MmkvManager.setAppEnableModuleStatus(AppName,moduleName,status)
+            Log.e("rzxsetApp",AppName+":"+status+":"+moduleName)
+
         })
     }
     fun initData(): Collection<AppItemInfo>? {
         var applist: MutableList<AppItemInfo> = mutableListOf()
-        SingApplist.get().global_applist?.forEach{
+        for( it in SingApplist.get().global_applist!!){
             it.setEnable(MmkvManager.getAppEnableModuleStatus(it.packageName,moduleName))
+            Log.e("rzx",it.enable.toString()+":"+it.packageName.toString()+":"+moduleName)
             applist.add(it)
         }
         return applist

@@ -126,10 +126,13 @@ object MmkvManager {
         }else{
             modules.remove(mooduleName)
         }
+        if(modules.size == 0){
+
+        }
         setStorage.encode(appName,modules)
     }
 
-
+    // appName = com.android.camera
     fun getAppEnableModuleStatus(appName:String, ModuleName:String):Boolean{
          var modules = setStorage.decodeStringSet(appName)
         if(modules == null){

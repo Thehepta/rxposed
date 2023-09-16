@@ -47,6 +47,12 @@ public class ProcessListAdapter extends BaseQuickAdapter<UIDPorcessItem, BaseVie
 
     }
 
+
+    @Override
+    protected int getDefItemViewType(int position) {   //不写这个容易导致item混乱
+        return position;
+    }
+
     public interface OnClickListener{
         void onClick(UIDPorcessItem item);
     }
