@@ -115,8 +115,8 @@ bool get_pid_by_name(pid_t *pid, char *task_name){
     DIR *dir;
     struct dirent *ptr;
     FILE *fp;
-    char filepath[50];
-    char cur_task_name[50];
+    char filepath[150];
+    char cur_task_name[1024];
     char buf[1024];
 
     dir = opendir("/proc");
@@ -146,7 +146,6 @@ bool get_pid_by_name(pid_t *pid, char *task_name){
         }
         closedir(dir);
     }
-
     return false;
 }
 
