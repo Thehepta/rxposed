@@ -11,8 +11,8 @@ def FileCopy(src_file,dst_dir,src_name,dst_name){
         from src_file
         into dst_dir
         rename(src_name,dst_name)
-        println("copy file success:"+src_file)
-        println("copy file success:"+dst_dir+":"+dst_name)
+        println("[FileCopy]copy file success:"+src_file)
+        println("[FileCopy]copy file success:"+dst_dir+":"+dst_name)
     }
 }
 
@@ -52,33 +52,25 @@ def build_Module_copy_file(type,taskname,file_name){
         Asset_dir = "mergeReleaseAssets"
         command = "../${gradlew} -p ../${taskname} externalNativeBuildRelease"
     }
-//    try {
-//        def process = new ProcessBuilder(sh, "-c", command).redirectErrorStream(true).start()
-//        def output = new StringBuilder()
-//        process.inputStream.eachLine { line ->
-//            output.append(line).append('\n')
-//        }
-//        process.waitFor()
-//        println output.toString()
-//    } catch (IOException e) {
-//        e.printStackTrace()
-//    }
 
-    exec {
-        commandLine sh ,command
-        ignoreExitValue true
+
+    if(isWindows()) {
+        exec {
+            commandLine sh,command
+            ignoreExitValue true
+        }
+
+    }else {
+        exec {
+            try {
+                executable  sh
+                args '-c', command
+                println("the command is execute success")
+            } catch (GradleException e) {
+                println("the command is execute failed")
+            }
+        }
     }
-
-
-//    exec {
-//        try {
-//            executable  sh
-//            args '-c', command
-//            println("the command is execute success")
-//        } catch (GradleException e) {
-//            println("the command is execute failed")
-//        }
-//    }
 
 
     def arch_arm64 = "arm64-v8a"
