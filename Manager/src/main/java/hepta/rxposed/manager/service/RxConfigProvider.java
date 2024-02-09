@@ -96,9 +96,11 @@ public class RxConfigProvider extends ContentProvider {
             try {
                 ApplicationInfo applicationInfo = pm.getApplicationInfo(pkgName,PackageManager.GET_META_DATA);
                 String apk_path = applicationInfo.sourceDir;
+
                 String entry_class = applicationInfo.metaData.getString("rxposed_clsentry");
                 String entry_method = applicationInfo.metaData.getString("rxposed_mtdentry");
-                stringList.add(apk_path+":"+entry_class+":"+entry_method);
+                boolean hide = applicationInfo.metaData.getBoolean("rxposed_hide",false);
+                stringList.add(apk_path+":"+entry_class+":"+entry_method+":"+hide);
             } catch (PackageManager.NameNotFoundException e) {
                 Log.e("getRxConfig","PackageManager$NameNotFoundException ");
             }

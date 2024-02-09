@@ -8,7 +8,6 @@
 #include <sys/shm.h>
 #include "include/rprocess.h"
 #include "android/log.h"
-#include "include/service.h"
 #include "include/android_shm.h"
 
 int (*system_property_get_org)( char*, char *);
@@ -75,6 +74,7 @@ bool rprocess::InitModuleInfo() {
             string pkgName = "";
             string Entry_class = info[1];
             string Entry_method = info[2];
+            string hide = info[3];
             size_t startPost = source.find(bask);
 #ifdef __aarch64__
             string NativelibPath = info[0].replace(startPost,bask.length(),"lib/arm64");
@@ -83,7 +83,7 @@ bool rprocess::InitModuleInfo() {
 #endif
             LOGE("source:%s",source.c_str());
             LOGE("NativelibPath:%s",NativelibPath.c_str());
-            AppinfoNative* appinfoNative = new AppinfoNative(pkgName,source,NativelibPath,Entry_class,Entry_method);
+            AppinfoNative* appinfoNative = new AppinfoNative(pkgName,source,NativelibPath,Entry_class,Entry_method,hide);
             AppinfoNative_vec.push_back(appinfoNative);
         }
     }

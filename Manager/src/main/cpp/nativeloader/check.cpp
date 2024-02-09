@@ -11,11 +11,12 @@
 #include <fstream>
 #include <unistd.h>
 #include <vector>
-#include "include/artmethod_native_hook.h"
+#include "artmethod_native_hook.h"
 #include "include/dobby.h"
 #include "include/tool.h"
 #include "include/And64InlineHook.h"
 #include "include/FunHook.h"
+#include "include/elf_resolver.h"
 
 using namespace std;
 
@@ -76,8 +77,8 @@ Java_hepta_rxposed_manager_fragment_check_checkFragment_chekc_1android_1os_1Proc
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_hepta_rxposed_manager_fragment_check_checkFragment_chekc_1PreGetenv(JNIEnv *env,
-                                                                         jobject thiz) {
+Java_hepta_rxposed_manager_fragment_check_checkFragment_chekcPreGetenv(JNIEnv *env,
+                                                                       jobject thiz) {
     JNIEnv *pEnv =Pre_GetEnv();
     if(pEnv == env){
         return true;
@@ -118,15 +119,33 @@ Java_hepta_rxposed_manager_fragment_check_checkFragment_check_1inline_1hook(JNIE
 
 
 
-    void *system_property_get_addr = get__system_property_get_addr();
-    DobbyHook((void *)system_property_get_addr, (void *)text_system_property_get_call, (void **)&text_system_property_get_org);
-    LOGE("system_property_get_addr = %p",system_property_get_addr);
+    DobbyHook((void *)__system_property_get, (void *)text_system_property_get_call, (void **)&text_system_property_get_org);
+    LOGE("system_property_get_addr = %p",__system_property_get);
 
     memset(sdk_ver,0,32);
     __system_property_get("rxposed_activity", sdk_ver);
     if(!strncmp(sdk_ver,"true", strlen("true"))){
         re = true;
     }
-    DobbyDestroy(system_property_get_addr);
+    DobbyDestroy((void *)__system_property_get);
     return re;
+}
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_hepta_rxposed_manager_fragment_check_checkFragment_ELFresolveSymbol(JNIEnv *env,
+                                                                         jobject thiz) {
+    // TODO: implement ELFresolveSymbol()
+
+    void* __system_property_get_fun = rxposed::resolve_elf_internal_symbol("/apex/com.android.runtime/lib64/bionic/libc.so","__system_property_get");
+    LOGE("ELFresolveSymbol dlopen=%x", __system_property_get);
+    LOGE("ELFresolveSymbol __system_property_get_fun=%x",__system_property_get_fun);
+
+    if(__system_property_get_fun == __system_property_get){
+        LOGE("ELFresolveSymbol true " );
+        return true;
+    }else{
+        LOGE("ELFresolveSymbol false");
+        return false;
+    }
+
 }

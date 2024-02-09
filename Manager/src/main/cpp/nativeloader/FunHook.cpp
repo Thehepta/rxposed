@@ -4,17 +4,11 @@
 
 #include <cstring>
 #include "include/FunHook.h"
-#include "include/elf_symbol_resolver.h"
+#include "include/elf_resolver.h"
 
 
 #if defined(__aarch64__) // 真机64位
 
-void * get__system_property_get_addr(){
-
-
-    void *system_property_get_addr = rxposed::resolve_elf_internal_symbol("/apex/com.android.runtime/lib64/bionic/libc.so", "__system_property_get");
-    return system_property_get_addr;
-}
 
 void * get_AndroidRuntimeGetEnv_addr(){
 
@@ -40,12 +34,6 @@ void * get_selinux_android_setcontext_addr(){
 
 }
 #else
-
-
-void * get__system_property_get_addr(){
-    void *system_property_get_addr = rxposed::resolve_elf_internal_symbol("/apex/com.android.runtime/lib/bionic/libc.so", "__system_property_get");
-    return system_property_get_addr;
-}
 
 void * get_AndroidRuntimeGetEnv_addr(){
 

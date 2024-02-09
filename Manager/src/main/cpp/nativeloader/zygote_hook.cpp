@@ -8,7 +8,6 @@
 #include "include/InjectApp.h"
 #include "include/And64InlineHook.h"
 #include "include/FunHook.h"
-#include "include/service.h"
 
 void application_hook_init();
 
@@ -114,10 +113,6 @@ void zygote_server_init() {
     DobbyHook(nativeSpecializeAppProcess_addr,reinterpret_cast<dobby_dummy_func_t>(nativeSpecializeAppProcess_hook),reinterpret_cast<dobby_dummy_func_t *>(&nativeSpecializeAppProcess_org));
 
 }
-
-
-
-
 
 
 

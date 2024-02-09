@@ -52,7 +52,6 @@ dependencies {
     implementation 'top.canyie.pine:core:+'
 
 
-
     implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:3.0.11'
 
     //dialogs

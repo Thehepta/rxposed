@@ -22,13 +22,15 @@ message("cmake project name is  ${CMAKE_PROJECT_NAME}")
 #    message("this is RXDEBUG ON")
 #endif()
 
-
+add_subdirectory(hideload)
 
 add_library(libdobby STATIC IMPORTED)
 set_target_properties(libdobby PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/libs/${ANDROID_ABI}/libdobby.a)
 
 
-#include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(include)
+include_directories(hideload)
+
 
 
 
@@ -40,7 +42,7 @@ add_library( # Sets the name of the library.
         zygote_hook.cpp
         InjectApp.cpp
         tool.cpp
-        elf_symbol_resolver.cpp
+        elf_resolver.cpp
         And64InlineHook.cpp
         artmethod_native_hook.cpp
         rprocess.cpp
@@ -71,6 +73,7 @@ find_library( # Sets the name of the path variable.
 
 target_link_libraries( # Specifies the target library.
         nativeloader
+        hideload
         # Links the target library to the log library
         # included in the NDK.
         libdobby

@@ -8,6 +8,7 @@
 #include "include/dobby.h"
 #include "include/artmethod_native_hook.h"
 #include "include/FunHook.h"
+#include "linker.h"
 
 using namespace std;
 
@@ -64,7 +65,7 @@ AppinfoNative* GetRxAppInfoNative(JNIEnv *env, jobject android_Context,string AU
     string entry_class = env->GetStringUTFChars(static_cast<jstring>(jentry_class), nullptr);
     string entry_method = env->GetStringUTFChars(static_cast<jstring>(jentry_method), nullptr);
 
-    auto * tmp = new AppinfoNative(pkgName, apk_path, apk_native_lib, entry_class, entry_method);
+    auto * tmp = new AppinfoNative(pkgName, apk_path, apk_native_lib, entry_class, entry_method,"false");
     return tmp;
 }
 
@@ -115,7 +116,7 @@ AppinfoNative* GetPmAppInfoNative(JNIEnv *env, jobject android_Context, string p
     const char *  entry_method = env->GetStringUTFChars(js_entry_method, nullptr);
 
 
-    AppinfoNative * tmp = new AppinfoNative(pkgName, sourceDir, nativeLibraryDir, entry_class, entry_method);
+    AppinfoNative * tmp = new AppinfoNative(pkgName, sourceDir, nativeLibraryDir, entry_class, entry_method,"false");
 
 
     env->DeleteLocalRef(js_entry_method);
@@ -131,24 +132,34 @@ AppinfoNative* GetPmAppInfoNative(JNIEnv *env, jobject android_Context, string p
     return tmp ;
 
 }
+jobject PathClassLoaderLoadAPK(JNIEnv *pEnv,jstring apkSource,jstring nativelib){
 
+    jclass PathClassLoader_cls = pEnv->FindClass("dalvik/system/PathClassLoader");
+    jmethodID PathClassLoader_init_mth = pEnv->GetMethodID(PathClassLoader_cls, "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/ClassLoader;)V");
+    jclass ClassLoader_cls = pEnv->FindClass("java/lang/ClassLoader");
+    jmethodID ClassLoader_getSystemClassLoader_cls = pEnv->GetStaticMethodID(ClassLoader_cls, "getSystemClassLoader", "()Ljava/lang/ClassLoader;");
+    jobject SystemClassLoader_obj = pEnv->CallStaticObjectMethod(ClassLoader_cls,ClassLoader_getSystemClassLoader_cls);
+    jobject ApkClassLoader = pEnv->NewObject(PathClassLoader_cls,PathClassLoader_init_mth,apkSource,nativelib,SystemClassLoader_obj);
+    pEnv->DeleteLocalRef(SystemClassLoader_obj);
+    return ApkClassLoader;
+}
 
 void load_apk_And_exe_Class_Method_13(JNIEnv *pEnv, jobject android_context,AppinfoNative *appinfoNativeVec) {
 
     LOGE("enbale pkgName:%s ",appinfoNativeVec->source.c_str());
-    jstring apk = pEnv->NewStringUTF(appinfoNativeVec->source.c_str());
-    jstring nativelib = pEnv->NewStringUTF(appinfoNativeVec->NativelibPath.c_str());
-    jstring class_name = pEnv->NewStringUTF(appinfoNativeVec->Entry_class.c_str());
-    jclass DexClassLoader_cls = pEnv->FindClass("dalvik/system/PathClassLoader");
-    jmethodID init = pEnv->GetMethodID(DexClassLoader_cls, "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/ClassLoader;)V");
-    jclass ClassLoader_cls = pEnv->FindClass("java/lang/ClassLoader");
-    jmethodID ClassLoader_getSystemClassLoader_cls = pEnv->GetStaticMethodID(ClassLoader_cls, "getSystemClassLoader", "()Ljava/lang/ClassLoader;");
-    jmethodID Class_loadClass_method = pEnv->GetMethodID(ClassLoader_cls, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
+    jobject  ApkClassLoader = nullptr;
     jobject entryClass_obj = nullptr;
+    jstring apkSource = pEnv->NewStringUTF(appinfoNativeVec->source.c_str());
+    if(strncmp(appinfoNativeVec->hide.c_str(),"true", strlen("true"))==0){
+        ApkClassLoader = hideLoadApkModule(pEnv, (char*)appinfoNativeVec->source.c_str());
+    } else{
+        jstring nativelib = pEnv->NewStringUTF(appinfoNativeVec->NativelibPath.c_str());
+        ApkClassLoader = PathClassLoaderLoadAPK(pEnv, apkSource, nativelib);
+    }
 
-
-    jobject SystemClassLoader_obj = pEnv->CallStaticObjectMethod(ClassLoader_cls,ClassLoader_getSystemClassLoader_cls);
-    jobject ApkClassLoader = pEnv->NewObject(DexClassLoader_cls,init,apk,nativelib,SystemClassLoader_obj);
+    jclass ClassLoader_cls = pEnv->FindClass("java/lang/ClassLoader");
+    jmethodID Class_loadClass_method = pEnv->GetMethodID(ClassLoader_cls, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
+    jstring class_name = pEnv->NewStringUTF(appinfoNativeVec->Entry_class.c_str());
 
     if(pEnv->ExceptionCheck()){
 //        goto out2;
@@ -163,16 +174,11 @@ void load_apk_And_exe_Class_Method_13(JNIEnv *pEnv, jobject android_context,Appi
     LOGE("invoke method_name=%s ",appinfoNativeVec->Entry_method.c_str());
     jmethodID call_method_mth = pEnv->GetStaticMethodID(static_cast<jclass>(entryClass_obj), appinfoNativeVec->Entry_method.c_str(), "(Landroid/content/Context;Ljava/lang/String;)V");
     DEBUG();
-//调用java反射方法进行调用的，但是传参数比较麻烦
-//    entryMethod_obj = pEnv->CallObjectMethod(entryClass_obj, getmethod_method, method_name,JAAR);
     if(pEnv->ExceptionCheck()){
         goto out2;
     }
     DEBUG();
-
-//    native_hook.invoke(clazz);
-//    pEnv->CallObjectMethod(entryMethod_obj, invoke_met, entryClass_obj,JAAR);
-    pEnv->CallStaticVoidMethod(static_cast<jclass>(entryClass_obj), call_method_mth,android_context,apk);
+    pEnv->CallStaticVoidMethod(static_cast<jclass>(entryClass_obj), call_method_mth, android_context, apkSource);
     DEBUG();
     if(pEnv->ExceptionCheck()){
 
@@ -181,86 +187,11 @@ void load_apk_And_exe_Class_Method_13(JNIEnv *pEnv, jobject android_context,Appi
     out2:
     pEnv->ExceptionDescribe();
     pEnv->ExceptionClear();//清除引发的异常，在Java层不会打印异常堆栈信息，如果不清除，后面的调用ThrowNew抛出的异常堆栈信息会
-//    pEnv->DeleteLocalRef(entryMethod_obj);
-    pEnv->DeleteLocalRef(SystemClassLoader_obj);
     pEnv->DeleteLocalRef(ApkClassLoader);
     pEnv->DeleteLocalRef(entryClass_obj);
 }
 
 
-
-void load_apk_And_exe_Class_Method(JNIEnv *pEnv, jobject android_context,AppinfoNative *appinfoNativeVec) {
-
-    LOGE("enbale pkgName:%s ",appinfoNativeVec->source.c_str());
-    jstring apk = pEnv->NewStringUTF(appinfoNativeVec->source.c_str());
-    jstring dexOutput = nullptr;
-    jstring nativelib = pEnv->NewStringUTF(appinfoNativeVec->NativelibPath.c_str());
-    jstring class_name = pEnv->NewStringUTF(appinfoNativeVec->Entry_class.c_str());
-//    jstring method_name = pEnv->NewStringUTF(appinfoNativeVec->Entry_method.c_str());
-//    jobjectArray JAAR = nullptr;
-    jclass DexClassLoader_cls = pEnv->FindClass("dalvik/system/DexClassLoader");
-    jmethodID init = pEnv->GetMethodID(DexClassLoader_cls, "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/ClassLoader;)V");
-    jclass ClassLoader_cls = pEnv->FindClass("java/lang/ClassLoader");
-    jmethodID ClassLoader_getSystemClassLoader_cls = pEnv->GetStaticMethodID(ClassLoader_cls, "getSystemClassLoader", "()Ljava/lang/ClassLoader;");
-    jmethodID Class_loadClass_method = pEnv->GetMethodID(ClassLoader_cls, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
-    jclass Class_cls = pEnv->FindClass("java/lang/Class");
-    jclass Method_cls = pEnv->FindClass("java/lang/reflect/Method");
-    jmethodID invoke_met =  pEnv->GetMethodID(Method_cls,"invoke","(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;");
-    jmethodID getmethod_method = pEnv->GetMethodID(Class_cls, "getMethod", "(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;");
-//    LOGE("new classload ");
-//    jobject entryMethod_obj = nullptr;
-    jobject entryClass_obj = nullptr;
-
-    //---------------------------------------------------------------------------------------------------------------------
-    //全局 LoadModuleClassLoader，使用上一次加载函数的classLoader,生成本次加载apk的classLoader,需要先释放，在次赋值
-//    if(LoadModuleClassLoader == nullptr) {
-//        jobject classload = pEnv->CallStaticObjectMethod(ClassLoader_cls,ClassLoader_getSystemClassLoader_cls);
-//        LoadModuleClassLoader = pEnv->NewGlobalRef(classload);
-//    }
-//    jobject ApkClassLoader = pEnv->NewObject(DexClassLoader_cls,init,apk,dexOutput,nativelib,LoadModuleClassLoader);
-//    pEnv->DeleteGlobalRef(LoadModuleClassLoader);
-//    LoadModuleClassLoader = pEnv->NewGlobalRef(ApkClassLoader);
-    //---------------------------------------------------------------------------------------------------------------------
-
-    jobject SystemClassLoader_obj = pEnv->CallStaticObjectMethod(ClassLoader_cls,ClassLoader_getSystemClassLoader_cls);
-    jobject ApkClassLoader = pEnv->NewObject(DexClassLoader_cls,init,apk,dexOutput,nativelib,SystemClassLoader_obj);
-
-    if(pEnv->ExceptionCheck()){
-//        goto out2;
-    }
-//    Class clazz = dexClassLoader.loadClass(name);
-    LOGE("loadclass Entry_class=%s ",appinfoNativeVec->Entry_class.c_str());
-    entryClass_obj = pEnv->CallObjectMethod(ApkClassLoader, Class_loadClass_method, class_name);
-    if(pEnv->ExceptionCheck()){
-//        goto out2;
-    }
-//    Method native_hook = clazz.getMethod("native_hook");
-    LOGE("invoke method_name=%s ",appinfoNativeVec->Entry_method.c_str());
-    jmethodID call_method_mth = pEnv->GetStaticMethodID(static_cast<jclass>(entryClass_obj), appinfoNativeVec->Entry_method.c_str(), "(Landroid/content/Context;)V");
-    DEBUG();
-//调用java反射方法进行调用的，但是传参数比较麻烦
-//    entryMethod_obj = pEnv->CallObjectMethod(entryClass_obj, getmethod_method, method_name,JAAR);
-    if(pEnv->ExceptionCheck()){
-        goto out2;
-    }
-    DEBUG();
-
-//    native_hook.invoke(clazz);
-//    pEnv->CallObjectMethod(entryMethod_obj, invoke_met, entryClass_obj,JAAR);
-    pEnv->CallStaticVoidMethod(static_cast<jclass>(entryClass_obj), call_method_mth,android_context);
-    DEBUG();
-    if(pEnv->ExceptionCheck()){
-
-    }
-    DEBUG();
-out2:
-    pEnv->ExceptionDescribe();
-    pEnv->ExceptionClear();//清除引发的异常，在Java层不会打印异常堆栈信息，如果不清除，后面的调用ThrowNew抛出的异常堆栈信息会
-//    pEnv->DeleteLocalRef(entryMethod_obj);
-    pEnv->DeleteLocalRef(SystemClassLoader_obj);
-    pEnv->DeleteLocalRef(ApkClassLoader);
-    pEnv->DeleteLocalRef(entryClass_obj);
-}
 
 jobject GetRxposedProvider(JNIEnv *env, jobject android_Context , string& AUTHORITY, const string& Provider_call_method, const string& Provider_call_arg) {
     LOGD("CALL rprocess GetRxposedProvider");
@@ -497,7 +428,7 @@ void find_class_method(JNIEnv* env){
         env->DeleteLocalRef(methodName);
     }
 }
-
+//这部分需要权限，在第一次注入zygote的时候，会通过root权限修改selinux规则
 string getCurrentAppRxposedConfig(JNIEnv* env,string AUTHORITY , string callName,string method ,uid_t currentUid){
     DEBUG();
     jstring key = env->NewStringUTF("ModuleList");
@@ -524,7 +455,6 @@ string getCurrentAppRxposedConfig(JNIEnv* env,string AUTHORITY , string callName
         appinfoList = appinfoList +"|"+appinfo;
     }
     return appinfoList;
-
 }
 
 jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,string method ,string uid_str){

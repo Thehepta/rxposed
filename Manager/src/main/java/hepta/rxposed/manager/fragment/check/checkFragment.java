@@ -17,9 +17,6 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.chad.library.adapter.base.BaseQuickAdapter;
-import com.chad.library.adapter.base.BaseSectionQuickAdapter;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -27,8 +24,6 @@ import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 
 import hepta.rxposed.manager.R;
-
-import hepta.rxposed.manager.util.InjectTool;
 
 public class checkFragment extends Fragment {
 
@@ -67,8 +62,9 @@ public class checkFragment extends Fragment {
             itemBeans.add(new ItemBean("chekc_GetArtmethodNative_init",false));
         }
 
-        itemBeans.add(new ItemBean("chekc_PreGetenv",chekc_PreGetenv()));
+        itemBeans.add(new ItemBean("chekc_PreGetenv", chekcPreGetenv()));
         itemBeans.add(new ItemBean("check_inline_hook",check_inline_hook()));
+        itemBeans.add(new ItemBean("linker_resolve_elf_internal_symbol",ELFresolveSymbol()));
         chekc_java_method();
 
     }
@@ -110,7 +106,6 @@ public class checkFragment extends Fragment {
 
 
         itemBeans.add(Java_CreateApplicationContext());
-
 
 
 
@@ -282,7 +277,8 @@ public class checkFragment extends Fragment {
 
 
     public native boolean  chekc_android_os_Process_setArgV0();
-    public native boolean  chekc_PreGetenv();
+    public native boolean chekcPreGetenv();
+    public native boolean  ELFresolveSymbol();
     public native boolean  check_inline_hook();
 
 

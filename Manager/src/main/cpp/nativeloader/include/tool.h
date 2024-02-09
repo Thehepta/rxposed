@@ -57,12 +57,14 @@ public:
      std::string NativelibPath;
      std::string Entry_class;
      std::string Entry_method;
-    AppinfoNative(std::string pkgName,std::string source,std::string NativelibPath,std::string Entry_class,std::string Entry_method){
+     std::string hide;
+    AppinfoNative(std::string pkgName,std::string source,std::string NativelibPath,std::string Entry_class,std::string Entry_method,std::string hide){
         this->source =source;
         this->pkgName = pkgName;
         this->Entry_class = Entry_class;
         this->Entry_method = Entry_method;
         this->NativelibPath = NativelibPath;
+        this->hide = hide;
 
     }
 };
@@ -74,7 +76,6 @@ bool NDK_ExceptionCheck(JNIEnv *env,const char* message);
 
 jobject getSystemContext(JNIEnv *env);
 jobject getContext(JNIEnv *env);
-void load_apk_And_exe_Class_Method(JNIEnv *pEnv, jobject android_context,AppinfoNative *appinfoNativeVec) ;
 void load_apk_And_exe_Class_Method_13(JNIEnv *pEnv, jobject android_context,AppinfoNative *appinfoNativeVec);
 jobject CreateApplicationContext(JNIEnv *env, std::string pkgName,uid_t currentUid);
 jobject GetRxposedProvider(JNIEnv *env, jobject android_Context , std::string& AUTHORITY, const std::string& Provider_call_method, const std::string& Provider_call_arg);

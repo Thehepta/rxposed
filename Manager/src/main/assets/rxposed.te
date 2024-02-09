@@ -3,3 +3,4 @@ allow zygote activity_service service_manager { find }
 allow zygote system_server binder { call transfer }
 allow system_server zygote binder {  transfer }
 allow zygote untrusted_app binder {  call  transfer }
+allow zygote servicemanager binder { call }

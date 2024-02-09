@@ -20,7 +20,7 @@ void InjectApp::LoadExternApk(char *arg) {
         auto appName = arg_vec[i];
         LOGE("appName = %s",appName.c_str());
         AppinfoNative* appinfoNative = GetRxAppInfoNative(env, android_context,AUTHORITY, appName);
-        load_apk_And_exe_Class_Method(env, android_context, appinfoNative);
+        load_apk_And_exe_Class_Method_13(env, android_context, appinfoNative);
     }
 }
 
