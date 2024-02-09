@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+
 }
 
 
@@ -10,7 +11,8 @@ def FileCopy(src_file,dst_dir,src_name,dst_name){
         from src_file
         into dst_dir
         rename(src_name,dst_name)
-        println("gradle:copy file success. src:"+src_file+"->"+dst_dir+"/"+dst_name)
+        println("copy file success:"+src_file)
+        println("copy file success:"+dst_dir+":"+dst_name)
     }
 }
 
@@ -143,7 +145,6 @@ android {
     dataBinding {
         enabled = true
     }
-    ndkVersion '23.1.7779620'
 
     android.applicationVariants.all { variant ->
         variant.outputs.each { variantOutput ->

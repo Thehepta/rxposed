@@ -18,8 +18,6 @@
 // TODO: 更优雅的处理SELinux问题
 // TODO: 适配armeabi-v7a和x86_64
 
-void map_hide(pid_t pid, char *path);
-
 /**
  * @brief 通过远程直接调用dlopen/dlsym的方法ptrace注入so模块到远程进程中
  *
@@ -111,7 +109,7 @@ int inject_remote_process(pid_t pid, char *LibPath, char *FunctionName, char *Fu
             printf("[+] Call Remote dlopen Func Failed\n");
             break;
         }
-        map_hide(pid,LibPath);
+
         // RemoteModuleAddr为远程进程加载注入模块的地址
         void *RemoteModuleAddr = (void *) ptrace_getret(&CurrentRegs);
         printf("[+] ptrace_call dlopen success, Remote Process load module Addr:0x%lx\n",(long) RemoteModuleAddr);
@@ -129,8 +127,6 @@ int inject_remote_process(pid_t pid, char *LibPath, char *FunctionName, char *Fu
             printf("[-] dlopen error:%s\n", LocalErrorInfo);
             break;
         }
-
-
 
         // 判断是否传入symbols
         if (strcmp(FunctionName,"symbols") != 0){
@@ -152,6 +148,7 @@ int inject_remote_process(pid_t pid, char *LibPath, char *FunctionName, char *Fu
                 printf("[-] Call Remote dlsym Func Failed\n");
                 break;
             }
+
             // RemoteModuleFuncAddr为远程进程空间内获取的函数地址
             void *RemoteModuleFuncAddr = (void *) ptrace_getret(&CurrentRegs);
             if(RemoteModuleFuncAddr == 0){
@@ -164,8 +161,6 @@ int inject_remote_process(pid_t pid, char *LibPath, char *FunctionName, char *Fu
                 printf("[-] Write FunctionArgs:%s to RemoteProcess error\n", FunctionName);
                 break;
             }
-
-
             parameters[0] = (uintptr_t) ((uint8_t *) RemoteMapMemoryAddr);
             printf("[+] Call Function %s Arg:%d\n",FunctionName,parameters[0]);
             if (ptrace_call(pid, (uintptr_t) RemoteModuleFuncAddr, parameters,num_arg ,&CurrentRegs) == -1) {
@@ -195,11 +190,6 @@ int inject_remote_process(pid_t pid, char *LibPath, char *FunctionName, char *Fu
     ptrace_detach(pid);
 
     return iRet;
-}
-
-void map_hide(pid_t pid, char *path) {
-
-
 }
 
 // so注入所需要的一些核心数据 组成一个数据结构
