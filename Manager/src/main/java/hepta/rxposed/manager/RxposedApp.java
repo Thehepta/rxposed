@@ -29,8 +29,6 @@ public class RxposedApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.e(TAG, "onCreate");
-        MMKV.initialize(this);
         instance = this;
 
         IntentFilter filter = new IntentFilter();
@@ -43,6 +41,13 @@ public class RxposedApp extends Application {
         registerReceiver(packageChangeReceiver, filter);
     }
 
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        Log.e(TAG, "attachBaseContext");
+        MMKV.initialize(this);
+
+    }
 
     static {
             System.loadLibrary("status");

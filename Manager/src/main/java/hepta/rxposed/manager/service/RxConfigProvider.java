@@ -31,7 +31,6 @@ public class RxConfigProvider extends ContentProvider {
     String TAG = RxConfigProvider.class.getName();
     @Override
     public boolean onCreate() {
-        MMKV.initialize(this.getContext());
         Log.e(TAG, "onCreate");
         return true;
     }
