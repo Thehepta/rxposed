@@ -84,7 +84,7 @@ jclass DefineClass(JNIEnv * env,const char *name, jobject loader, const jbyte* b
 
 
 jclass FindClass(JNIEnv * env,const char* name){
-    HOOKLOGE("FindClass");
+    HOOKLOGE("FindClass:%s",name);
     Linker_JNIEnv * linkerJniEnv = (Linker_JNIEnv *) env;
     JNIEnv * functions = linkerJniEnv->env;
     jstring FindClass_name = functions->NewStringUTF(name);
@@ -504,7 +504,7 @@ void CallVoidMethod(JNIEnv*env, jobject obj, jmethodID methodID, ...){
     JNIEnv * functions = linkerJniEnv->env;
     va_list args;
     va_start(args, methodID);
-    functions->CallVoidMethodV(obj, methodID, args);
+    functions->CallVoidMethod(obj, methodID, args);
     va_end(args);
 }
 void CallVoidMethodV(JNIEnv*env, jobject obj, jmethodID methodID, va_list args){
@@ -896,7 +896,7 @@ void CallStaticVoidMethod(JNIEnv* env,jclass clazz, jmethodID methodID, ...)
     va_start(args, methodID);
     Linker_JNIEnv * linkerJniEnv = (Linker_JNIEnv *) env;
     JNIEnv * functions = linkerJniEnv->env;
-    functions->CallStaticVoidMethodV( clazz, methodID, args);
+    functions->CallStaticVoidMethod( clazz, methodID, args);
     va_end(args);
 }
 void CallStaticVoidMethodV(JNIEnv* env,jclass clazz, jmethodID methodID, va_list args)

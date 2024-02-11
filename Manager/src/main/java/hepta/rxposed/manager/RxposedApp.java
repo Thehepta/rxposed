@@ -5,13 +5,16 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.util.Log;
 
 import com.tencent.mmkv.MMKV;
+
+import hepta.rxposed.manager.service.RxConfigProvider;
 
 
 public class RxposedApp extends Application {
 
-
+    String TAG = RxposedApp.class.getName();
     private static RxposedApp instance;
 
     public static  RxposedApp getInstance(){
@@ -26,6 +29,7 @@ public class RxposedApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.e(TAG, "onCreate");
         MMKV.initialize(this);
         instance = this;
 

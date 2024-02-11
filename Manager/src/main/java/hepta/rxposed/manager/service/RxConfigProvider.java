@@ -14,6 +14,8 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.tencent.mmkv.MMKV;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -26,10 +28,11 @@ import hepta.rxposed.manager.util.MmkvManager;
 public class RxConfigProvider extends ContentProvider {
 
     private String configName = "rxposed_config";
-
+    String TAG = RxConfigProvider.class.getName();
     @Override
     public boolean onCreate() {
-        Log.e("hepta.rxposed.manager", "RxConfigProvider : onCreate");
+        MMKV.initialize(this.getContext());
+        Log.e(TAG, "onCreate");
         return true;
     }
 

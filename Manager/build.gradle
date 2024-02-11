@@ -145,6 +145,7 @@ android {
     dataBinding {
         enabled = true
     }
+    ndkVersion '23.1.7779620'                              //这个需要高一点的版本，因为编译中使用了自定的linker，有部分elf的宏，只有在新版本中才会存在
 
     android.applicationVariants.all { variant ->
         variant.outputs.each { variantOutput ->
