@@ -11,10 +11,13 @@
 #include <fstream>
 #include <unistd.h>
 #include <vector>
-#include "tool.h"
+#include "TraverseSo.h"
+//#include "tool.h"
 //#include "hideload/linker.h"
 using namespace std;
 
+#define LOG_TAG "Rxposed_Status_Chect"
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
 extern "C"
 JNIEXPORT jboolean JNICALL
@@ -27,8 +30,8 @@ JNIEXPORT jboolean JNICALL
     if(!strncmp(sdk_ver,"true", strlen("true"))){
         re = true;
     }
-//    soinfo* si = find_all_library_byname("libnativeloader.so") ;
-
+    find_all_library_byname("rewrew.so") ;
+//    find_system_library_byname("rewrew.so");
     return re;
 
 }
@@ -45,7 +48,6 @@ jboolean hook_fun_addr(JNIEnv *env, jclass clazz) {
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_hepta_rxposed_manager_fragment_check_checkFragment_jni_1hook_1text(JNIEnv *env, jobject thiz) {
-
     LOGE("hook_test");
     return false;
 }
@@ -61,7 +63,7 @@ Java_hepta_rxposed_manager_fragment_check_checkFragment_jni_1hook(JNIEnv *env, j
     jmethodID javamethod  =  env->GetMethodID(cls,"jni_hook_text", "()Z");
 //    void *native_addr = (void *)Java_hepta_rxposed_manager_fragment_check_checkFragment_jni_1hook_1text;
 
-    HookJmethod_JniFunction(env,cls,javamethod,(uintptr_t)hook_fun_addr);
+//    HookJmethod_JniFunction(env,cls,javamethod,(uintptr_t)hook_fun_addr);
 //    void* jni_native_fun_addr = getJmethod_JniFunction(env,cls,javamethod);
 
     LOGE("Java_hepta_rxposed_manager_fragment_check_checkFragment_jni_1hook");

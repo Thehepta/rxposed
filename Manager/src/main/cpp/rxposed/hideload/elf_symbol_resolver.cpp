@@ -304,6 +304,115 @@ void *linker_resolve_elf_internal_symbol(const char *library_name, const char *s
 
 
 
+static const unsigned char encoding_table[64] = {
+        'A', 'B', 'C', 'D', 'E','F', 'G', 'H',
+        'I','J','K','L','M','N','O','P',
+        'Q','R','S','T', 'U', 'V', 'W','X',
+        'Y', 'Z','a', 'b', 'c', 'd', 'e', 'f',
+        'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+        'o','p', 'q', 'r', 's', 't', 'u', 'v',
+        'w', 'x', 'y', 'z','0', '1', '2', '3',
+        '4', '5', '6', '7', '8', '9','-', '_'
+};
+
+static uint8_t *decoding_table = NULL;
+
+void build_decoding_table()
+{
+    decoding_table = (uint8_t*)malloc(256);
+
+    for (int i = 0; i < 64; i++)
+        decoding_table[(uint8_t)encoding_table[i]] = i;
+}
+
+char * base64_decode(const char *data, size_t input_length, size_t *output_length)
+{
+    if (decoding_table == nullptr) build_decoding_table();
+
+    if (input_length % 4 != 0) return nullptr;
+
+    *output_length = input_length / 4 * 3;
+    if (data[input_length - 1] == '=') (*output_length)--;
+    if (data[input_length - 2] == '=') (*output_length)--;
+
+    auto *decoded_data = (char*)malloc(*output_length);
+    if (decoded_data == nullptr) return nullptr;
+
+    for (int i = 0, j = 0; i < input_length;) {
+        uint32_t sextet_a = data[i] == '=' ? 0 & i++ : decoding_table[data[i++]];
+        uint32_t sextet_b = data[i] == '=' ? 0 & i++ : decoding_table[data[i++]];
+        uint32_t sextet_c = data[i] == '=' ? 0 & i++ : decoding_table[data[i++]];
+        uint32_t sextet_d = data[i] == '=' ? 0 & i++ : decoding_table[data[i++]];
+
+        uint32_t triple = (sextet_a << 3 * 6)
+                          + (sextet_b << 2 * 6)
+                          + (sextet_c << 1 * 6)
+                          + (sextet_d << 0 * 6);
+
+        if (j < *output_length) decoded_data[j++] = (triple >> 2 * 8) & 0xFF;
+        if (j < *output_length) decoded_data[j++] = (triple >> 1 * 8) & 0xFF;
+        if (j < *output_length) decoded_data[j++] = (triple >> 0 * 8) & 0xFF;
+    }
+
+    return decoded_data;
+}
+
+void *linker_resolve_elf_internal_symbol_base64(const char *library_name, const char *base64_symbol_name) {
+    size_t output_length_encode = 0;
+
+    char* symbol_name = base64_decode(base64_symbol_name, strlen(base64_symbol_name),
+                                                       &output_length_encode);
+
+    void *result = NULL;
+    elf_ctx_t ctx;
+    memset(&ctx, 0, sizeof(elf_ctx_t));
+    RuntimeModule module = GetProcessModule(library_name);
+    if(module.load_address){
+        size_t file_size = 0;
+        {
+            struct stat s;
+            int rt = stat(module.path, &s);
+            if (rt != 0) {
+                // printf("mmap %s failed\n", file_);
+                return NULL;
+            }
+            file_size = s.st_size;
+        }
+        int fd = open(module.path, O_RDONLY, 0);
+        if (fd < 0) {
+            // printf("%s open failed\n", file_);
+            return NULL;
+        }
+
+        // auto align
+        auto mmap_buffer = (uint8_t *)mmap(0, file_size, PROT_READ | PROT_WRITE, MAP_FILE | MAP_PRIVATE, fd, 0);
+        if (mmap_buffer == MAP_FAILED) {
+            // printf("mmap %s failed\n", file_);
+            return NULL;
+        }
+        close(fd);
+
+        linker_elf_ctx_init(&ctx, mmap_buffer);
+        result = linker_elf_ctx_iterate_symbol_table(&ctx, symbol_name);
+
+        if (result)
+            result = (void *)((addr_t)result + (addr_t)module.load_address - ((addr_t)mmap_buffer - (addr_t)ctx.load_bias));
+
+    }
+    free(symbol_name);
+    return result;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 

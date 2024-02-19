@@ -5,8 +5,6 @@
 
 #include <dlfcn.h>
 #include "tool.h"
-#include "artmethod_native_hook.h"
-#include "FunHook.h"
 #include "linker.h"
 #include "elf_symbol_resolver.h"
 
@@ -382,50 +380,6 @@ jobject CreateApplicationContext(JNIEnv *env, string pkgName,uid_t currentUid) {
     return ApplicationContext;
 }
 
-bool art_method_hook_init(JNIEnv* env){
-
-    jclass Zygote_cls =  env->FindClass("com/android/internal/os/Zygote");
-
-    jclass  Process_cls = env->FindClass("android/os/Process");
-    jmethodID javamethod = env->GetStaticMethodID(Process_cls,"getUidForName", "(Ljava/lang/String;)I");
-    void * libandroid_runtime =  dlopen("libandroid_runtime.so",RTLD_NOW);
-    uintptr_t getUidForName = reinterpret_cast<uintptr_t>(dlsym(libandroid_runtime,"_Z32android_os_Process_getUidForNameP7_JNIEnvP8_jobjectP8_jstring"));
-
-
-    INIT_HOOK_PlatformABI(env, nullptr,javamethod,(uintptr_t*)getUidForName,0x109);
-
-    uintptr_t  art_javamethod_method = GetArtMethod(env, Zygote_cls,javamethod);
-    uintptr_t native_art_art_javamethod_method = GetOriginalNativeFunction((uintptr_t *)art_javamethod_method);
-
-    if(native_art_art_javamethod_method == getUidForName){
-        return true;
-    } else{
-        return false;
-    }
-
-}
-
-uintptr_t getJmethod_JniFunction(JNIEnv* env,jclass jclass1,jmethodID jmethodId){
-
-
-    uintptr_t  jmethodArtmethod = GetArtMethod(env, jclass1, jmethodId);
-    uintptr_t native_art_javamethod_method = GetOriginalNativeFunction((uintptr_t *)jmethodArtmethod);
-    return native_art_javamethod_method;
-}
-void unHookJmethod_JniFunction(JNIEnv* env,jclass jclass1,jmethodID jmethodId) {
-
-    uintptr_t  jmethodArtmethod = GetArtMethod(env, jclass1,jmethodId);
-    unHookJniNativeFunction((uintptr_t *)jmethodArtmethod);
-}
-uintptr_t HookJmethod_JniFunction(JNIEnv* env,jclass jclass1,jmethodID jmethodId,uintptr_t fun_addr) {
-
-    uintptr_t jmethodArtmethod = GetArtMethod(env, jclass1,jmethodId);
-    if(jmethodArtmethod == NULL){
-        LOGE("jmethodArtmethod is null");
-        return NULL;
-    }
-    return HookJniNativeFunction( (uintptr_t*)jmethodArtmethod,fun_addr);
-}
 
 void find_class_method(JNIEnv* env){
     jclass Class_cls =  env->FindClass("java/lang/Class");

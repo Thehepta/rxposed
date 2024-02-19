@@ -6,9 +6,8 @@
 #include <sys/mman.h>
 #include "rprocess.h"
 #include "InjectApp.h"
-#include "FunHook.h"
 #include "tool.h"
-
+#include "artmethod_native_hook.h"
 
 
 void (*android_os_Process_setArg_org)(JNIEnv* env, jclass clazz, jstring name);

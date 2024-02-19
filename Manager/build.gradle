@@ -44,34 +44,38 @@ def build_Module_copy_file(type,taskname,file_name){
     }
 
     if(type.equals("debug")){
-        println("rxposed gradle:"+"externalNativeBuildDebug")
+        println("rxposed_gradle:"+"externalNativeBuildDebug")
         Asset_dir = "mergeDebugAssets"
-        command = "../${gradlew} -p ../${taskname} externalNativeBuildDebug"
+        command = "./${gradlew} -p ./${taskname} externalNativeBuildDebug"
 
     }
     if(type.equals("release")){
-        println("rxposed gradle:"+"externalNativeBuildRelease")
+        println("rxposed_gradle:"+"externalNativeBuildRelease")
         Asset_dir = "mergeReleaseAssets"
-        command = "../${gradlew} -p ../${taskname} externalNativeBuildRelease"
+        command = "./${gradlew} -p ./${taskname} externalNativeBuildRelease"
     }
-//    try {
-//        def process = new ProcessBuilder(sh, "-c", command).redirectErrorStream(true).start()
-//        def output = new StringBuilder()
-//        process.inputStream.eachLine { line ->
-//            output.append(line).append('\n')
-//        }
-//        process.waitFor()
-//        println output.toString()
-//    } catch (IOException e) {
-//        e.printStackTrace()
+
+    try {
+        def process = new ProcessBuilder(sh, "-c", command).redirectErrorStream(true).start()
+        def output = new StringBuilder()
+        process.inputStream.eachLine { line ->
+            output.append(line).append('\n')
+        }
+        process.waitFor()
+        println output.toString()
+    } catch (IOException e) {
+        e.printStackTrace()
+    }
+
+
+    // linux 无法使用 windows第一次编译 会卡死
+//    exec {
+//        commandLine sh ,command
+//        ignoreExitValue true
 //    }
 
-    exec {
-        commandLine sh ,command
-        ignoreExitValue true
-    }
 
-
+// 在linux上可以完美使用
 //    exec {
 //        try {
 //            executable  sh
@@ -107,15 +111,20 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
+
             cmake {
-                //                cppFlags "-frtti -fexceptions -Wpointer-arith"
+                arguments "-DRXDEBUG=OFF" ,"-DTEXTSO=${Rxposed_InjectTest_So}" , "-DINJECTSO=${Rxposed_Inject_So}" //给cmake传参数
+                cppFlags '-DRXDEBUG=1'      //给c++传递编译参数 源文件文件编译宏参数
                 abiFilters 'armeabi-v7a', 'arm64-v8a'
             }
 
+            //android.mk 配置
             ndk {
                 abiFilters 'armeabi-v7a','arm64-v8a'           //写在这里
             }
         }
+
+        //给java传递参数
         buildConfigField "String", "Rxposed_InjectTest_So", "\"${Rxposed_InjectTest_So}\""
         buildConfigField "String", "Rxposed_Inject_So", "\"${Rxposed_Inject_So}\""      // 要注入到zygote进程中的so的名字，会写到配置文件中，方便修改名字
                                                                                         //Rxposed_Inject_So 遍历在 上层 build.gradle 文件中定义

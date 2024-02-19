@@ -49,6 +49,8 @@ template <typename T>
 static inline T* untag_address(T* p) {
     return reinterpret_cast<T*>(untag_address(reinterpret_cast<uintptr_t>(p)));
 }
+
+//通过动态计算结构内部成员的位置，循环找到soinfo 内部的next的位置，然后通过next进行遍历
 soinfo* find_all_library_byname(const char* soname){
     std::vector<void *> linker_solist;
 
@@ -93,15 +95,16 @@ soinfo* find_all_library_byname(const char* soname){
 }
 
 soinfo* find_system_library_byname(const char* soname) {
+    LOGE("find_system_library_byname");
 
     for (soinfo* si = solist_get_head(); si != nullptr; si = si->next) {
         char* ret_name = soinfo_get_soname(si);
         if(ret_name!= nullptr){
             LOGE("get_soname : %s",ret_name);
             LOGE("get_soname == null so->realpath: %s",si->get_realpath());
-            if(0 == strncmp(ret_name,soname, strlen(soname))) {
-                return si;
-            }
+//            if(0 == strncmp(ret_name,soname, strlen(soname))) {
+//                return si;
+//            }
         }
         else{
             LOGE("get_soname == null so->realpath: %s",si->get_realpath());

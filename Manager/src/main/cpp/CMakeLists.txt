@@ -16,13 +16,20 @@ project("status")
 
 add_subdirectory(rxposed)
 include_directories(rxposed)
+include_directories(./)
+
+
+message("test build.gradle arg ${INJECTSO}")
 
 add_library( # Sets the name of the library.
         status
         # Sets the library as a shared library.
         SHARED
         # Provides a relative path to your source file(s).
+        TraverseSo.cpp
+        rxposed/hideload/elf_symbol_resolver.cpp
         status.cpp)
+
 
 add_library( # Sets the name of the library.
         test
@@ -49,14 +56,14 @@ find_library( # Sets the name of the path variable.
 # build script, prebuilt third-party libraries, or system libraries.
 
 target_link_libraries( # Specifies the target library.
-        test
+        ${TEXTSO}
         # Links the target library to the log library
         # included in the NDK.
         ${log-lib})
 
 target_link_libraries( # Specifies the target library.
         status
-        rxposed
+#        rxposed
         # Links the target library to the log library
         # included in the NDK.
         ${log-lib})

@@ -15,16 +15,21 @@ project("rxposed")
 # Gradle automatically packages shared libraries with your APK.
 
 
-#if (${RXDEBUG} STREQUAL OFF)
-#    message("this is RXDEBUG OFF")
-#else()
-#    message("this is RXDEBUG ON")
-#endif()
+message("test build.gradle DRXDEBUG")
 
-add_subdirectory(hideload)
+if (${RXDEBUG} STREQUAL OFF)
+    message("this is RXDEBUG OFF")
+else()
+    message("this is RXDEBUG ON")
+endif()
 
-add_library(libdobby STATIC IMPORTED)
-set_target_properties(libdobby PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/libs/${ANDROID_ABI}/libdobby.a)
+#add_subdirectory(hideload)
+
+#add_library(libdobby STATIC IMPORTED)
+#set_target_properties(libdobby PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/libs/${ANDROID_ABI}/libdobby.a)
+
+message("test build.gradle arg ${INJECTSO}")
+
 
 include_directories(hideload)
 
@@ -32,7 +37,7 @@ include_directories(hideload)
 
 
 add_library( # Sets the name of the library.
-        rxposed
+        rxposede
         # Sets the library as a shared library.
         SHARED
         # Provides a relative path to your source file(s).
@@ -40,10 +45,9 @@ add_library( # Sets the name of the library.
         InjectApp.cpp
         tool.cpp
         artmethod_native_hook.cpp
-        elf_symbol_resolver.cpp
+        hideload/elf_symbol_resolver.cpp
         rprocess.cpp
         check.cpp
-        FunHook.cpp
         android_shm.cpp
         )
 
@@ -66,7 +70,7 @@ find_library( # Sets the name of the path variable.
 # build script, prebuilt third-party libraries, or system libraries.
 
 target_link_libraries( # Specifies the target library.
-        rxposed
+        rxposede
 #        hideload
         # Links the target library to the log library
         # included in the NDK.

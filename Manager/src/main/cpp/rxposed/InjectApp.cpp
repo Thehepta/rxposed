@@ -5,7 +5,6 @@
 #include <dlfcn.h>
 #include "InjectApp.h"
 #include "artmethod_native_hook.h"
-#include "FunHook.h"
 
 using namespace std;
 

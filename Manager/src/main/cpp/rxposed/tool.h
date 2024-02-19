@@ -83,10 +83,7 @@ AppinfoNative* GetPmAppInfoNative(JNIEnv *env, jobject android_Context, std::str
 AppinfoNative* GetRxAppInfoNative(JNIEnv *env, jobject android_Context,std::string AUTHORITY,std::string pkgName);
 std::string getCurrentAppRxposedConfig(JNIEnv* env,std::string AUTHORITY , std::string callName,std::string method ,uid_t currentUid);
 JNIEnv *Pre_GetEnv() ;
-bool art_method_hook_init(JNIEnv* env);
-void* dlsym_android_dlopen_ext(char* name);
-uintptr_t getJmethod_JniFunction(JNIEnv* env,jclass jclass1,jmethodID jmethodId);
-uintptr_t  HookJmethod_JniFunction(JNIEnv* env,jclass jclass1,jmethodID jmethodId,uintptr_t fun_addr) ;
+
 void unHookJmethod_JniFunction(JNIEnv* env,jclass jclass1,jmethodID jmethodId);
 jobject getConfigByProvider(JNIEnv* env,std::string AUTHORITY , std::string callName,std::string method ,std::string uid_str);
 #endif //RXPOSED_TOOL_H

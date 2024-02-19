@@ -29,6 +29,10 @@
   } while (0)
 
 
+bool art_method_hook_init(JNIEnv* env);
+uintptr_t getJmethod_JniFunction(JNIEnv* env,jclass jclass1,jmethodID jmethodId);
+uintptr_t  HookJmethod_JniFunction(JNIEnv* env,jclass jclass1,jmethodID jmethodId,uintptr_t fun_addr) ;
+
 bool INIT_HOOK_PlatformABI(JNIEnv *env, jclass clazz, jmethodID methodId, uintptr_t *native, uint32_t flags);
 
 uintptr_t GetArtMethod(JNIEnv *env, jclass clazz, jmethodID methodId);

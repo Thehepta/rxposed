@@ -13,7 +13,6 @@
 #include <vector>
 #include "artmethod_native_hook.h"
 #include "tool.h"
-#include "FunHook.h"
 
 using namespace std;
 
