@@ -50,14 +50,14 @@ static const char *getLibPath() {
 #define RXPOSED_APK_PATH "apk_path"
 #define RXPOSED_APK_NATIVE_LIB "apk_native_lib"
 
- class AppinfoNative{
+class AppinfoNative{
 public:
     std::string pkgName;
-     std::string source;
-     std::string NativelibPath;
-     std::string Entry_class;
-     std::string Entry_method;
-     std::string hide;
+    std::string source;
+    std::string NativelibPath;
+    std::string Entry_class;
+    std::string Entry_method;
+    std::string hide;
     AppinfoNative(std::string pkgName,std::string source,std::string NativelibPath,std::string Entry_class,std::string Entry_method,std::string hide){
         this->source =source;
         this->pkgName = pkgName;
@@ -76,15 +76,17 @@ bool NDK_ExceptionCheck(JNIEnv *env,const char* message);
 
 jobject getSystemContext(JNIEnv *env);
 jobject getContext(JNIEnv *env);
-void load_apk_And_exe_Class_Method_13(JNIEnv *pEnv, jobject android_context,AppinfoNative *appinfoNativeVec);
+void load_apk_And_Call_Class_Entry_Method(JNIEnv *pEnv, jobject android_context, AppinfoNative *appinfoNativeVec);
 jobject CreateApplicationContext(JNIEnv *env, std::string pkgName,uid_t currentUid);
 jobject GetRxposedProvider(JNIEnv *env, jobject android_Context , std::string& AUTHORITY, const std::string& Provider_call_method, const std::string& Provider_call_arg);
 AppinfoNative* GetPmAppInfoNative(JNIEnv *env, jobject android_Context, std::string pkgName);
 AppinfoNative* GetRxAppInfoNative(JNIEnv *env, jobject android_Context,std::string AUTHORITY,std::string pkgName);
 std::string getCurrentAppRxposedConfig(JNIEnv* env,std::string AUTHORITY , std::string callName,std::string method ,uid_t currentUid);
 JNIEnv *Pre_GetEnv() ;
-bool hook_init_and_text(JNIEnv* env);
+bool art_method_hook_init(JNIEnv* env);
 void* dlsym_android_dlopen_ext(char* name);
-void * getJmethod_JniFunction(JNIEnv* env,jclass jclass1,jmethodID jmethodId);
+uintptr_t getJmethod_JniFunction(JNIEnv* env,jclass jclass1,jmethodID jmethodId);
+uintptr_t  HookJmethod_JniFunction(JNIEnv* env,jclass jclass1,jmethodID jmethodId,uintptr_t fun_addr) ;
+void unHookJmethod_JniFunction(JNIEnv* env,jclass jclass1,jmethodID jmethodId);
 jobject getConfigByProvider(JNIEnv* env,std::string AUTHORITY , std::string callName,std::string method ,std::string uid_str);
 #endif //RXPOSED_TOOL_H

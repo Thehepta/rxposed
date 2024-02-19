@@ -2,8 +2,10 @@
 // Created by chic on 2023/5/15.
 //
 
-#include "include/InjectApp.h"
-#include "include/artmethod_native_hook.h"
+#include <dlfcn.h>
+#include "InjectApp.h"
+#include "artmethod_native_hook.h"
+#include "FunHook.h"
 
 using namespace std;
 
@@ -19,8 +21,8 @@ void InjectApp::LoadExternApk(char *arg) {
     for(int i=1;i<arg_vec.size();i++){
         auto appName = arg_vec[i];
         LOGE("appName = %s",appName.c_str());
-        AppinfoNative* appinfoNative = GetRxAppInfoNative(env, android_context,AUTHORITY, appName);
-        load_apk_And_exe_Class_Method_13(env, android_context, appinfoNative);
+//        AppinfoNative* appinfoNative = GetRxAppInfoNative(env, android_context,AUTHORITY, appName);     //android11的包可见性问题导致了contentprovider 请求失败
+//        load_apk_And_Call_Class_Entry_Method(env, android_context, appinfoNative);
     }
 }
 
@@ -33,10 +35,12 @@ bool hookinit(JNIEnv *env){
     DEBUG();
 
 //    LOGE("setArgV0Native %p",setArgV0Native2);
-    void *getUidForName =  DobbySymbolResolver("","_Z32android_os_Process_getUidForNameP7_JNIEnvP8_jobjectP8_jstring");
-    LOGE("setArgV0P7 %p",getUidForName);
 
-    INIT_HOOK_PlatformABI(env, nullptr,javamethod,getUidForName,109);
+    void * libandroid_runtime =  dlopen("libandroid_runtime.so",RTLD_NOW);
+    void * getUidForName = reinterpret_cast<void *>(dlsym(libandroid_runtime,"_Z32android_os_Process_getUidForNameP7_JNIEnvP8_jobjectP8_jstring"));
+    LOGE("setArgV0P7 %p",getUidForName);
+    dlclose(libandroid_runtime);
+    INIT_HOOK_PlatformABI(env, nullptr, javamethod, (uintptr_t *)getUidForName, 109);
 
     DEBUG();
 }

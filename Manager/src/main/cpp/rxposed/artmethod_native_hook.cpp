@@ -2,43 +2,68 @@
 // Created by chic on 2023/5/23.
 //
 
-#include "include/artmethod_native_hook.h"
+#include "artmethod_native_hook.h"
+#include <map>
+
 inline static bool IsIndexId(jmethodID mid) { return ((reinterpret_cast<uintptr_t>(mid) % 2) != 0); }
 
 static jfieldID field_art_method = nullptr;
+
+static std::map<uintptr_t , uintptr_t> hookFunMaps;
+
 
 int access_flags_art_method_offset = -1;
 static int jni_offset;
 static int api;
 
 //传入的是method索引
-void *GetArtMethod(JNIEnv *env, jclass clazz, jmethodID methodId) {
+uintptr_t GetArtMethod(JNIEnv *env, jclass clazz, jmethodID methodId) {
 
     if (api >= __ANDROID_API_R__) {
         if (IsIndexId(methodId)) {
             jobject method = env->ToReflectedMethod(clazz, methodId, true);
-            return reinterpret_cast<void *>(env->GetLongField(method, field_art_method));
+            return env->GetLongField(method, field_art_method);
         }
     }
-    return methodId;
+    return reinterpret_cast<uintptr_t>(methodId);
 }
 //传入的不是method索引，而是method对象的索引
-void *GetArtMethod(JNIEnv *env, jclass clazz, jobject methodId) {
+uintptr_t GetArtMethod(JNIEnv *env, jclass clazz, jobject methodId) {
 
     if (api >= __ANDROID_API_R__) {
 
-        return reinterpret_cast<void *>(env->GetLongField(methodId, field_art_method));
+        return env->GetLongField(methodId, field_art_method);
 
     }
-    return methodId;
+    return reinterpret_cast<uintptr_t>(methodId);
+}
+
+uintptr_t HookJniNativeFunction(uintptr_t *art_method, uintptr_t hook_fun_addr){
+    if (__predict_false(art_method == nullptr)) {
+        return NULL;
+    }
+    uintptr_t old_fun_addr = art_method[jni_offset];
+    hookFunMaps.emplace(hook_fun_addr,old_fun_addr);
+    art_method[jni_offset] = hook_fun_addr;
+    return old_fun_addr;
+}
+
+void unHookJniNativeFunction(uintptr_t *art_method){
+    if (__predict_false(art_method == nullptr)) {
+        return ;
+    }
+    uintptr_t hook_fun_addr = art_method[jni_offset];
+    uintptr_t old_fun_addr = hookFunMaps.at(hook_fun_addr);
+    art_method[jni_offset] = old_fun_addr;
+    hookFunMaps.erase(hook_fun_addr);
 }
 
 
-void *GetOriginalNativeFunction(const uintptr_t *art_method) {
+uintptr_t GetOriginalNativeFunction(const uintptr_t *art_method) {
     if (__predict_false(art_method == nullptr)) {
-        return nullptr;
+        return NULL;
     }
-    return (void *)art_method[jni_offset];
+    return art_method[jni_offset];
 }
 
 //Executable 的artMethod 可能是隐藏的，需要注意是否能获取
@@ -56,14 +81,14 @@ jfieldID getArtMethod_filed(JNIEnv *env){
 
 
 
-bool INIT_HOOK_PlatformABI(JNIEnv *env, jclass clazz, jmethodID methodId, void *native, uint32_t flags) {
+bool INIT_HOOK_PlatformABI(JNIEnv *env, jclass clazz, jmethodID methodId, uintptr_t *native, uint32_t flags) {
 
     api = android_get_device_api_level();
     if (api >= __ANDROID_API_R__) {
         field_art_method = getArtMethod_filed(env);
         CHECK(field_art_method);
     }
-    uintptr_t *artMethod = static_cast<uintptr_t *>(GetArtMethod(env, clazz, methodId));
+    uintptr_t *artMethod = reinterpret_cast<uintptr_t *>(GetArtMethod(env, clazz, methodId));
 
     bool success = false;
     for (int i = 0; i < 30; ++i) {

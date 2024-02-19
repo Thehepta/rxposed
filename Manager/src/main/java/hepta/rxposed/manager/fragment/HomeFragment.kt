@@ -110,6 +110,9 @@ class HomeFragment : Fragment() {
                                     1 -> DialogUtil.DidalogSimple(requireContext(),R.string.rebootMessage, {
                                         InjectTool.Application_reboot()
                                     })
+                                    2 -> DialogUtil.DidalogSimple(requireContext(),R.string.injectTestMessage, {
+                                        InjectTool.inject_text()
+                                    })
                                 }
 
                             }
@@ -140,8 +143,7 @@ class HomeFragment : Fragment() {
             btn_activity?.setOnClickListener {
 
                 DialogUtil.DidalogSimple(requireContext(),R.string.activityMessage, {
-                    InjectTool.init()
-                    InjectTool.zygote_patrace()
+                    InjectTool.Start()
                     DialogUtil.DidalogSimple(requireContext(),R.string.rxrebootMessage, {
                         InjectTool.Application_reboot()
                     })

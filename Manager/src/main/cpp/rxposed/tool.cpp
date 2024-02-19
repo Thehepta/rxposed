@@ -4,13 +4,38 @@
 
 
 #include <dlfcn.h>
-#include "include/tool.h"
-#include "include/dobby.h"
-#include "include/artmethod_native_hook.h"
-#include "include/FunHook.h"
+#include "tool.h"
+#include "artmethod_native_hook.h"
+#include "FunHook.h"
 #include "linker.h"
+#include "elf_symbol_resolver.h"
 
 using namespace std;
+
+
+
+
+android_namespace_t* g_default_namespace = static_cast<android_namespace_t *>(linker_resolve_elf_internal_symbol(
+        get_android_linker_path(), "__dl_g_default_namespace"));
+
+soinfo* (*soinf_alloc_fun)(android_namespace_t* , const char* ,const struct stat* , off64_t ,uint32_t ) = (soinfo* (*)(android_namespace_t* , const char* ,const struct stat* , off64_t ,uint32_t )) linker_resolve_elf_internal_symbol(
+        get_android_linker_path(), "__dl__Z12soinfo_allocP19android_namespace_tPKcPK4statlj");
+
+soinfo* (*solist_get_head)() = (soinfo* (*)()) linker_resolve_elf_internal_symbol(
+        get_android_linker_path(), "__dl__Z15solist_get_headv");
+
+soinfo* (*solist_get_somain)() = (soinfo* (*)()) linker_resolve_elf_internal_symbol(
+        get_android_linker_path(), "__dl__Z17solist_get_somainv");
+
+char* (*soinfo_get_soname)(soinfo*) = (char* (*)(soinfo*)) linker_resolve_elf_internal_symbol(
+        get_android_linker_path(), "__dl__ZNK6soinfo10get_sonameEv");
+
+bool (*solist_remove_soinfo)(soinfo*) = (bool  (*)(soinfo*)) linker_resolve_elf_internal_symbol(
+        get_android_linker_path(), "__dl__Z20solist_remove_soinfoP6soinfo");
+
+ElfW(Addr) (*call_ifunc_resolver)(ElfW(Addr) resolver_addr) =(ElfW(Addr) (*)(ElfW(Addr) resolver_addr)) linker_resolve_elf_internal_symbol(
+        get_android_linker_path(), "__dl__Z19call_ifunc_resolvery");
+
 
 vector<string> string_split(string str,string pattern)
 {
@@ -43,6 +68,7 @@ bool NDK_ExceptionCheck(JNIEnv *env,const char* message){
     }
     return false;
 }
+
 //请求转接，获取应用信息
 AppinfoNative* GetRxAppInfoNative(JNIEnv *env, jobject android_Context,string AUTHORITY,string pkgName) {
 
@@ -69,7 +95,7 @@ AppinfoNative* GetRxAppInfoNative(JNIEnv *env, jobject android_Context,string AU
     return tmp;
 }
 
- //andorid 11以后，app应用有可见性的问题，getApplicationInfo 需要权限，所以弃用
+//andorid 11以后，app应用有可见性的问题，getApplicationInfo 需要权限，所以弃用
 AppinfoNative* GetPmAppInfoNative(JNIEnv *env, jobject android_Context, string pkgName){
 
     jclass Context_cls = env->FindClass("android/content/Context");
@@ -144,14 +170,14 @@ jobject PathClassLoaderLoadAPK(JNIEnv *pEnv,jstring apkSource,jstring nativelib)
     return ApkClassLoader;
 }
 
-void load_apk_And_exe_Class_Method_13(JNIEnv *pEnv, jobject android_context,AppinfoNative *appinfoNativeVec) {
+void load_apk_And_Call_Class_Entry_Method(JNIEnv *pEnv, jobject android_context, AppinfoNative *appinfoNativeVec) {
 
     LOGE("enbale pkgName:%s ",appinfoNativeVec->source.c_str());
     jobject  ApkClassLoader = nullptr;
     jobject entryClass_obj = nullptr;
     jstring apkSource = pEnv->NewStringUTF(appinfoNativeVec->source.c_str());
     if(strncmp(appinfoNativeVec->hide.c_str(),"true", strlen("true"))==0){
-        ApkClassLoader = hideLoadApkModule(pEnv, (char*)appinfoNativeVec->source.c_str());
+//        ApkClassLoader = hideLoadApkModule(pEnv, (char*)appinfoNativeVec->source.c_str());
     } else{
         jstring nativelib = pEnv->NewStringUTF(appinfoNativeVec->NativelibPath.c_str());
         ApkClassLoader = PathClassLoaderLoadAPK(pEnv, apkSource, nativelib);
@@ -204,8 +230,7 @@ jobject GetRxposedProvider(JNIEnv *env, jobject android_Context , string& AUTHOR
     jclass Context_cls = env->FindClass("android/content/Context");
     jclass Uri_cls = env->FindClass("android/net/Uri");
     jclass ContentResolver_cls = env->FindClass("android/content/ContentResolver");
-    jmethodID context_getContentResolver_method = env->GetMethodID(Context_cls,
-                                                                   "getContentResolver",
+    jmethodID context_getContentResolver_method = env->GetMethodID(Context_cls,"getContentResolver",
                                                                    "()Landroid/content/ContentResolver;");
     jmethodID ContentResolver_call_method = env->GetMethodID(ContentResolver_cls, "call",
                                                              "(Landroid/net/Uri;Ljava/lang/String;Ljava/lang/String;Landroid/os/Bundle;)Landroid/os/Bundle;");
@@ -239,7 +264,9 @@ jobject GetRxposedProvider(JNIEnv *env, jobject android_Context , string& AUTHOR
 
 
 JNIEnv *Pre_GetEnv() {
-    void*getAndroidRuntimeEnv = DobbySymbolResolver("libandroid_runtime.so", "_ZN7android14AndroidRuntime9getJNIEnvEv");
+    void * libandroid_runtime =  dlopen("libandroid_runtime.so",RTLD_NOW);
+    void *getAndroidRuntimeEnv = reinterpret_cast<void *>(dlsym(libandroid_runtime,"_ZN7android14AndroidRuntime9getJNIEnvEv"));
+    dlclose(libandroid_runtime);
     return ((JNIEnv*(*)())getAndroidRuntimeEnv)();
 }
 
@@ -355,21 +382,20 @@ jobject CreateApplicationContext(JNIEnv *env, string pkgName,uid_t currentUid) {
     return ApplicationContext;
 }
 
-bool hook_init_and_text(JNIEnv* env){
+bool art_method_hook_init(JNIEnv* env){
 
     jclass Zygote_cls =  env->FindClass("com/android/internal/os/Zygote");
 
     jclass  Process_cls = env->FindClass("android/os/Process");
     jmethodID javamethod = env->GetStaticMethodID(Process_cls,"getUidForName", "(Ljava/lang/String;)I");
     void * libandroid_runtime =  dlopen("libandroid_runtime.so",RTLD_NOW);
-    void *getUidForName = dlsym(libandroid_runtime,"_Z32android_os_Process_getUidForNameP7_JNIEnvP8_jobjectP8_jstring");
-//    void *getUidForName =  DobbySymbolResolver("/system/lib64/libandroid_runtime.so","_Z32android_os_Process_getUidForNameP7_JNIEnvP8_jobjectP8_jstring");
+    uintptr_t getUidForName = reinterpret_cast<uintptr_t>(dlsym(libandroid_runtime,"_Z32android_os_Process_getUidForNameP7_JNIEnvP8_jobjectP8_jstring"));
 
 
-    INIT_HOOK_PlatformABI(env, nullptr,javamethod,getUidForName,0x109);
+    INIT_HOOK_PlatformABI(env, nullptr,javamethod,(uintptr_t*)getUidForName,0x109);
 
-    uintptr_t * art_javamethod_method = static_cast<uintptr_t *>(GetArtMethod(env, Zygote_cls,javamethod));
-    void * native_art_art_javamethod_method = GetOriginalNativeFunction(art_javamethod_method);
+    uintptr_t  art_javamethod_method = GetArtMethod(env, Zygote_cls,javamethod);
+    uintptr_t native_art_art_javamethod_method = GetOriginalNativeFunction((uintptr_t *)art_javamethod_method);
 
     if(native_art_art_javamethod_method == getUidForName){
         return true;
@@ -379,12 +405,26 @@ bool hook_init_and_text(JNIEnv* env){
 
 }
 
-void * getJmethod_JniFunction(JNIEnv* env,jclass jclass1,jmethodID jmethodId){
+uintptr_t getJmethod_JniFunction(JNIEnv* env,jclass jclass1,jmethodID jmethodId){
 
 
-    uintptr_t * javamethod_method = static_cast<uintptr_t *>(GetArtMethod(env, jclass1,jmethodId));
-    void * native_art_javamethod_method = GetOriginalNativeFunction(javamethod_method);
+    uintptr_t  jmethodArtmethod = GetArtMethod(env, jclass1, jmethodId);
+    uintptr_t native_art_javamethod_method = GetOriginalNativeFunction((uintptr_t *)jmethodArtmethod);
     return native_art_javamethod_method;
+}
+void unHookJmethod_JniFunction(JNIEnv* env,jclass jclass1,jmethodID jmethodId) {
+
+    uintptr_t  jmethodArtmethod = GetArtMethod(env, jclass1,jmethodId);
+    unHookJniNativeFunction((uintptr_t *)jmethodArtmethod);
+}
+uintptr_t HookJmethod_JniFunction(JNIEnv* env,jclass jclass1,jmethodID jmethodId,uintptr_t fun_addr) {
+
+    uintptr_t jmethodArtmethod = GetArtMethod(env, jclass1,jmethodId);
+    if(jmethodArtmethod == NULL){
+        LOGE("jmethodArtmethod is null");
+        return NULL;
+    }
+    return HookJniNativeFunction( (uintptr_t*)jmethodArtmethod,fun_addr);
 }
 
 void find_class_method(JNIEnv* env){
@@ -472,7 +512,7 @@ jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,strin
     jmethodID Bundle_getString_method = env->GetMethodID(Bundle_class, "getString","(Ljava/lang/String;)Ljava/lang/String;");
     auto IContentProvider_class = env->FindClass("android/content/IContentProvider");
     auto ContentProviderHolder_provider_filed = env->GetFieldID(ContentProviderHolder_class,"provider","Landroid/content/IContentProvider;");
-        jmethodID ActivityManager_getservice_method_ = env->GetStaticMethodID(ServiceManager_cls, "getService", "()Landroid/app/IActivityManager;");
+    jmethodID ActivityManager_getservice_method_ = env->GetStaticMethodID(ServiceManager_cls, "getService", "()Landroid/app/IActivityManager;");
     jobject IActivityManager_Obj = env->CallStaticObjectMethod(ServiceManager_cls, ActivityManager_getservice_method_);
     if(IActivityManager_Obj == nullptr){
         NDK_ExceptionCheck(env,"ActivityManager_getservice_method_ is null");

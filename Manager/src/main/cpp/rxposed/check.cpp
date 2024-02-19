@@ -12,11 +12,8 @@
 #include <unistd.h>
 #include <vector>
 #include "artmethod_native_hook.h"
-#include "include/dobby.h"
-#include "include/tool.h"
-#include "include/And64InlineHook.h"
-#include "include/FunHook.h"
-#include "include/elf_resolver.h"
+#include "tool.h"
+#include "FunHook.h"
 
 using namespace std;
 
@@ -29,18 +26,21 @@ Java_hepta_rxposed_manager_fragment_check_checkFragment_chekc_1GetArtmethodNativ
 
     jclass  cls = env->GetObjectClass(thiz);
     jmethodID javamethod  =  env->GetMethodID(cls,"chekc_GetArtmethodNative_init", "()Z");
-    void *native_addr = (void *)Java_hepta_rxposed_manager_fragment_check_checkFragment_chekc_1GetArtmethodNative_1init;
-    INIT_HOOK_PlatformABI(env, cls,javamethod,native_addr,109);
-    void* native_get_addr = getJmethod_JniFunction(env,cls,javamethod);
+    uintptr_t native_fun_addr = reinterpret_cast<uintptr_t>(Java_hepta_rxposed_manager_fragment_check_checkFragment_chekc_1GetArtmethodNative_1init);
+    INIT_HOOK_PlatformABI(env, cls, javamethod, (uintptr_t*)native_fun_addr, 109);
+    uintptr_t jni_native_fun_addr = getJmethod_JniFunction(env,cls,javamethod);
 
-    if(native_get_addr == native_addr){
+    if(jni_native_fun_addr == native_fun_addr){
         return true;
     } else{
         return false;
     }
 
-
 }
+
+
+
+
 
 
 
@@ -51,10 +51,11 @@ Java_hepta_rxposed_manager_fragment_check_checkFragment_chekc_1android_1os_1Proc
     jclass  Process_cls = env->FindClass("android/os/Process");
     jmethodID javamethod = env->GetStaticMethodID(Process_cls,"getUidForName", "(Ljava/lang/String;)I");
 
-    void *getUidForName =  get_getUidForName_addr();
-    LOGE("getUidForName = %p",getUidForName);
+    void * libandroid_runtime =  dlopen("libandroid_runtime.so",RTLD_NOW);
+    uintptr_t  getUidForName = reinterpret_cast<uintptr_t>(dlsym(libandroid_runtime,"_Z32android_os_Process_getUidForNameP7_JNIEnvP8_jobjectP8_jstring"));
+    LOGE("getUidForName = %lx",getUidForName);
 
-    void * native_get_addr = getJmethod_JniFunction(env,Process_cls,javamethod);
+    uintptr_t native_get_addr = getJmethod_JniFunction(env,Process_cls,javamethod);
 
     if(getUidForName == native_get_addr){
         return true;
@@ -67,10 +68,10 @@ JNIEXPORT jboolean JNICALL
 Java_hepta_rxposed_manager_fragment_check_checkFragment_chekc_1android_1os_1Process_1setArgV0(
         JNIEnv *env, jobject thiz) {
 
-    void *setArgV0 =  get_android_os_Process_setArgV0_addr();
-    if(setArgV0 != nullptr){
-        return true;
-    }
+//    void *setArgV0 =  get_android_os_Process_setArgV0_addr();
+//    if(setArgV0 != nullptr){
+//        return true;
+//    }
     return false;
 }
 
@@ -119,15 +120,15 @@ Java_hepta_rxposed_manager_fragment_check_checkFragment_check_1inline_1hook(JNIE
 
 
 
-    DobbyHook((void *)__system_property_get, (void *)text_system_property_get_call, (void **)&text_system_property_get_org);
-    LOGE("system_property_get_addr = %p",__system_property_get);
-
-    memset(sdk_ver,0,32);
-    __system_property_get("rxposed_activity", sdk_ver);
-    if(!strncmp(sdk_ver,"true", strlen("true"))){
-        re = true;
-    }
-    DobbyDestroy((void *)__system_property_get);
+//    DobbyHook((void *)__system_property_get, (void *)text_system_property_get_call, (void **)&text_system_property_get_org);
+//    LOGE("system_property_get_addr = %p",__system_property_get);
+//
+//    memset(sdk_ver,0,32);
+//    __system_property_get("rxposed_activity", sdk_ver);
+//    if(!strncmp(sdk_ver,"true", strlen("true"))){
+//        re = true;
+//    }
+//    DobbyDestroy((void *)__system_property_get);
     return re;
 }
 extern "C"
@@ -136,16 +137,12 @@ Java_hepta_rxposed_manager_fragment_check_checkFragment_ELFresolveSymbol(JNIEnv 
                                                                          jobject thiz) {
     // TODO: implement ELFresolveSymbol()
 
-    void* __system_property_get_fun = rxposed::resolve_elf_internal_symbol("/apex/com.android.runtime/lib64/bionic/libc.so","__system_property_get");
-    LOGE("ELFresolveSymbol dlopen=%x", __system_property_get);
-    LOGE("ELFresolveSymbol __system_property_get_fun=%x",__system_property_get_fun);
 
-    if(__system_property_get_fun == __system_property_get){
-        LOGE("ELFresolveSymbol true " );
-        return true;
-    }else{
-        LOGE("ELFresolveSymbol false");
-        return false;
-    }
+    return true;
 
 }
+
+
+
+
+

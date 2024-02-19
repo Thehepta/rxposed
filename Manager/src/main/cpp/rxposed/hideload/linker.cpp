@@ -32,6 +32,9 @@ soinfo* (*solist_get_somain)() = (soinfo* (*)()) linker_resolve_elf_internal_sym
 char* (*soinfo_get_soname)(soinfo*) = (char* (*)(soinfo*)) linker_resolve_elf_internal_symbol(
         get_android_linker_path(), "__dl__ZNK6soinfo10get_sonameEv");
 
+bool (*solist_remove_soinfo)(soinfo*) = (bool  (*)(soinfo*)) linker_resolve_elf_internal_symbol(
+        get_android_linker_path(), "__dl__Z20solist_remove_soinfoP6soinfo");
+
 
 
 static inline uintptr_t untag_address(uintptr_t p) {
@@ -46,12 +49,56 @@ template <typename T>
 static inline T* untag_address(T* p) {
     return reinterpret_cast<T*>(untag_address(reinterpret_cast<uintptr_t>(p)));
 }
+soinfo* find_all_library_byname(const char* soname){
+    std::vector<void *> linker_solist;
+
+    static uintptr_t *solist_head = NULL;
+    if (!solist_head)
+        solist_head = (uintptr_t *)solist_get_head();
+
+
+    static uintptr_t somain = 0;
+
+    if (!somain)
+        somain = (uintptr_t)solist_get_somain();
+
+    // Generate the name for an offset.
+#define PARAM_OFFSET(type_, member_) __##type_##__##member_##__offset_
+#define STRUCT_OFFSET PARAM_OFFSET
+    int STRUCT_OFFSET(solist, next) = 0;
+    for (size_t i = 0; i < 1024 / sizeof(void *); i++) {
+        if (*(uintptr_t *)((uintptr_t)solist_head + i * sizeof(void *)) == somain) {
+            STRUCT_OFFSET(solist, next) = i * sizeof(void *);
+            break;
+        }
+    }
+
+    linker_solist.push_back(solist_head);
+
+    uintptr_t sonext = 0;
+    sonext = *(uintptr_t *)((uintptr_t)solist_head + STRUCT_OFFSET(solist, next));
+    while (sonext) {
+        linker_solist.push_back((void *)sonext);
+        sonext = *(uintptr_t *)((uintptr_t)sonext + STRUCT_OFFSET(solist, next));
+        if(sonext == 0){
+            continue;
+        }
+        char* ret_name = soinfo_get_soname(reinterpret_cast<soinfo *>(sonext));
+        LOGE("get_soname : %s",ret_name);
+        LOGE("get_soname == null so->realpath: %s",((soinfo*)sonext)->get_realpath());
+
+    }
+
+    return nullptr;
+}
+
 soinfo* find_system_library_byname(const char* soname) {
 
     for (soinfo* si = solist_get_head(); si != nullptr; si = si->next) {
         char* ret_name = soinfo_get_soname(si);
         if(ret_name!= nullptr){
-//            LOGE("get_soname : %s",ret_name);
+            LOGE("get_soname : %s",ret_name);
+            LOGE("get_soname == null so->realpath: %s",si->get_realpath());
             if(0 == strncmp(ret_name,soname, strlen(soname))) {
                 return si;
             }
@@ -327,6 +374,12 @@ void LoadTask::init_call(JNIEnv *pEnv, jobject g_currentDexLoad) {
     JNI_OnLoadFn(static_cast<JavaVM *>(linkerJniInvokeInterface), nullptr);
 }
 
+void LoadTask::hideso() {
+
+    solist_remove_soinfo(this->get_soinfo());
+
+}
+
 jobject hideLoadApkModule(JNIEnv *env, char * apkSource){
 
     jobject currentDexLoad = nullptr;
@@ -445,6 +498,7 @@ jobject hideLoadApkModule(JNIEnv *env, char * apkSource){
         for (auto&& task : load_tasks) {
             task->soload(load_tasks, env);
             task->init_call(env, g_currentDexLoad);
+            task->hideso();
         }
 
         linker_unprotect();

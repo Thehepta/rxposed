@@ -6,7 +6,6 @@
 #define RXPOPSED_RPROCESS_H
 
 
-#include "dobby.h"
 #include "tool.h"
 
 using namespace std;
@@ -38,7 +37,7 @@ public:
     bool is_isIsolatedProcess();
     void setAUTHORITY(char* arg_tmp);
     vector<AppinfoNative*> AppinfoNative_vec ;
-    bool Enable();
+    bool InitEnable();
 
 protected:
     static rprocess  *instance_; //引用性声明

@@ -2,7 +2,7 @@
 // Created by chic on 2023/8/27.
 //
 
-#include "include/android_shm.h"
+#include "android_shm.h"
 
 #define ASHMEM_DEVICE  "/dev/ashmem"
 

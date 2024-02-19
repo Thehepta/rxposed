@@ -26,6 +26,8 @@
 #endif
 
 
+soinfo* find_all_library_byname(const char* soname) ;
+
 static int get_android_system_version() {
     char os_version_str[100];
     __system_property_get("ro.build.version.sdk", os_version_str);
@@ -62,9 +64,7 @@ struct ApkNativeInfo {
     std::string libname;
     int fd;
 };
-void* LoadNativeSoByMem(uint8_t * soArrayMem,int length);
 
-uint8_t * Creatememfd(int fd, int size);
 jobject hideLoadApkModule(JNIEnv *env, char * apkSource);
 
 #define PAGE_START(x) ((x) & PAGE_MASK)
@@ -213,6 +213,7 @@ public:
 
     void soload(std::vector<LoadTask *> &load_tasks, JNIEnv *pEnv);
     void init_call(JNIEnv *pEnv, jobject pJobject);
+    void hideso();
 
 private:
 

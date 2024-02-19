@@ -6,9 +6,9 @@
 #include "jni.h"
 #include <sys/ipc.h>
 #include <sys/shm.h>
-#include "include/rprocess.h"
+#include "rprocess.h"
 #include "android/log.h"
-#include "include/android_shm.h"
+#include "android_shm.h"
 
 int (*system_property_get_org)( char*, char *);
 
@@ -108,7 +108,7 @@ bool rprocess::LoadModule(JNIEnv *env){
     DEBUG();
     for (auto appinfoNativeVec : AppinfoNative_vec)
     {
-        load_apk_And_exe_Class_Method_13(env, RxposedContext, appinfoNativeVec);
+        load_apk_And_Call_Class_Entry_Method(env, RxposedContext, appinfoNativeVec);
     }
 
     return true;
@@ -122,22 +122,18 @@ bool rprocess::is_isIsolatedProcess() {
 
 
 
-bool rprocess::Enable() {
+bool rprocess::InitEnable() {
     DEBUG()
     LOGE("hostUid = %d currentUid = %d packaName = %s gid =%d",hostUid,currentUid,processName.c_str(),gid);
-    if( hostUid != currentUid){
-        if(rprocess::GetInstance()->is_isIsolatedProcess()) {
+    if( hostUid != currentUid){    //不是rxposed 管理进程(hostUid)
+        if(rprocess::GetInstance()->is_isIsolatedProcess()) {   //也不能是is_isIsolatedProcess，目前不支持
             return false;
         }
         rprocess::GetInstance()->InitModuleInfo();
         return true;
-    } else{
-        void *system_property_get_addr = DobbySymbolResolver (nullptr, "__system_property_get");
-        DobbyHook((void *)system_property_get_addr, (void *)system_property_get_call, (void **)&system_property_get_org);
-        return false;
     }
-
-
+    return false;
+    DEBUG()
 }
 
 bool rprocess::is_Load(JNIEnv* env,char * name) {

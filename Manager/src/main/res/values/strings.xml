@@ -54,6 +54,7 @@
     <string name="activityMessage">rxposed激活需要提供root权限,通过ptrace的方式注入zygtoe进程</string>
     <string name="rxrebootMessage">rxposed管理应用在rxposed激活后需要重启一次来刷新状态,是否立即重启应用</string>
     <string name="rebootMessage">重新启动应用程序</string>
+    <string name="injectTestMessage">进程注入检测测试</string>
     <string name="zygoteMessage">系统软重启是通过重启zygote实现了，重启后rxposed激活状态将消除</string>
     <string name="appTips">应用提示:</string>
     <string name="signalStrength">signalStrength</string>

@@ -24,7 +24,7 @@ public class Util {
         String tmp = "";
         for(Object arg:args)
             tmp = tmp +" "+arg;
-        Log.d("rxposde",tmp);
+        Log.d("rxposde Util",tmp);
    }
 
 

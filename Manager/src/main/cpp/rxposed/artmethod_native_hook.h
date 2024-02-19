@@ -11,7 +11,7 @@
 #include <cstdlib>
 #include <android/log.h>
 
-#define Rxposed_jnihook "rxposed_jni"
+#define Rxposed_jnihook "rxposed_hook"
 
 
 #define async_safe_fatal(...)                                                                                          \
@@ -29,11 +29,15 @@
   } while (0)
 
 
-bool INIT_HOOK_PlatformABI(JNIEnv *env, jclass clazz, jmethodID methodId, void *native, uint32_t flags);
+bool INIT_HOOK_PlatformABI(JNIEnv *env, jclass clazz, jmethodID methodId, uintptr_t *native, uint32_t flags);
 
-void *GetArtMethod(JNIEnv *env, jclass clazz, jmethodID methodId);
+uintptr_t GetArtMethod(JNIEnv *env, jclass clazz, jmethodID methodId);
 
-void *GetOriginalNativeFunction(const uintptr_t *art_method);
+uintptr_t GetArtMethod(JNIEnv *env, jclass clazz, jobject methodId);
 
+uintptr_t GetOriginalNativeFunction(const uintptr_t *art_method);
 
+uintptr_t HookJniNativeFunction(uintptr_t *art_method, uintptr_t fun_addr);
+
+void unHookJniNativeFunction(uintptr_t *art_method);
 #endif //NDKAPPLICATION_ARTMETHOD_NATIVE_HOOK_H

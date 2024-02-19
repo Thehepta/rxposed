@@ -182,7 +182,7 @@ int map_hide(pid_t pid,char *path) {
  * @param NumParameter NumParameter为参数的个数
  * @return int 返回0表示注入成功，返回-1表示失败
  */
-int inject_remote_process(pid_t pid, char *LibPath, char *FunctionName, char *FunctionArgs){
+int inject_remote_process(pid_t pid, char *LibPath, char *FunctionName, char *FunctionArgs,int hidemaps){
     long parameters[6];
     // attach到目标进程
     if (ptrace_attach(pid) != 0){
@@ -281,10 +281,11 @@ int inject_remote_process(pid_t pid, char *LibPath, char *FunctionName, char *Fu
             printf("[-][function:%s] dlopen error:%s\n",__func__, LocalErrorInfo );
             break;
         }
-
-        if(map_hide(pid,LibPath)==-1){
-            printf("[-][function:%s] map_hide failed\n",__func__ );
-            break;
+        if(hidemaps == 1){
+            if(map_hide(pid,LibPath)==-1){
+                printf("[-][function:%s] map_hide failed\n",__func__ );
+                break;
+            }
         }
 
 
@@ -321,7 +322,7 @@ int inject_remote_process(pid_t pid, char *LibPath, char *FunctionName, char *Fu
                 break;
             }
             parameters[0] = (uintptr_t) ((uint8_t *) RemoteMapMemoryAddr);
-            printf("[+][function:%s] Call Function %s Arg:%d\n",__func__,FunctionName,parameters[0]);
+            printf("[+][function:%s] Call Function %s ArgAddr:0x%lx\n",__func__,FunctionName,(uintptr_t)parameters[0]);
             if (ptrace_call(pid, (uintptr_t) RemoteModuleFuncAddr, parameters,num_arg ,&CurrentRegs) == -1) {
                 printf("[-][function:%s] Call Remote injected Func Failed\n",__func__);
                 break;
@@ -368,6 +369,7 @@ struct process_inject{
     char lib_path[1024];
     char func_symbols[1024];
     char func_args[1024];
+    int hidemaps;
 } process_inject = {0, "", "symbols",""};
 
 /**
@@ -388,6 +390,7 @@ void handle_parameter(int argc, char *argv[]){
     char *lib_path = NULL;
     char *func_symbols = NULL;
     char *func_args=NULL;
+    int hidemaps = 0 ;
     bool start_app_flag = false;
 
     while (index < argc){ // 循环判断参数
@@ -430,17 +433,26 @@ void handle_parameter(int argc, char *argv[]){
 
         if (strcmp("-symbols", argv[index]) == 0){ // 判断是否传入so路径
             if (index + 1 >= argc){
-                printf("[-] Missing parameter -func\n");
+                printf("[-] Missing parameter -symbols\n");
                 exit(-1);
             }
             index++;
-            func_symbols = argv[index]; // so中的调用的函数
+            func_symbols = argv[index]; // so中的调用的函数符号
             if (index + 1 >= argc){
                 printf("[-] function: %s not params\n",func_symbols);
             }else{
                 index++;
                 func_args = argv[index]; // so中的调用的函数
             }
+        }
+
+        if (strcmp("-hidemaps", argv[index]) == 0) { // 判断是否传入so路径
+            if (index + 1 >= argc){
+                printf("[-] Missing parameter -hidemaps\n");
+                exit(-1);
+            }
+            index++;
+            hidemaps = atoi(argv[index]); // 是否隐藏so的maps
         }
 
         index++;
@@ -470,16 +482,19 @@ void handle_parameter(int argc, char *argv[]){
         strcpy(process_inject.lib_path, strdup(lib_path)); // 传递so路径到inject数据结构
     }
 
-    // 处理功能名称
+    // 函数符号
     if (func_symbols != NULL){ // 如果有功能名称
         printf("[+] symbols is %s\n", func_symbols);
         strcpy(process_inject.func_symbols,strdup(func_symbols)); // 传递功能名称到inject数据结构
     }
-    // 处理功能名称
+    // 函数参数
     if (func_args != NULL){ // 如果有功能名称
-        printf("[+] func_args is %s\n", func_args);
+        printf("[+] func_args is [%s]\n", func_args);
         strcpy(process_inject.func_args,strdup(func_args)); // 传递功能名称到inject数据结构
     }
+    process_inject.hidemaps = hidemaps;
+    printf("[+] hidemaps is %d\n", hidemaps);
+
 }
 
 /**
@@ -507,7 +522,7 @@ int init_inject(int argc, char *argv[]){
         printf("[+][SELinux] SELinux is Permissive or Disabled\n");
     }
 //    int re;
-    int re = inject_remote_process(process_inject.pid, process_inject.lib_path, process_inject.func_symbols, process_inject.func_args);
+    int re = inject_remote_process(process_inject.pid, process_inject.lib_path, process_inject.func_symbols, process_inject.func_args,process_inject.hidemaps);
     sleep(1);
     // 如果原SELinux状态为严格 则恢复状态
 

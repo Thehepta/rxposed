@@ -66,7 +66,7 @@ void handle_libs(){ // __attribute__((constructor))修饰 最先执行
     printf("[+] libdl_path is %s\n", process_libs.libdl_path);
     printf("[+] system libs is OK\n");
 }
-
+//不能用文件写入的方式，经过测试会有延迟问题，设置了以后代码会立即执行，这个时候，selinux策略还没有生效导致注入失败
 int get_selinux_status(){
     FILE *fp;
     char buffer[1024];

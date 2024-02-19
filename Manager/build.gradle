@@ -24,7 +24,9 @@ static def isWindows() {
 task myTask {
     doLast {
         exec {
-            commandLine 'powershell', '-c', 'echo Hello, World!'
+            commandLine  "powershell" ,"../gradlew.bat -p ../Tool externalNativeBuildRelease"
+            ignoreExitValue true
+
         }
     }
 }
@@ -114,8 +116,10 @@ android {
                 abiFilters 'armeabi-v7a','arm64-v8a'           //写在这里
             }
         }
-        buildConfigField "String", "Rxposed_Inject_So", "\"${Rxposed_Inject_So}\""
-
+        buildConfigField "String", "Rxposed_InjectTest_So", "\"${Rxposed_InjectTest_So}\""
+        buildConfigField "String", "Rxposed_Inject_So", "\"${Rxposed_Inject_So}\""      // 要注入到zygote进程中的so的名字，会写到配置文件中，方便修改名字
+                                                                                        //Rxposed_Inject_So 遍历在 上层 build.gradle 文件中定义
+                                                                                        //需要同步修改 cmake 中so 的名字（rxposed）
     }
 
     buildTypes {
@@ -131,7 +135,7 @@ android {
     externalNativeBuild {
         cmake {
             path file('src/main/cpp/CMakeLists.txt')
-            version '3.18.1'
+            version '3.22.1'
         }
     }
 

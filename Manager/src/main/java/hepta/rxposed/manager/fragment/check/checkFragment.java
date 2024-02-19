@@ -28,9 +28,9 @@ import hepta.rxposed.manager.R;
 public class checkFragment extends Fragment {
 
 
-
+    String TAG = checkFragment.class.getName();
     static {
-        System.loadLibrary("nativeloader");
+        System.loadLibrary("rxposed");
     }
 
     ArrayList<ItemBean> itemBeans = new ArrayList<>();
@@ -65,8 +65,20 @@ public class checkFragment extends Fragment {
         itemBeans.add(new ItemBean("chekc_PreGetenv", chekcPreGetenv()));
         itemBeans.add(new ItemBean("check_inline_hook",check_inline_hook()));
         itemBeans.add(new ItemBean("linker_resolve_elf_internal_symbol",ELFresolveSymbol()));
+        itemBeans.add(new ItemBean("check_jni_hook",check_jni_hook()));
         chekc_java_method();
 
+    }
+
+    private boolean check_jni_hook() {
+        boolean text =  jni_hook_text();
+        jni_hook();
+        boolean hook_text =  jni_hook_text();
+        if(hook_text == text){
+            return false;
+        }else {
+            return true;
+        }
     }
 
     private void chekc_java_method(){
@@ -105,9 +117,13 @@ public class checkFragment extends Fragment {
         itemBeans.add(Found_javaMethod("android.app.IActivityManager","getContentProviderExternal",getContentProviderExternal_parameter));
 
 
+        Class<?>[] setArgV0Native_parameter= {
+                String.class
+        };
+//        itemBeans.add(Found_javaMethod("android.os.Process","setArgV0Native",getContentProviderExternal_parameter));
+
+
         itemBeans.add(Java_CreateApplicationContext());
-
-
 
 
 
@@ -279,6 +295,9 @@ public class checkFragment extends Fragment {
     public native boolean  chekc_android_os_Process_setArgV0();
     public native boolean chekcPreGetenv();
     public native boolean  ELFresolveSymbol();
+
+    public native boolean  jni_hook();
+    public native boolean  jni_hook_text();
     public native boolean  check_inline_hook();
 
 
