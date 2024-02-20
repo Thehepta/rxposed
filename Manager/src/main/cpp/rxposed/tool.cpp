@@ -5,34 +5,10 @@
 
 #include <dlfcn.h>
 #include "tool.h"
-#include "linker.h"
-#include "elf_symbol_resolver.h"
+//#include "linker.h"
+//#include "elf_symbol_resolver.h"
 
 using namespace std;
-
-
-
-
-android_namespace_t* g_default_namespace = static_cast<android_namespace_t *>(linker_resolve_elf_internal_symbol(
-        get_android_linker_path(), "__dl_g_default_namespace"));
-
-soinfo* (*soinf_alloc_fun)(android_namespace_t* , const char* ,const struct stat* , off64_t ,uint32_t ) = (soinfo* (*)(android_namespace_t* , const char* ,const struct stat* , off64_t ,uint32_t )) linker_resolve_elf_internal_symbol(
-        get_android_linker_path(), "__dl__Z12soinfo_allocP19android_namespace_tPKcPK4statlj");
-
-soinfo* (*solist_get_head)() = (soinfo* (*)()) linker_resolve_elf_internal_symbol(
-        get_android_linker_path(), "__dl__Z15solist_get_headv");
-
-soinfo* (*solist_get_somain)() = (soinfo* (*)()) linker_resolve_elf_internal_symbol(
-        get_android_linker_path(), "__dl__Z17solist_get_somainv");
-
-char* (*soinfo_get_soname)(soinfo*) = (char* (*)(soinfo*)) linker_resolve_elf_internal_symbol(
-        get_android_linker_path(), "__dl__ZNK6soinfo10get_sonameEv");
-
-bool (*solist_remove_soinfo)(soinfo*) = (bool  (*)(soinfo*)) linker_resolve_elf_internal_symbol(
-        get_android_linker_path(), "__dl__Z20solist_remove_soinfoP6soinfo");
-
-ElfW(Addr) (*call_ifunc_resolver)(ElfW(Addr) resolver_addr) =(ElfW(Addr) (*)(ElfW(Addr) resolver_addr)) linker_resolve_elf_internal_symbol(
-        get_android_linker_path(), "__dl__Z19call_ifunc_resolvery");
 
 
 vector<string> string_split(string str,string pattern)
@@ -262,8 +238,16 @@ jobject GetRxposedProvider(JNIEnv *env, jobject android_Context , string& AUTHOR
 
 
 JNIEnv *Pre_GetEnv() {
+    //这个函数有使用限制可能无法在zygote以外的应用进程中使用，主要是因为so命名限制的问题 dlopen 无法打开libandroid_runtime.so
+    //如果想要在任何地方使用，需要突破dlopen限制，比如使用dobby的全局符号查找工具
     void * libandroid_runtime =  dlopen("libandroid_runtime.so",RTLD_NOW);
+    if(libandroid_runtime == nullptr){
+        return nullptr;
+    }
     void *getAndroidRuntimeEnv = reinterpret_cast<void *>(dlsym(libandroid_runtime,"_ZN7android14AndroidRuntime9getJNIEnvEv"));
+    if(getAndroidRuntimeEnv == nullptr){
+        return nullptr;
+    }
     dlclose(libandroid_runtime);
     return ((JNIEnv*(*)())getAndroidRuntimeEnv)();
 }
@@ -423,13 +407,13 @@ void find_class_method(JNIEnv* env){
     }
 }
 //这部分需要权限，在第一次注入zygote的时候，会通过root权限修改selinux规则
-string getCurrentAppRxposedConfig(JNIEnv* env,string AUTHORITY , string callName,string method ,uid_t currentUid){
+string getCurrentAppRxposedConfig(JNIEnv* env, string providerHost_providerName , string callName, string method , uid_t currentUid){
     DEBUG();
     jstring key = env->NewStringUTF("ModuleList");
     DEBUG();
     string uid_str = std::to_string(currentUid);
     DEBUG();
-    jobject obj_bundle = getConfigByProvider(env,  AUTHORITY,callName  ,method,uid_str);
+    jobject obj_bundle = getConfigByProvider(env, providerHost_providerName, callName  , method, uid_str);
     DEBUG();
     jclass Bundle_cls = env->FindClass("android/os/Bundle");
     jmethodID Bundle_getStringArrayList_method = env->GetMethodID(Bundle_cls, "getStringArrayList","(Ljava/lang/String;)Ljava/util/ArrayList;");
@@ -451,7 +435,7 @@ string getCurrentAppRxposedConfig(JNIEnv* env,string AUTHORITY , string callName
     return appinfoList;
 }
 
-jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,string method ,string uid_str){
+jobject getConfigByProvider(JNIEnv* env, string providerHost_providerName , string callName, string method , string uid_str){
     DEBUG()
     jclass ServiceManager_cls = env->FindClass("android/app/ActivityManager");
     auto IActivityManager_class = env->FindClass("android/app/IActivityManager");
@@ -472,7 +456,7 @@ jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,strin
         NDK_ExceptionCheck(env,"ActivityManager_getservice_method_ is null");
     }
 //    jstring AUTHORITY_jstring = env->NewStringUTF("hepta.rxposed.manager.Provider");
-    jstring j_AUTHORITY = env->NewStringUTF(AUTHORITY.c_str());
+    jstring j_providerHost_providerName = env->NewStringUTF(providerHost_providerName.c_str());
     jstring tag_jstring = env->NewStringUTF("*cmd*");
     jstring j_callingPkg = env->NewStringUTF(callName.c_str());
     jstring j_method = env->NewStringUTF(method.c_str());
@@ -482,8 +466,8 @@ jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,strin
     auto mExtras_BundleObj = env->NewObject(Bundle_class,Bundle_init);
 
     DEBUG()
-    LOGE("j_AUTHORITY : %s",AUTHORITY.c_str());
-    jobject holder_ContentProviderHolderObj = env->CallObjectMethod(IActivityManager_Obj,IActivityManager_getContentProviderExternal_method,j_AUTHORITY,0,token_ibinderObj,tag_jstring);
+    LOGE("j_providerHost_providerName : %s", providerHost_providerName.c_str());
+    jobject holder_ContentProviderHolderObj = env->CallObjectMethod(IActivityManager_Obj, IActivityManager_getContentProviderExternal_method, j_providerHost_providerName, 0, token_ibinderObj, tag_jstring);
     DEBUG()
     jobject  provider_IContentProviderObj = env->GetObjectField(holder_ContentProviderHolderObj,ContentProviderHolder_provider_filed);
     DEBUG()
@@ -496,14 +480,14 @@ jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,strin
         auto  attributionSourceObj = env->NewObject(AttributionSource_class,AttributionSource_init,uid,j_callingPkg,nullptr);
 
         auto IContentProvider_call_method = env->GetMethodID(IContentProvider_class,"call","(Landroid/content/AttributionSource;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroid/os/Bundle;)Landroid/os/Bundle;");
-        ret_bundle = env->CallObjectMethod(provider_IContentProviderObj, IContentProvider_call_method, attributionSourceObj, j_AUTHORITY, j_method, j_uid, mExtras_BundleObj);
-        env->CallObjectMethod(IActivityManager_Obj,IActivityManager_removeContentProviderExternalAsUser_method,j_AUTHORITY,token_ibinderObj,0);
+        ret_bundle = env->CallObjectMethod(provider_IContentProviderObj, IContentProvider_call_method, attributionSourceObj, j_providerHost_providerName, j_method, j_uid, mExtras_BundleObj);
+        env->CallObjectMethod(IActivityManager_Obj, IActivityManager_removeContentProviderExternalAsUser_method, j_providerHost_providerName, token_ibinderObj, 0);
 
     } else{
 
         auto IContentProvider_call_method = env->GetMethodID(IContentProvider_class,"call","(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroid/os/Bundle;)Landroid/os/Bundle;");
         ret_bundle = env->CallObjectMethod(provider_IContentProviderObj, IContentProvider_call_method, j_callingPkg,
-                                           nullptr, j_AUTHORITY, j_method, j_uid, mExtras_BundleObj);
+                                           nullptr, j_providerHost_providerName, j_method, j_uid, mExtras_BundleObj);
     }
 
 //    jstring config = static_cast<jstring>(env->CallObjectMethod(ret_bundle, Bundle_getString_method,j_key));
@@ -514,7 +498,7 @@ jobject getConfigByProvider(JNIEnv* env,string AUTHORITY , string callName,strin
     env->DeleteLocalRef(IActivityManager_Obj);
     DEBUG()
 
-    env->DeleteLocalRef(j_AUTHORITY);
+    env->DeleteLocalRef(j_providerHost_providerName);
 
     DEBUG()
     env->DeleteLocalRef(tag_jstring);

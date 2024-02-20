@@ -16,7 +16,7 @@ int g_argc = 0;
 char** g_argv = nullptr;
 char** g_envp = nullptr;
 
-ElfW(Addr) (*call_ifunc_resolver)(ElfW(Addr) resolver_addr) =(ElfW(Addr) (*)(ElfW(Addr) resolver_addr)) linker_resolve_elf_internal_symbol(
+ElfW(Addr) (*call_ifunc_resolver)(ElfW(Addr) resolver_addr) =(ElfW(Addr) (*)(ElfW(Addr) resolver_addr)) linkerResolveElfInternalSymbol(
         get_android_linker_path(), "__dl__Z19call_ifunc_resolvery");
 
 #if defined(__LP64__)

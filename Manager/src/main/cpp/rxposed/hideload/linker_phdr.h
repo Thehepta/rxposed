@@ -55,7 +55,7 @@ private:
     bool did_load_;
     std::string name_;
     int fd_;
-    off64_t file_offset_;
+    off64_t file_offset_;   //elf EHdr所在的文件，映射到内存以后，相较于  file_offset_ =  elf EHdr地址 - 映射首地址，一般为0,大部分文件elf ehdr 都位于首地址
     off64_t file_size_;
 
     ElfW(Ehdr) header_;

@@ -133,7 +133,7 @@ class HomeFragment : Fragment() {
         val Image_icon = view?.findViewById<ImageView>(R.id.status_icon)
         val Text_status = view?.findViewById<TextView>(R.id.status_text)
 
-        var activity =  get_rxposed_activity()
+        var activity = get_rxposed_status();
 
         if (activity){
             btn_activity?.visibility=View.INVISIBLE
@@ -151,7 +151,15 @@ class HomeFragment : Fragment() {
             }
         }
     }
+    private fun get_rxposed_status(): Boolean {
 
-    external fun get_rxposed_activity():Boolean
+        val zygote_host_uid = android.os.Process.getUidForName(InjectTool.getStatusAuthority());
+        if(zygote_host_uid!=-1){
+            return true;
+        }
+        return false;
+    }
+
+//        external fun get_rxposed_activity():Boolean
 
 }

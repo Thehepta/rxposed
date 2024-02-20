@@ -90,7 +90,10 @@ public  class InjectTool {
 
     }
 
-
+    public static String getStatusAuthority(){
+        int uid = context.getApplicationInfo().uid;
+        return uid+":"+InjectArg;
+    }
     public static void Application_reboot() throws IOException {
         Intent intent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); //与正常页面跳转一样可传递序列化数据,在Launch页面内获得
@@ -120,6 +123,7 @@ public  class InjectTool {
         rootRun(cmd_arm64);
         rootRun(cmd_armv7);
     }
+    ///data/user/0/hepta.rxposed.manager/files/assets/armv7_InjectTool -n zygote -hidemaps 1 -so /data/user/0/hepta.rxposed.manager/files/lib/armeabi-v7a/librxposed.so -symbols _Z14Ptrace_ZygotesPKc 10288:hepta.rxposed.manager:hepta.rxposed.manager.Provider
     public static  void zygote_ptrace_hide_so_maps()  {
         //zygote 附加
         int uid = context.getApplicationInfo().uid;

@@ -4,16 +4,41 @@ plugins {
 
 }
 
+import org.gradle.testfixtures.ProjectBuilder
+
+import java.util.Base64
+
+task encodeBase64 {
+    doLast {
+        def text = "__dl__ZNK6soinfo12get_realpathEv"
+        def encodedText = Base64.getEncoder().encodeToString(text.bytes)
+        println "Encoded text: ${encodedText}"
+    }
+}
+
+task decodeBase64 {
+    doLast {
+        def encodedText = "X19kbF9fWk5LNnNvaW5mbzEyZ2V0X3JlYWxwYXRoRXY="
+        def decodedText = new String(Base64.getDecoder().decode(encodedText))
+        println "Decoded text: ${decodedText}"
+    }
+}
+
 
 def FileCopy(src_file,dst_dir,src_name,dst_name){
 
-    copy {
+    def copySpec = copy {
         from src_file
         into dst_dir
         rename(src_name,dst_name)
+    }.didWork
+    if(copySpec){
         println("copy file success:"+src_file)
         println("copy file success:"+dst_dir+":"+dst_name)
+    }else {
+        throw new GradleException("copy file failed:"+src_file+" -> "+dst_dir)
     }
+
 }
 
 
@@ -21,25 +46,19 @@ static def isWindows() {
     return org.gradle.internal.os.OperatingSystem.current().isWindows()
 }
 
-task myTask {
-    doLast {
-        exec {
-            commandLine  "powershell" ,"../gradlew.bat -p ../Tool externalNativeBuildRelease"
-            ignoreExitValue true
 
-        }
-    }
-}
-
+//externalNativeBuildDebug.dependsOn InjectToolBuild
 
 def build_Module_copy_file(type,taskname,file_name){
     def command
     def Asset_dir
     def gradlew = "gradlew"
     def sh = "bash"
+    def arg = "-c"
     if(isWindows()) {
-        sh = "powershell"
+        sh = "cmd"
         gradlew = "gradlew.bat"
+        arg = "/c"
 
     }
 
@@ -48,6 +67,7 @@ def build_Module_copy_file(type,taskname,file_name){
         Asset_dir = "mergeDebugAssets"
         command = "./${gradlew} -p ./${taskname} externalNativeBuildDebug"
 
+
     }
     if(type.equals("release")){
         println("rxposed_gradle:"+"externalNativeBuildRelease")
@@ -55,8 +75,10 @@ def build_Module_copy_file(type,taskname,file_name){
         command = "./${gradlew} -p ./${taskname} externalNativeBuildRelease"
     }
 
+
+    //window上gradle输出 显示乱码,linux 上没问题
     try {
-        def process = new ProcessBuilder(sh, "-c", command).redirectErrorStream(true).start()
+        def process = new ProcessBuilder(sh, arg, command).redirectErrorStream(true).start()
         def output = new StringBuilder()
         process.inputStream.eachLine { line ->
             output.append(line).append('\n')
@@ -66,13 +88,6 @@ def build_Module_copy_file(type,taskname,file_name){
     } catch (IOException e) {
         e.printStackTrace()
     }
-
-
-    // linux 无法使用 windows第一次编译 会卡死
-//    exec {
-//        commandLine sh ,command
-//        ignoreExitValue true
-//    }
 
 
 // 在linux上可以完美使用
@@ -85,6 +100,8 @@ def build_Module_copy_file(type,taskname,file_name){
 //            println("the command is execute failed")
 //        }
 //    }
+
+
 
 
     def arch_arm64 = "arm64-v8a"
@@ -160,6 +177,7 @@ android {
     }
     ndkVersion '23.1.7779620'                              //这个需要高一点的版本，因为编译中使用了自定的linker，有部分elf的宏，只有在新版本中才会存在
 
+
     android.applicationVariants.all { variant ->
         variant.outputs.each { variantOutput ->
             println("applicationVariants.name----------------${variant.name}")
@@ -170,17 +188,22 @@ android {
             variant.mergeAssetsProvider.get().doLast {
                 println("mergeAssetsProvider.name----------------${variant.name}")
 //                build_Module_copy_file(variant.name,"nativeloader","${Rxposed_Inject_So_name}")
+
                 build_Module_copy_file(variant.name,"Tool","InjectTool")
+
+
 
             }
         }
     }
+
 }
 
 
 
 
 dependencies {
+
 
     implementation 'androidx.appcompat:appcompat:1.5.1'
     implementation 'com.google.android.material:material:1.7.0'

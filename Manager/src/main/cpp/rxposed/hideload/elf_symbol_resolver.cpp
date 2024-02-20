@@ -35,7 +35,7 @@
 #define PRIxPTR __PRI_PTR_prefix "x" /* uintptr_t */
 
 
-typedef struct elf_ctx {
+typedef struct elfctx {
     void *header;
 
     uintptr_t load_bias;
@@ -73,7 +73,7 @@ typedef uintptr_t addr_t;
 
 static std::vector<RuntimeModule> *modules;
 
-static std::vector<RuntimeModule> & get_process_map_with_proc_maps(){
+static std::vector<RuntimeModule> & getProcessMapWithProcMaps(){
     if (modules == nullptr) {
         modules = new std::vector<RuntimeModule>();
     }
@@ -146,8 +146,8 @@ static std::vector<RuntimeModule> & get_process_map_with_proc_maps(){
     return *modules;
 }
 
-RuntimeModule GetProcessModule(const char *name) {
-    auto modules = get_process_map_with_proc_maps();
+RuntimeModule GetProcessMaps(const char *name) {
+    auto modules = getProcessMapWithProcMaps();
     for (auto module : modules) {
         if (strstr(module.path, name) != 0) {
             return module;
@@ -160,7 +160,7 @@ RuntimeModule GetProcessModule(const char *name) {
 }
 
 
-int linker_elf_ctx_init(elf_ctx_t *ctx, void *header_) {
+int linkerElfCtxInit(elf_ctx_t *ctx, void *header_) {
     ElfW(Ehdr) *ehdr = (ElfW(Ehdr) *)header_;
     ctx->header = ehdr;
 
@@ -218,7 +218,7 @@ int linker_elf_ctx_init(elf_ctx_t *ctx, void *header_) {
     return 0;
 }
 
-static void *iterate_symbol_table_impl(const char *symbol_name, ElfW(Sym) * symtab, const char *strtab, int count) {
+static void *iterateSymbolTableImpl(const char *symbol_name, ElfW(Sym) * symtab, const char *strtab, int count) {
     for (int i = 0; i < count; ++i) {
         ElfW(Sym) *sym = symtab + i;
         const char *symbol_name_ = strtab + sym->st_name;
@@ -229,18 +229,18 @@ static void *iterate_symbol_table_impl(const char *symbol_name, ElfW(Sym) * symt
     return NULL;
 }
 
-void *linker_elf_ctx_iterate_symbol_table(elf_ctx_t *ctx, const char *symbol_name) {
+void *linkerElfCtxIterateSymbolTable(elf_ctx_t *ctx, const char *symbol_name) {
     void *result = NULL;
     if (ctx->symtab_ && ctx->strtab_) {
         size_t count = ctx->sym_sh_->sh_size / sizeof(ElfW(Sym));
-        result = iterate_symbol_table_impl(symbol_name, ctx->symtab_, ctx->strtab_, count);
+        result = iterateSymbolTableImpl(symbol_name, ctx->symtab_, ctx->strtab_, count);
         if (result)
             return result;
     }
 
     if (ctx->dynsymtab_ && ctx->dynstrtab_) {
         size_t count = ctx->dynsym_sh_->sh_size / sizeof(ElfW(Sym));
-        result = iterate_symbol_table_impl(symbol_name, ctx->dynsymtab_, ctx->dynstrtab_, count);
+        result = iterateSymbolTableImpl(symbol_name, ctx->dynsymtab_, ctx->dynstrtab_, count);
         if (result)
             return result;
     }
@@ -251,12 +251,12 @@ void *linker_elf_ctx_iterate_symbol_table(elf_ctx_t *ctx, const char *symbol_nam
 
 
 
-void *linker_resolve_elf_internal_symbol(const char *library_name, const char *symbol_name) {
+void *linkerResolveElfInternalSymbol(const char *library_name, const char *symbol_name) {
     void *result = NULL;
 
     elf_ctx_t ctx;
     memset(&ctx, 0, sizeof(elf_ctx_t));
-    RuntimeModule module = GetProcessModule(library_name);
+    RuntimeModule module = GetProcessMaps(library_name);
     if(module.load_address){
         size_t file_size = 0;
         {
@@ -280,13 +280,17 @@ void *linker_resolve_elf_internal_symbol(const char *library_name, const char *s
             // printf("mmap %s failed\n", file_);
             return NULL;
         }
-        close(fd);
 
-        linker_elf_ctx_init(&ctx, mmap_buffer);
-        result = linker_elf_ctx_iterate_symbol_table(&ctx, symbol_name);
 
-        if (result)
+        linkerElfCtxInit(&ctx, mmap_buffer);
+        result = linkerElfCtxIterateSymbolTable(&ctx, symbol_name);
+
+        if (result)      //result 符号相较于Ehdr的偏移
+                        // ((addr_t)result + (addr_t)module.load_address    偏移+ 基址
+                        // ((addr_t)mmap_buffer - (addr_t)ctx.load_bias))   可能存在的偏移
             result = (void *)((addr_t)result + (addr_t)module.load_address - ((addr_t)mmap_buffer - (addr_t)ctx.load_bias));
+        munmap(mmap_buffer,file_size);
+        close(fd);
 
     }
 
@@ -335,8 +339,9 @@ char * base64_decode(const char *data, size_t input_length, size_t *output_lengt
     if (data[input_length - 1] == '=') (*output_length)--;
     if (data[input_length - 2] == '=') (*output_length)--;
 
-    auto *decoded_data = (char*)malloc(*output_length);
+    auto *decoded_data = (char*)malloc(*output_length+1);
     if (decoded_data == nullptr) return nullptr;
+    memset(decoded_data,0,*output_length+1);
 
     for (int i = 0, j = 0; i < input_length;) {
         uint32_t sextet_a = data[i] == '=' ? 0 & i++ : decoding_table[data[i++]];
@@ -357,7 +362,7 @@ char * base64_decode(const char *data, size_t input_length, size_t *output_lengt
     return decoded_data;
 }
 
-void *linker_resolve_elf_internal_symbol_base64(const char *library_name, const char *base64_symbol_name) {
+void *linkerResolveElfInternalSymbolBase64(const char *library_name, const char *base64_symbol_name) {
     size_t output_length_encode = 0;
 
     char* symbol_name = base64_decode(base64_symbol_name, strlen(base64_symbol_name),
@@ -366,7 +371,7 @@ void *linker_resolve_elf_internal_symbol_base64(const char *library_name, const 
     void *result = NULL;
     elf_ctx_t ctx;
     memset(&ctx, 0, sizeof(elf_ctx_t));
-    RuntimeModule module = GetProcessModule(library_name);
+    RuntimeModule module = GetProcessMaps(library_name);
     if(module.load_address){
         size_t file_size = 0;
         {
@@ -392,13 +397,18 @@ void *linker_resolve_elf_internal_symbol_base64(const char *library_name, const 
         }
         close(fd);
 
-        linker_elf_ctx_init(&ctx, mmap_buffer);
-        result = linker_elf_ctx_iterate_symbol_table(&ctx, symbol_name);
+        linkerElfCtxInit(&ctx, mmap_buffer);
+        result = linkerElfCtxIterateSymbolTable(&ctx, symbol_name);
 
-        if (result)
+        if (result)      //result 符号相较于Ehdr的偏移
+            // ((addr_t)result + (addr_t)module.load_address    偏移+ 基址
+            // ((addr_t)mmap_buffer - (addr_t)ctx.load_bias))   可能存在的偏移
             result = (void *)((addr_t)result + (addr_t)module.load_address - ((addr_t)mmap_buffer - (addr_t)ctx.load_bias));
+        munmap(mmap_buffer,file_size);
+        close(fd);
 
     }
+    memset(symbol_name,0,output_length_encode);
     free(symbol_name);
     return result;
 }
@@ -406,6 +416,29 @@ void *linker_resolve_elf_internal_symbol_base64(const char *library_name, const 
 
 
 
+int get_android_system_version() {
+    char os_version_str[100];
+    __system_property_get("ro.build.version.sdk", os_version_str);
+    int os_version_int = atoi(os_version_str);
+    return os_version_int;
+}
+
+
+const char *get_android_linker_path() {
+#if __LP64__
+    if (get_android_system_version() >= 29) {
+        return (const char *)"/apex/com.android.runtime/bin/linker64";
+    } else {
+        return (const char *)"/system/bin/linker64";
+    }
+#else
+    if (get_android_system_version() >= 29) {
+        return (const char *)"/apex/com.android.runtime/bin/linker";
+    } else {
+        return (const char *)"/system/bin/linker";
+    }
+#endif
+}
 
 
 

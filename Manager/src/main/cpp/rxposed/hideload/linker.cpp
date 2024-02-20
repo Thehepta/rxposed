@@ -17,22 +17,22 @@
 #include <sys/utsname.h>
 #include "jni_hook.h"
 
-android_namespace_t* g_default_namespace = static_cast<android_namespace_t *>(linker_resolve_elf_internal_symbol(
+android_namespace_t* g_default_namespace = static_cast<android_namespace_t *>(linkerResolveElfInternalSymbol(
         get_android_linker_path(), "__dl_g_default_namespace"));
 
-soinfo* (*soinf_alloc_fun)(android_namespace_t* , const char* ,const struct stat* , off64_t ,uint32_t ) = (soinfo* (*)(android_namespace_t* , const char* ,const struct stat* , off64_t ,uint32_t )) linker_resolve_elf_internal_symbol(
+soinfo* (*soinf_alloc_fun)(android_namespace_t* , const char* ,const struct stat* , off64_t ,uint32_t ) = (soinfo* (*)(android_namespace_t* , const char* ,const struct stat* , off64_t ,uint32_t )) linkerResolveElfInternalSymbol(
         get_android_linker_path(), "__dl__Z12soinfo_allocP19android_namespace_tPKcPK4statlj");
 
-soinfo* (*solist_get_head)() = (soinfo* (*)()) linker_resolve_elf_internal_symbol(
+soinfo* (*solist_get_head)() = (soinfo* (*)()) linkerResolveElfInternalSymbol(
         get_android_linker_path(), "__dl__Z15solist_get_headv");
 
-soinfo* (*solist_get_somain)() = (soinfo* (*)()) linker_resolve_elf_internal_symbol(
+soinfo* (*solist_get_somain)() = (soinfo* (*)()) linkerResolveElfInternalSymbol(
         get_android_linker_path(), "__dl__Z17solist_get_somainv");
 
-char* (*soinfo_get_soname)(soinfo*) = (char* (*)(soinfo*)) linker_resolve_elf_internal_symbol(
+char* (*soinfo_get_soname)(soinfo*) = (char* (*)(soinfo*)) linkerResolveElfInternalSymbol(
         get_android_linker_path(), "__dl__ZNK6soinfo10get_sonameEv");
 
-bool (*solist_remove_soinfo)(soinfo*) = (bool  (*)(soinfo*)) linker_resolve_elf_internal_symbol(
+bool (*solist_remove_soinfo)(soinfo*) = (bool  (*)(soinfo*)) linkerResolveElfInternalSymbol(
         get_android_linker_path(), "__dl__Z20solist_remove_soinfoP6soinfo");
 
 
@@ -118,11 +118,11 @@ soinfo* find_containing_library(const void* p) {
 
 //    static soinfo* (*solist_get_head)() = NULL;
 //    if (!solist_get_head)
-//        solist_get_head = (soinfo* (*)())linker_resolve_elf_internal_symbol(get_android_linker_path(), "__dl__Z15solist_get_headv");
+//        solist_get_head = (soinfo* (*)())linkerResolveElfInternalSymbol(get_android_linker_path(), "__dl__Z15solist_get_headv");
 
 //    static soinfo* (*solist_get_somain)() = NULL;
 //    if (!solist_get_somain)
-//        solist_get_somain = (soinfo* (*)())linker_resolve_elf_internal_symbol(get_android_linker_path(), "__dl__Z17solist_get_somainv");
+//        solist_get_somain = (soinfo* (*)())linkerResolveElfInternalSymbol(get_android_linker_path(), "__dl__Z17solist_get_somainv");
 
     ElfW(Addr) address = reinterpret_cast<ElfW(Addr)>(untag_address(p));
     for (soinfo* si = solist_get_head(); si != nullptr; si = si->next) {
@@ -146,17 +146,17 @@ soinfo* find_containing_library(const void* p) {
 void linker_protect(){
 
 
-    void* g_soinfo_allocator = static_cast<void *>(linker_resolve_elf_internal_symbol(
+    void* g_soinfo_allocator = static_cast<void *>(linkerResolveElfInternalSymbol(
             get_android_linker_path(), "__dl__ZL18g_soinfo_allocator"));
-    void* g_soinfo_links_allocator = static_cast<void *>(linker_resolve_elf_internal_symbol(
+    void* g_soinfo_links_allocator = static_cast<void *>(linkerResolveElfInternalSymbol(
             get_android_linker_path(), "__dl__ZL24g_soinfo_links_allocator"));
-    void* g_namespace_allocator = static_cast<void *>(linker_resolve_elf_internal_symbol(
+    void* g_namespace_allocator = static_cast<void *>(linkerResolveElfInternalSymbol(
             get_android_linker_path(), "__dl__ZL21g_namespace_allocator"));
-    void* g_namespace_list_allocator = static_cast<void *>(linker_resolve_elf_internal_symbol(
+    void* g_namespace_list_allocator = static_cast<void *>(linkerResolveElfInternalSymbol(
             get_android_linker_path(), "__dl__ZL26g_namespace_list_allocator"));
 
 
-    void (*protect_all)(void*,int prot) = (void (*)(void*,int prot)) linker_resolve_elf_internal_symbol(
+    void (*protect_all)(void*,int prot) = (void (*)(void*,int prot)) linkerResolveElfInternalSymbol(
             get_android_linker_path(), "__dl__ZN20LinkerBlockAllocator11protect_allEi");
     protect_all(g_soinfo_allocator,PROT_READ | PROT_WRITE);      //arg1 = 0x73480D23D8
     protect_all(g_soinfo_links_allocator,PROT_READ | PROT_WRITE);
@@ -167,17 +167,17 @@ void linker_protect(){
 void linker_unprotect(){
 
 
-    void* g_soinfo_allocator = static_cast<void *>(linker_resolve_elf_internal_symbol(
+    void* g_soinfo_allocator = static_cast<void *>(linkerResolveElfInternalSymbol(
             get_android_linker_path(), "__dl__ZL18g_soinfo_allocator"));
-    void* g_soinfo_links_allocator = static_cast<void *>(linker_resolve_elf_internal_symbol(
+    void* g_soinfo_links_allocator = static_cast<void *>(linkerResolveElfInternalSymbol(
             get_android_linker_path(), "__dl__ZL24g_soinfo_links_allocator"));
-    void* g_namespace_allocator = static_cast<void *>(linker_resolve_elf_internal_symbol(
+    void* g_namespace_allocator = static_cast<void *>(linkerResolveElfInternalSymbol(
             get_android_linker_path(), "__dl__ZL21g_namespace_allocator"));
-    void* g_namespace_list_allocator = static_cast<void *>(linker_resolve_elf_internal_symbol(
+    void* g_namespace_list_allocator = static_cast<void *>(linkerResolveElfInternalSymbol(
             get_android_linker_path(), "__dl__ZL26g_namespace_list_allocator"));
 
 
-    void (*protect_all)(void*,int prot) = (void (*)(void*,int prot)) linker_resolve_elf_internal_symbol(
+    void (*protect_all)(void*,int prot) = (void (*)(void*,int prot)) linkerResolveElfInternalSymbol(
             get_android_linker_path(), "__dl__ZN20LinkerBlockAllocator11protect_allEi");
     protect_all(g_soinfo_allocator,PROT_READ  );
     protect_all(g_soinfo_links_allocator,PROT_READ  );
@@ -189,7 +189,7 @@ void linker_unprotect(){
 soinfo* soinfo_alloc(ApkNativeInfo &apkNativeInfo){
 
 
-    soinfo* (*soinf_alloc_fun)(android_namespace_t* , const char* ,const struct stat* , off64_t ,uint32_t ) = (soinfo* (*)(android_namespace_t* , const char* ,const struct stat* , off64_t ,uint32_t )) linker_resolve_elf_internal_symbol(
+    soinfo* (*soinf_alloc_fun)(android_namespace_t* , const char* ,const struct stat* , off64_t ,uint32_t ) = (soinfo* (*)(android_namespace_t* , const char* ,const struct stat* , off64_t ,uint32_t )) linkerResolveElfInternalSymbol(
             get_android_linker_path(), "__dl__Z12soinfo_allocP19android_namespace_tPKcPK4statlj");
     soinfo* si = soinf_alloc_fun(g_default_namespace, apkNativeInfo.libname.c_str(), nullptr, 0, RTLD_GLOBAL);
     return si;

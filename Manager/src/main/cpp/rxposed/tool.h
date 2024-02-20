@@ -81,9 +81,9 @@ jobject CreateApplicationContext(JNIEnv *env, std::string pkgName,uid_t currentU
 jobject GetRxposedProvider(JNIEnv *env, jobject android_Context , std::string& AUTHORITY, const std::string& Provider_call_method, const std::string& Provider_call_arg);
 AppinfoNative* GetPmAppInfoNative(JNIEnv *env, jobject android_Context, std::string pkgName);
 AppinfoNative* GetRxAppInfoNative(JNIEnv *env, jobject android_Context,std::string AUTHORITY,std::string pkgName);
-std::string getCurrentAppRxposedConfig(JNIEnv* env,std::string AUTHORITY , std::string callName,std::string method ,uid_t currentUid);
+std::string getCurrentAppRxposedConfig(JNIEnv* env, std::string providerHost_providerName , std::string callName, std::string method , uid_t currentUid);
 JNIEnv *Pre_GetEnv() ;
 
 void unHookJmethod_JniFunction(JNIEnv* env,jclass jclass1,jmethodID jmethodId);
-jobject getConfigByProvider(JNIEnv* env,std::string AUTHORITY , std::string callName,std::string method ,std::string uid_str);
+jobject getConfigByProvider(JNIEnv* env, std::string providerHost_providerName , std::string callName, std::string method , std::string uid_str);
 #endif //RXPOSED_TOOL_H

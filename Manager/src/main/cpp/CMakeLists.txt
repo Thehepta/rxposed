@@ -22,13 +22,15 @@ include_directories(./)
 message("test build.gradle arg ${INJECTSO}")
 
 add_library( # Sets the name of the library.
-        status
+        check
         # Sets the library as a shared library.
         SHARED
         # Provides a relative path to your source file(s).
         TraverseSo.cpp
         rxposed/hideload/elf_symbol_resolver.cpp
-        status.cpp)
+        rxposed/artmethod_native_hook.cpp
+        rxposed/tool.cpp
+        check.cpp)
 
 
 add_library( # Sets the name of the library.
@@ -62,7 +64,7 @@ target_link_libraries( # Specifies the target library.
         ${log-lib})
 
 target_link_libraries( # Specifies the target library.
-        status
+        check
 #        rxposed
         # Links the target library to the log library
         # included in the NDK.

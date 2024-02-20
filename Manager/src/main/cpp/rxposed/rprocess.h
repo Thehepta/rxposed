@@ -8,6 +8,15 @@
 
 #include "tool.h"
 
+#ifndef __aarch64__
+#define APK_NATIVE_LIB "lib/arm64"
+
+#else
+#define APK_NATIVE_LIB "lib/arm"
+
+#endif
+
+
 using namespace std;
 
 class rprocess {
@@ -29,15 +38,16 @@ public:
     }
 
     void setProcessInfo(char* nice_name, uid_t uid, gid_t gid);
-    void setUUID(char* nice_name);
-    bool LoadModule(JNIEnv *env);
-    bool InitModuleInfo();
-    bool getModuleInfo();
-    bool is_Load(JNIEnv* env,char * name);
+    bool LoadModule(JNIEnv* env);
+    bool InitModuleInfo(JNIEnv *env);
+    bool is_Start(JNIEnv* env, char * name);
     bool is_isIsolatedProcess();
-    void setAUTHORITY(char* arg_tmp);
+    bool is_HostProcess();
+    const char* getStatusAuthority();
+    uint getHostUid();
+    void setAuthorityInfo(const char* arg_tmp);
     vector<AppinfoNative*> AppinfoNative_vec ;
-    bool InitEnable();
+    bool InitEnable(JNIEnv *pEnv);
 
 protected:
     static rprocess  *instance_; //引用性声明
@@ -45,7 +55,7 @@ protected:
 private:
     rprocess(const rprocess& other);
     rprocess & operator=(const rprocess & other);
-    rprocess();
+    rprocess():processName(""),currentUid(1),gid(1){};
     string processName;
     jobject RxposedContext;
     uid_t hostUid;
@@ -53,6 +63,7 @@ private:
     uid_t currentUid;
     string AUTHORITY;
     string providerHost_pkgName;
+    string providerHost_providerName;
     string UUID;
 };
 

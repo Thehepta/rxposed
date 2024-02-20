@@ -6,24 +6,47 @@
 #include "rxposed/hideload/elf_symbol_resolver.h"
 #include "TraverseSo.h"
 #define LOG_TAG "sotravers"
+
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
 
 
-soinfo* (*solist_get_head)() = (soinfo* (*)()) linker_resolve_elf_internal_symbol(
+soinfo* (*solist_get_head)() = (soinfo* (*)()) linkerResolveElfInternalSymbol(
         get_android_linker_path(), "__dl__Z15solist_get_headv");
 
-soinfo* (*solist_get_somain)() = (soinfo* (*)()) linker_resolve_elf_internal_symbol(
+soinfo* (*solist_get_somain)() = (soinfo* (*)()) linkerResolveElfInternalSymbol(
         get_android_linker_path(), "__dl__Z17solist_get_somainv");
 
-char* (*soinfo_get_soname)(soinfo*) = (char* (*)(soinfo*)) linker_resolve_elf_internal_symbol(
+char* (*soinfo_get_soname)(soinfo*) = (char* (*)(soinfo*)) linkerResolveElfInternalSymbol(
         get_android_linker_path(), "__dl__ZNK6soinfo10get_sonameEv");
 
-bool (*solist_remove_soinfo)(soinfo*) = (bool  (*)(soinfo*)) linker_resolve_elf_internal_symbol(
+bool (*solist_remove_soinfo)(soinfo*) = (bool  (*)(soinfo*)) linkerResolveElfInternalSymbol(
         get_android_linker_path(), "__dl__Z20solist_remove_soinfoP6soinfo");
 
-char* (*soinfo_get_realpath)(soinfo*) = (char* (*)(soinfo*)) linker_resolve_elf_internal_symbol(
+char* (*soinfo_get_realpath)(soinfo*) = (char* (*)(soinfo*)) linkerResolveElfInternalSymbol(
         get_android_linker_path(), "__dl__ZNK6soinfo12get_realpathEv");
+
+
+
+void text(){
+    char* (*soinfo_get_realpath)(soinfo*) = (char* (*)(soinfo*)) linkerResolveElfInternalSymbol(
+            get_android_linker_path(), "__dl__ZNK6soinfo12get_realpathEv");
+
+    char* (*soinfo_get_realpath_bsee64)(soinfo*) = (char* (*)(soinfo*)) linkerResolveElfInternalSymbolBase64(
+            get_android_linker_path(), "X19kbF9fWk5LNnNvaW5mbzEyZ2V0X3JlYWxwYXRoRXY=");
+
+
+
+    if(*soinfo_get_realpath == *soinfo_get_realpath_bsee64){
+        LOGE("soinfo_get_realpath == soinfo_get_realpath_bsee64)");
+
+    } else{
+        LOGE("soinfo_get_realpath != soinfo_get_realpath_bsee64)");
+
+    }
+
+    return;
+}
 
 //通过动态计算结构内部成员的位置，循环找到soinfo 内部的next的位置，然后通过next进行遍历
 soinfo* find_all_library_byname(const char* soname){

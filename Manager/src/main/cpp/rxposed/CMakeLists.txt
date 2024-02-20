@@ -23,7 +23,7 @@ else()
     message("this is RXDEBUG ON")
 endif()
 
-#add_subdirectory(hideload)
+add_subdirectory(hideload)
 
 #add_library(libdobby STATIC IMPORTED)
 #set_target_properties(libdobby PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/libs/${ANDROID_ABI}/libdobby.a)
@@ -37,7 +37,7 @@ include_directories(hideload)
 
 
 add_library( # Sets the name of the library.
-        rxposede
+        rxposed
         # Sets the library as a shared library.
         SHARED
         # Provides a relative path to your source file(s).
@@ -47,7 +47,6 @@ add_library( # Sets the name of the library.
         artmethod_native_hook.cpp
         hideload/elf_symbol_resolver.cpp
         rprocess.cpp
-        check.cpp
         android_shm.cpp
         )
 
@@ -70,7 +69,7 @@ find_library( # Sets the name of the path variable.
 # build script, prebuilt third-party libraries, or system libraries.
 
 target_link_libraries( # Specifies the target library.
-        rxposede
+        rxposed
 #        hideload
         # Links the target library to the log library
         # included in the NDK.
