@@ -36,7 +36,7 @@ def FileCopy(src_file,dst_dir,src_name,dst_name){
         println("copy file success:"+src_file)
         println("copy file success:"+dst_dir+":"+dst_name)
     }else {
-        throw new GradleException("copy file failed:"+src_file+" -> "+dst_dir)
+        throw new GradleException("copy file failed: "+src_file+" -> "+dst_dir)
     }
 
 }
@@ -56,7 +56,8 @@ def build_Module_copy_file(type,taskname,file_name){
     def sh = "bash"
     def arg = "-c"
     if(isWindows()) {
-        sh = "cmd"
+        sh = "powershell"
+//        sh = "cmd"
         gradlew = "gradlew.bat"
         arg = "/c"
 
@@ -79,12 +80,10 @@ def build_Module_copy_file(type,taskname,file_name){
     //window上gradle输出 显示乱码,linux 上没问题
     try {
         def process = new ProcessBuilder(sh, arg, command).redirectErrorStream(true).start()
-        def output = new StringBuilder()
         process.inputStream.eachLine { line ->
-            output.append(line).append('\n')
+            println line
         }
         process.waitFor()
-        println output.toString()
     } catch (IOException e) {
         e.printStackTrace()
     }
@@ -94,7 +93,7 @@ def build_Module_copy_file(type,taskname,file_name){
 //    exec {
 //        try {
 //            executable  sh
-//            args '-c', command
+//            args arg, command
 //            println("the command is execute success")
 //        } catch (GradleException e) {
 //            println("the command is execute failed")
@@ -227,6 +226,7 @@ dependencies {
 
     implementation 'com.tencent:mmkv:1.2.15'
     implementation 'com.google.code.gson:gson:2.10.1'
+//    implementation project(':Tool')
 
 
     testImplementation 'junit:junit:4.13.2'

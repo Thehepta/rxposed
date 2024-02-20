@@ -49,8 +49,4 @@ public class RxposedApp extends Application {
 
     }
 
-    static {
-            System.loadLibrary("status");
-    }
-
 }

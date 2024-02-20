@@ -8,7 +8,7 @@
 
 #include "tool.h"
 
-#ifndef __aarch64__
+#ifdef __aarch64__
 #define APK_NATIVE_LIB "lib/arm64"
 
 #else
