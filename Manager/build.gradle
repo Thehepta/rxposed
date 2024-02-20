@@ -1,122 +1,13 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-
-}
-
-import org.gradle.testfixtures.ProjectBuilder
-
-import java.util.Base64
-
-task encodeBase64 {
-    doLast {
-        def text = "__dl__ZNK6soinfo12get_realpathEv"
-        def encodedText = Base64.getEncoder().encodeToString(text.bytes)
-        println "Encoded text: ${encodedText}"
-    }
-}
-
-task decodeBase64 {
-    doLast {
-        def encodedText = "X19kbF9fWk5LNnNvaW5mbzEyZ2V0X3JlYWxwYXRoRXY="
-        def decodedText = new String(Base64.getDecoder().decode(encodedText))
-        println "Decoded text: ${decodedText}"
-    }
+    id 'kotlin-kapt'
 }
 
 
-def FileCopy(src_file,dst_dir,src_name,dst_name){
-
-    def copySpec = copy {
-        from src_file
-        into dst_dir
-        rename(src_name,dst_name)
-    }.didWork
-    if(copySpec){
-        println("copy file success:"+src_file)
-        println("copy file success:"+dst_dir+":"+dst_name)
-    }else {
-        throw new GradleException("copy file failed: "+src_file+" -> "+dst_dir)
-    }
-
-}
-
-
-static def isWindows() {
-    return org.gradle.internal.os.OperatingSystem.current().isWindows()
-}
-
-
-//externalNativeBuildDebug.dependsOn InjectToolBuild
-
-def build_Module_copy_file(type,taskname,file_name){
-    def command
-    def Asset_dir
-    def gradlew = "gradlew"
-    def sh = "bash"
-    def arg = "-c"
-    if(isWindows()) {
-        sh = "powershell"
-//        sh = "cmd"
-        gradlew = "gradlew.bat"
-        arg = "/c"
-
-    }
-
-    if(type.equals("debug")){
-        println("rxposed_gradle:"+"externalNativeBuildDebug")
-        Asset_dir = "mergeDebugAssets"
-        command = "./${gradlew} -p ./${taskname} externalNativeBuildDebug"
-
-
-    }
-    if(type.equals("release")){
-        println("rxposed_gradle:"+"externalNativeBuildRelease")
-        Asset_dir = "mergeReleaseAssets"
-        command = "./${gradlew} -p ./${taskname} externalNativeBuildRelease"
-    }
-
-
-    //window上gradle输出 显示乱码,linux 上没问题
-    try {
-        def process = new ProcessBuilder(sh, arg, command).redirectErrorStream(true).start()
-        process.inputStream.eachLine { line ->
-            println line
-        }
-        process.waitFor()
-    } catch (IOException e) {
-        e.printStackTrace()
-    }
-
-
-// 在linux上可以完美使用
-//    exec {
-//        try {
-//            executable  sh
-//            args arg, command
-//            println("the command is execute success")
-//        } catch (GradleException e) {
-//            println("the command is execute failed")
-//        }
-//    }
-
-
-
-
-    def arch_arm64 = "arm64-v8a"
-    def arm64_fromFile = rootProject.file("${taskname}/build/intermediates/cmake/${type}/obj/${arch_arm64}/${file_name}")
-    def arm64_intoDir = rootProject.file("Manager/build/intermediates/assets/${type}/${Asset_dir}")
-    FileCopy(arm64_fromFile,arm64_intoDir,file_name,"arm64_${file_name}")
-
-    def arch_armv7 = "armeabi-v7a"
-    def armv7_fromFile = rootProject.file("${taskname}/build/intermediates/cmake/${type}/obj/${arch_armv7}/${file_name}")
-    def armv7_intoDir = rootProject.file("Manager/build/intermediates/assets/${type}/${Asset_dir}")
-    FileCopy(armv7_fromFile,armv7_intoDir,file_name,"armv7_${file_name}")
-
-}
 
 android {
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "hepta.rxposed.manager"
@@ -169,29 +60,33 @@ android {
     }
     buildFeatures {
         viewBinding true
+        aidl true
+        buildConfig true
     }
 
     dataBinding {
         enabled = true
     }
-    ndkVersion '23.1.7779620'                              //这个需要高一点的版本，因为编译中使用了自定的linker，有部分elf的宏，只有在新版本中才会存在
+    ndkVersion '23.1.7779620' //这个需要高一点的版本，因为编译中使用了自定的linker，有部分elf的宏，只有在新版本中才会存在
+    namespace 'hepta.rxposed.manager'
 
 
     android.applicationVariants.all { variant ->
         variant.outputs.each { variantOutput ->
             println("applicationVariants.name----------------${variant.name}")
-//            println("applicationVariants.description----------------${variant.description}")
-//            println("applicationVariants.mergeAssets----------------${variant.mergeAssets}")
-//            println("applicationVariants.name----------------${variant.mergeAssets.name}")
 
-            variant.mergeAssetsProvider.get().doLast {
-                println("mergeAssetsProvider.name----------------${variant.name}")
-//                build_Module_copy_file(variant.name,"nativeloader","${Rxposed_Inject_So_name}")
+            def mergeAssetsTask = variant.mergeAssetsProvider
 
-                build_Module_copy_file(variant.name,"Tool","InjectTool")
-
-
-
+            mergeAssetsTask.configure {
+                if(variant.name == "debug"){
+                    dependsOn ":Tool:externalNativeBuildDebug"
+                }
+                if(variant.name == "release"){
+                    dependsOn ":Tool:externalNativeBuildRelease"
+                }
+            }
+            mergeAssetsTask.get().doLast {
+                copy_file_to_assets(variant.name,"Tool","InjectTool")
             }
         }
     }
@@ -204,8 +99,8 @@ android {
 dependencies {
 
 
-    implementation 'androidx.appcompat:appcompat:1.5.1'
-    implementation 'com.google.android.material:material:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'com.github.ChickenHook:RestrictionBypass:2.2'
 
@@ -216,8 +111,8 @@ dependencies {
     //RecyclerView
     implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:3.0.11'
     //Navigation
-    implementation "androidx.navigation:navigation-fragment-ktx:2.5.3"
-    implementation "androidx.navigation:navigation-ui-ktx:2.5.3"
+    implementation "androidx.navigation:navigation-fragment-ktx:2.7.7"
+    implementation "androidx.navigation:navigation-ui-ktx:2.7.7"
 
     //dialogs
     implementation 'com.afollestad.material-dialogs:bottomsheets:3.3.0'
@@ -226,10 +121,59 @@ dependencies {
 
     implementation 'com.tencent:mmkv:1.2.15'
     implementation 'com.google.code.gson:gson:2.10.1'
-//    implementation project(':Tool')
 
 
     testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}
+
+
+task encodeBase64 {
+    doLast {
+        def text = "__dl__ZNK6soinfo12get_realpathEv"
+        def encodedText = Base64.getEncoder().encodeToString(text.bytes)
+        println "Encoded text: ${encodedText}"
+    }
+}
+
+
+task decodeBase64 {
+    doLast {
+        def encodedText = "X19kbF9fWk5LNnNvaW5mbzEyZ2V0X3JlYWxwYXRoRXY="
+        def decodedText = new String(Base64.getDecoder().decode(encodedText))
+        println "Decoded text: ${decodedText}"
+    }
+}
+
+
+def FileCopy(src_file,dst_dir,src_name,dst_name){
+
+    def copySpec = copy {
+        from src_file
+        into dst_dir
+        rename(src_name,dst_name)
+    }.didWork
+    if(copySpec){
+        println("copy file success:"+src_file)
+        println("copy file success:"+dst_dir+":"+dst_name)
+    }else {
+        throw new GradleException("copy file failed: "+src_file+" -> "+dst_dir)
+    }
+
+}
+
+
+def copy_file_to_assets(type, taskname, file_name){
+
+    def arch_arm64 = "arm64-v8a"
+    def arm64_fromFile = rootProject.file("${taskname}/build/intermediates/cmake/${type}/obj/${arch_arm64}/${file_name}")
+    def arm64_intoDir = rootProject.file("Manager/build/intermediates/assets/${type}")
+    FileCopy(arm64_fromFile,arm64_intoDir,file_name,"arm64_${file_name}")
+
+    def arch_armv7 = "armeabi-v7a"
+    def armv7_fromFile = rootProject.file("${taskname}/build/intermediates/cmake/${type}/obj/${arch_armv7}/${file_name}")
+    def armv7_intoDir = rootProject.file("Manager/build/intermediates/assets/${type}")
+    FileCopy(armv7_fromFile,armv7_intoDir,file_name,"armv7_${file_name}")
+
 }
