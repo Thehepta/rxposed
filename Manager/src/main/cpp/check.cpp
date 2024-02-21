@@ -12,7 +12,7 @@
 #include <unistd.h>
 #include <vector>
 #include "rxposed/artmethod_native_hook.h"
-#include "rxposed/tool.h"
+//#include "rxposed/tool.h"
 #include "hideload/elf_symbol_resolver.h"
 
 using namespace std;
@@ -36,14 +36,14 @@ Java_hepta_rxposed_manager_util_CheckTool_chekcPreGetenv(JNIEnv *env, jobject th
 
 jboolean hook_fun_addr(JNIEnv *env, jclass clazz) {
 
-    LOGE("hook_fun_addr");
+//    LOGE("hook_fun_addr");
     return true;
 }
 
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_hepta_rxposed_manager_util_CheckTool_jni_1hook_1test(JNIEnv *env, jobject thiz) {
-    LOGE("hook_test");
+//    LOGE("hook_test");
     return false;
 }
 
@@ -58,7 +58,7 @@ Java_hepta_rxposed_manager_util_CheckTool_jni_1hook(JNIEnv *env, jobject thiz) {
     jmethodID javamethod  =  env->GetMethodID(cls,"jni_hook_test", "()Z");
     HookJmethod_JniFunction(env,cls,javamethod,(uintptr_t)hook_fun_addr);
 
-    LOGE("Java_hepta_rxposed_manager_fragment_check_checkFragment_jni_1hook");
+//    LOGE("Java_hepta_rxposed_manager_fragment_check_checkFragment_jni_1hook");
 }
 
 extern "C"
@@ -95,7 +95,7 @@ Java_hepta_rxposed_manager_util_CheckTool_chekc_1android_1os_1Process_1getUidFor
     jmethodID javamethod = env->GetStaticMethodID(Process_cls,"getUidForName", "(Ljava/lang/String;)I");
 
     uintptr_t  getUidForName = reinterpret_cast<uintptr_t>(linkerResolveElfInternalSymbol("libandroid_runtime.so","_Z32android_os_Process_getUidForNameP7_JNIEnvP8_jobjectP8_jstring"));
-    LOGE("getUidForName = %lx",getUidForName);
+//    LOGE("getUidForName = %lx",getUidForName);
 
     uintptr_t native_get_addr = getJmethod_JniFunction(env,Process_cls,javamethod);
 

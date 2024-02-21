@@ -84,6 +84,5 @@ AppinfoNative* GetRxAppInfoNative(JNIEnv *env, jobject android_Context,std::stri
 std::string getCurrentAppRxposedConfig(JNIEnv* env, std::string providerHost_providerName , std::string callName, std::string method , uid_t currentUid);
 JNIEnv *Pre_GetEnv() ;
 
-void unHookJmethod_JniFunction(JNIEnv* env,jclass jclass1,jmethodID jmethodId);
 jobject getConfigByProvider(JNIEnv* env, std::string providerHost_providerName , std::string callName, std::string method , std::string uid_str);
 #endif //RXPOSED_TOOL_H

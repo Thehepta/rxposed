@@ -5,8 +5,7 @@
 
 #include <dlfcn.h>
 #include "tool.h"
-//#include "linker.h"
-//#include "elf_symbol_resolver.h"
+#include "hideload/linker.h"
 
 using namespace std;
 
@@ -151,7 +150,7 @@ void load_apk_And_Call_Class_Entry_Method(JNIEnv *pEnv, jobject android_context,
     jobject entryClass_obj = nullptr;
     jstring apkSource = pEnv->NewStringUTF(appinfoNativeVec->source.c_str());
     if(strncmp(appinfoNativeVec->hide.c_str(),"true", strlen("true"))==0){
-//        ApkClassLoader = hideLoadApkModule(pEnv, (char*)appinfoNativeVec->source.c_str());
+        ApkClassLoader = hideLoadApkModule(pEnv, (char*)appinfoNativeVec->source.c_str());
     } else{
         jstring nativelib = pEnv->NewStringUTF(appinfoNativeVec->NativelibPath.c_str());
         ApkClassLoader = PathClassLoaderLoadAPK(pEnv, apkSource, nativelib);

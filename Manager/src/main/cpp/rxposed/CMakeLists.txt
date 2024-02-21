@@ -31,7 +31,7 @@ add_subdirectory(hideload)
 message("test build.gradle arg ${INJECTSO}")
 
 
-include_directories(hideload)
+#include_directories(hideload)
 
 
 
@@ -45,7 +45,7 @@ add_library( # Sets the name of the library.
         InjectApp.cpp
         tool.cpp
         artmethod_native_hook.cpp
-        hideload/elf_symbol_resolver.cpp
+#        hideload/elf_symbol_resolver.cpp
         rprocess.cpp
         android_shm.cpp
         )
@@ -70,7 +70,7 @@ find_library( # Sets the name of the path variable.
 
 target_link_libraries( # Specifies the target library.
         rxposed
-#        hideload
+        hideload
         # Links the target library to the log library
         # included in the NDK.
         ${log-lib} )

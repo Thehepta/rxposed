@@ -10,7 +10,6 @@
 #include <dlfcn.h>
 #include <sys/mman.h>
 #include <fstream>
-#include "link.h"
 #include "vector"
 #include <elf.h>
 #include <dlfcn.h>

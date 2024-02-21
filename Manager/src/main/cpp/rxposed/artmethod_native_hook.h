@@ -32,6 +32,7 @@
 bool art_method_hook_init(JNIEnv* env);
 uintptr_t getJmethod_JniFunction(JNIEnv* env,jclass jclass1,jmethodID jmethodId);
 uintptr_t  HookJmethod_JniFunction(JNIEnv* env,jclass jclass1,jmethodID jmethodId,uintptr_t fun_addr) ;
+void unHookJmethod_JniFunction(JNIEnv* env,jclass jclass1,jmethodID jmethodId);
 
 bool INIT_HOOK_PlatformABI(JNIEnv *env, jclass clazz, jmethodID methodId, uintptr_t *native, uint32_t flags);
 
@@ -44,4 +45,5 @@ uintptr_t GetOriginalNativeFunction(const uintptr_t *art_method);
 uintptr_t HookJniNativeFunction(uintptr_t *art_method, uintptr_t fun_addr);
 
 void unHookJniNativeFunction(uintptr_t *art_method);
+
 #endif //NDKAPPLICATION_ARTMETHOD_NATIVE_HOOK_H

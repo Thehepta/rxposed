@@ -29,7 +29,7 @@ add_library( # Sets the name of the library.
         TraverseSo.cpp
         rxposed/hideload/elf_symbol_resolver.cpp
         rxposed/artmethod_native_hook.cpp
-        rxposed/tool.cpp
+#        rxposed/tool.cpp
         check.cpp)
 
 

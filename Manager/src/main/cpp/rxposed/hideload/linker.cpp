@@ -100,14 +100,9 @@ soinfo* find_system_library_byname(const char* soname) {
     for (soinfo* si = solist_get_head(); si != nullptr; si = si->next) {
         char* ret_name = soinfo_get_soname(si);
         if(ret_name!= nullptr){
-            LOGE("get_soname : %s",ret_name);
-            LOGE("get_soname == null so->realpath: %s",si->get_realpath());
-//            if(0 == strncmp(ret_name,soname, strlen(soname))) {
-//                return si;
-//            }
-        }
-        else{
-            LOGE("get_soname == null so->realpath: %s",si->get_realpath());
+            if(0 == strncmp(ret_name,soname, strlen(soname))) {
+                return si;
+            }
         }
 
     }
