@@ -31,14 +31,7 @@ public class RxposedApp extends Application {
         super.onCreate();
         instance = this;
 
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
-        filter.addAction(Intent.ACTION_PACKAGE_REPLACED);
-        filter.addAction(Intent.ACTION_PACKAGE_ADDED);
-        filter.addAction(Intent.ACTION_PACKAGE_CHANGED);
-        filter.addDataScheme("package");
-        PackageChangeReceiver packageChangeReceiver = new PackageChangeReceiver();
-        registerReceiver(packageChangeReceiver, filter);
+
     }
 
     @Override
@@ -46,6 +39,16 @@ public class RxposedApp extends Application {
         super.attachBaseContext(base);
         Log.e(TAG, "attachBaseContext");
         MMKV.initialize(this);
+
+        //广播一直报错，研究不多，弃用了，手动刷新吧
+//        IntentFilter filter = new IntentFilter();
+//        filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
+//        filter.addAction(Intent.ACTION_PACKAGE_REPLACED);
+//        filter.addAction(Intent.ACTION_PACKAGE_ADDED);
+//        filter.addAction(Intent.ACTION_PACKAGE_CHANGED);
+//        filter.addDataScheme("package");
+//        PackageChangeReceiver packageChangeReceiver = new PackageChangeReceiver();
+//        registerReceiver(packageChangeReceiver, filter);
 
     }
 

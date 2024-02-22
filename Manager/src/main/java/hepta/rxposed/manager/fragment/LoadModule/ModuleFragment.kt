@@ -102,5 +102,10 @@ class ModuleFragment : Fragment() {
         appListAdapter!!.setList(initData())
         appListAdapter!!.notifyDataSetChanged()
     }
+
+    override fun onResume() {
+        super.onResume()
+        updateData()
+    }
 }
 
