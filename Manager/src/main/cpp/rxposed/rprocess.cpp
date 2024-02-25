@@ -21,6 +21,35 @@ void rprocess::setProcessInfo(char* nice_name, uid_t uid, gid_t arg_gid) {
     this->gid = arg_gid;
 }
 
+string rprocess::getCurrentAppRxposedConfig(JNIEnv* env, string providerHost_providerName , string callName, string method , uid_t currentUid) {
+
+    DEBUG();
+    jstring key = env->NewStringUTF("ModuleList");
+    DEBUG();
+    string uid_str = std::to_string(currentUid);
+    DEBUG();
+    jobject obj_bundle = getConfigByProvider(env, providerHost_providerName, callName  , method, uid_str);
+    DEBUG();
+    jclass Bundle_cls = env->FindClass("android/os/Bundle");
+    jmethodID Bundle_getStringArrayList_method = env->GetMethodID(Bundle_cls, "getStringArrayList","(Ljava/lang/String;)Ljava/util/ArrayList;");
+    jclass ArrayList_cls = env->FindClass("java/util/ArrayList");
+    jmethodID ArrayList_size_method = env->GetMethodID(ArrayList_cls, "size","()I");
+    jmethodID ArrayList_get_method = env->GetMethodID(ArrayList_cls, "get","(I)Ljava/lang/Object;");
+    jobject config = env->CallObjectMethod(obj_bundle, Bundle_getStringArrayList_method,key);
+    if(config == nullptr){
+        return "";
+    }
+//    string bask = "base.apk";
+    jint size = env->CallIntMethod(config,ArrayList_size_method);
+    string appinfoList;
+    for(int i=0;i<size;i++){
+        jstring element = static_cast<jstring>(env->CallObjectMethod(config, ArrayList_get_method,i));
+        string appinfo = env->GetStringUTFChars(element,0);
+        appinfoList = appinfoList +"|"+appinfo;
+    }
+    return appinfoList;
+}
+
 bool rprocess::InitModuleInfo(JNIEnv *env) {
 
     char* buf;
@@ -85,7 +114,7 @@ bool rprocess::LoadModule(JNIEnv* env){
     DEBUG();
     for (auto appinfoNativeVec : AppinfoNative_vec)
     {
-        load_apk_And_Call_Class_Entry_Method(env, RxposedContext, appinfoNativeVec);
+        load_apk_And_Call_Class_Entry_Method(env, RxposedContext, appinfoNativeVec->source,appinfoNativeVec->NativelibPath,appinfoNativeVec->Entry_class,appinfoNativeVec->Entry_method,appinfoNativeVec->hide);
     }
 
     return true;

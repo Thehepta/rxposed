@@ -2,8 +2,7 @@
 // Created by chic on 2023/8/27.
 //
 
-#ifndef ADNROIDRUNTIME_ANDROID_SHM_H
-#define ADNROIDRUNTIME_ANDROID_SHM_H
+#pragma once
 
 
 #include <fcntl.h>
@@ -34,4 +33,3 @@ extern int close_shared_memory(U64& shm_id, char*& addr);
 
 __END_DECLS
 
-#endif //ADNROIDRUNTIME_ANDROID_SHM_H

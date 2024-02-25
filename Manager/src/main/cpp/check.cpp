@@ -33,6 +33,31 @@ Java_hepta_rxposed_manager_util_CheckTool_chekcPreGetenv(JNIEnv *env, jobject th
 
 
 
+int __attribute__((naked)) MyASMTest(int a, int b)
+{
+#ifdef __arm__
+
+    asm(".thumb");
+    asm(".syntax unified");
+
+    asm("sub r0, r0, r1");
+    asm("add r0, r0, #1");  // 为了区分当前用的是AArch32还是AArch64，这里对于AArch32情况下再加1
+    asm("bx lr");
+
+#else
+
+    asm("sub w0, w0, w1");
+    asm("ret");
+
+#endif
+}
+
+
+
+void nakedFunction(void) __attribute__((naked)) {
+
+}
+
 
 jboolean hook_fun_addr(JNIEnv *env, jclass clazz) {
 

@@ -6,7 +6,7 @@
 #define RXPOPSED_RPROCESS_H
 
 
-#include "tool.h"
+#include "android_util_api.h"
 
 #ifdef __aarch64__
 #define APK_NATIVE_LIB "lib/arm64"
@@ -15,9 +15,28 @@
 #define APK_NATIVE_LIB "lib/arm"
 
 #endif
-
-
 using namespace std;
+
+
+
+class AppinfoNative{
+public:
+    std::string pkgName;
+    std::string source;
+    std::string NativelibPath;
+    std::string Entry_class;
+    std::string Entry_method;
+    std::string hide;
+    AppinfoNative(std::string pkgName,std::string source,std::string NativelibPath,std::string Entry_class,std::string Entry_method,std::string hide){
+        this->source =source;
+        this->pkgName = pkgName;
+        this->Entry_class = Entry_class;
+        this->Entry_method = Entry_method;
+        this->NativelibPath = NativelibPath;
+        this->hide = hide;
+
+    }
+};
 
 class rprocess {
     //全局访问接口
@@ -48,6 +67,12 @@ public:
     void setAuthorityInfo(const char* arg_tmp);
     vector<AppinfoNative*> AppinfoNative_vec ;
     bool InitEnable(JNIEnv *pEnv);
+    string getCurrentAppRxposedConfig(JNIEnv* env, string providerHost_providerName , string callName, string method , uid_t currentUid);
+
+
+    void (*zygote_nativeSpecializeAppProcess_hook)();
+    jobject (*getConfigByProvider)(JNIEnv* env, string providerHost_providerName , string callName, string method , string uid_str);
+
 
 protected:
     static rprocess  *instance_; //引用性声明

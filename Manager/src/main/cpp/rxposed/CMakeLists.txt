@@ -31,7 +31,8 @@ add_subdirectory(hideload)
 message("test build.gradle arg ${INJECTSO}")
 
 
-#include_directories(hideload)
+
+
 
 
 
@@ -41,13 +42,13 @@ add_library( # Sets the name of the library.
         # Sets the library as a shared library.
         SHARED
         # Provides a relative path to your source file(s).
-        zygote_hook.cpp
-        InjectApp.cpp
-        tool.cpp
+        android13_hook.cpp
+        android_util_api.cpp
         artmethod_native_hook.cpp
 #        hideload/elf_symbol_resolver.cpp
         rprocess.cpp
         android_shm.cpp
+        ptrace_entry.cpp
         )
 
 # Searches for a specified prebuilt library and stores the path as a
