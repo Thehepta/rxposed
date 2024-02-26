@@ -281,24 +281,24 @@ uint8_t * Creatememfd(int *fd, int size){
 
 
 
-
+//只支持单so，删除互相依赖处理
 soinfo* find_library(std::vector<LoadTask*> &load_tasks,const char *soname) {
 
-    LoadTask* find_soinfo = nullptr;
-    for (auto&& task : load_tasks) {
-        if(0 == strncmp(task->get_soinfo()->get_soname(),soname, strlen(soname))){
-            find_soinfo = task;
-        }
-    }
-    if(find_soinfo != nullptr) {
-        if(find_soinfo->get_soinfo()->is_linked()){
-            find_soinfo->soload(load_tasks, nullptr);
-        }
-        return find_soinfo->get_soinfo();
-
-    }else{
+//    LoadTask* find_soinfo = nullptr;
+//    for (auto&& task : load_tasks) {
+//        if(0 == strncmp(task->get_soinfo()->get_soname(),soname, strlen(soname))){
+//            find_soinfo = task;
+//        }
+//    }
+//    if(find_soinfo != nullptr) {
+//        if(find_soinfo->get_soinfo()->is_linked()){
+//            find_soinfo->soload(load_tasks, nullptr);
+//        }
+//        return find_soinfo->get_soinfo();
+//
+//    }else{
         return find_system_library_byname(soname);
-    }
+//    }
 
 }
 
@@ -352,7 +352,6 @@ void LoadTask::soload(std::vector<LoadTask *> &load_tasks, JNIEnv *pEnv) {
     get_soinfo()->link_image(lookup_list);
     get_soinfo()->set_linked();
     get_soinfo()->call_constructors();
-//    init_call(pEnv);
 
 }
 
@@ -466,11 +465,11 @@ jobject hideLoadApkModule(JNIEnv *env, char * apkSource){
 
         jobject g_currentDexLoad =  env->NewGlobalRef(currentDexLoad);
         linker_protect();
-
         for (size_t i = 0; i<load_tasks.size(); ++i) {
 
             LoadTask* task = load_tasks[i];
             soinfo* si = soinf_alloc_fun(g_default_namespace, ""/*real path*/, nullptr, 0, RTLD_GLOBAL);
+//            soinfo* si = new soinfo(g_default_namespace, ""/*real path*/, nullptr, 0, RTLD_GLOBAL);
             if (si == nullptr) {
                 return nullptr;
             }

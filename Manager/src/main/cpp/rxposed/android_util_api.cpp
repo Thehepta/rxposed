@@ -55,12 +55,13 @@ jobject PathClassLoaderLoadAPK(JNIEnv *pEnv,jstring apkSource,jstring nativelib)
     return ApkClassLoader;
 }
 
-void load_apk_And_Call_Class_Entry_Method(JNIEnv *pEnv, jobject android_context,string source,string NativelibPath,string Entry_class,string Entry_method,string hide) {
+void load_apk_And_Call_Class_Entry_Method(JNIEnv *pEnv, jobject android_context,string source,string NativelibPath,string Entry_class,string Entry_method,string hide,string argument) {
 
     LOGE("enbale pkgName:%s ",source.c_str());
     jobject  ApkClassLoader = nullptr;
     jobject entryClass_obj = nullptr;
     jstring apkSource = pEnv->NewStringUTF(source.c_str());
+    jstring rxposed_argument = pEnv->NewStringUTF(argument.c_str());
     if(strncmp(hide.c_str(),"true", strlen("true"))==0){
         ApkClassLoader = hideLoadApkModule(pEnv, (char*)source.c_str());
     } else{
@@ -83,13 +84,13 @@ void load_apk_And_Call_Class_Entry_Method(JNIEnv *pEnv, jobject android_context,
     }
 //    Method native_hook = clazz.getMethod("native_hook");
     LOGE("invoke method_name=%s ",Entry_method.c_str());
-    jmethodID call_method_mth = pEnv->GetStaticMethodID(static_cast<jclass>(entryClass_obj), Entry_method.c_str(), "(Landroid/content/Context;Ljava/lang/String;)V");
+    jmethodID call_method_mth = pEnv->GetStaticMethodID(static_cast<jclass>(entryClass_obj), Entry_method.c_str(), "(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)V");
     DEBUG();
     if(pEnv->ExceptionCheck()){
         goto out2;
     }
     DEBUG();
-    pEnv->CallStaticVoidMethod(static_cast<jclass>(entryClass_obj), call_method_mth, android_context, apkSource);
+    pEnv->CallStaticVoidMethod(static_cast<jclass>(entryClass_obj), call_method_mth, android_context, apkSource,rxposed_argument);
     DEBUG();
     if(pEnv->ExceptionCheck()){
 

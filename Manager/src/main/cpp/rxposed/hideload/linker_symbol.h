@@ -39,7 +39,7 @@ class SymbolLookupList {
     SymbolLookupLib sole_lib_;
     const SymbolLookupLib* begin_;
     const SymbolLookupLib* end_;
-    size_t slow_path_count_ = 0;
+    size_t slow_path_count_ = 0;   // 可能表示某个代码段或函数存在一些特殊情况，无法通过常规的快速路径进行优化，需要使用更复杂或更慢的处理方式
 
 public:
     SymbolLookupList(){};
@@ -51,6 +51,7 @@ public:
     bool needs_slow_path() const { return slow_path_count_ > 0; }
     void addSymbolLib(SymbolLookupLib SyLib){
         libs_.push_back(SyLib);
+        slow_path_count_+= SyLib.needs_sysv_lookup();     // 加入每个的so都会进行累计
     }
     std::vector<SymbolLookupLib> getVectorSymLib(){
         return this->libs_;

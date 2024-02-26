@@ -21,6 +21,7 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import hepta.rxposed.manager.RxposedApp;
 import hepta.rxposed.manager.util.MmkvManager;
@@ -90,7 +91,7 @@ public class RxConfigProvider extends ContentProvider {
         Log.e("getRxConfig","method:"+method);
         Log.e("getRxConfig","ProcessName:"+uid);
 
-        String req_packageName = getContext().getPackageManager().getNameForUid(new Integer(uid));
+        String req_packageName = getContext().getPackageManager().getNameForUid(Integer.parseInt(uid));
         List<String> enableModuleList = MmkvManager.INSTANCE.getAppEnableModuleList(req_packageName);
         ArrayList<String> stringList = new ArrayList<>();
         PackageManager pm = RxposedApp.getInstance().getBaseContext().getPackageManager();
@@ -102,7 +103,8 @@ public class RxConfigProvider extends ContentProvider {
                 String entry_class = applicationInfo.metaData.getString("rxposed_clsentry");
                 String entry_method = applicationInfo.metaData.getString("rxposed_mtdentry");
                 boolean hide = applicationInfo.metaData.getBoolean("rxposed_hide",false);
-                stringList.add(apk_path+":"+entry_class+":"+entry_method+":"+hide);
+                String argument = applicationInfo.metaData.getString("rxposed_argument","");
+                stringList.add(apk_path+":"+entry_class+":"+entry_method+":"+hide+":"+argument);
             } catch (PackageManager.NameNotFoundException e) {
                 Log.e("getRxConfig","PackageManager$NameNotFoundException ");
             }

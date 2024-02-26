@@ -1381,6 +1381,7 @@ void SetDoubleArrayRegion(JNIEnv* env,jdoubleArray array, jsize start, jsize len
 jint RegisterNatives(JNIEnv* env,jclass clazz, const JNINativeMethod* methods,
                      jint nMethods)
 {
+    HOOKLOGE("RegisterNatives");
     Linker_JNIEnv * linkerJniEnv = (Linker_JNIEnv *) env;
     JNIEnv * functions = linkerJniEnv->env;
     return functions->RegisterNatives( clazz, methods, nMethods); }

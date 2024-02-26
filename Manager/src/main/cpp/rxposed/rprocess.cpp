@@ -71,7 +71,7 @@ bool rprocess::InitModuleInfo(JNIEnv *env) {
         wait(NULL);
         LOGE("shared_memory appinfoList :%s len:%zu",buf, strlen(buf));
         vector<string> vectorApp = string_split(buf,"|");
-        string bask = "base.apk";
+        string base = "base.apk";
 
         for(int i=0;i<vectorApp.size();i++){
             string appinfo = vectorApp[i];
@@ -79,16 +79,18 @@ bool rprocess::InitModuleInfo(JNIEnv *env) {
                 continue;
             }
             vector<string> info = string_split(appinfo,":");
-            string source(info[0]);
             string pkgName = "";
+
+            string source(info[0]);
             string Entry_class = info[1];
             string Entry_method = info[2];
             string hide = info[3];
-            size_t startPost = source.find(bask);
-            string NativelibPath = info[0].replace(startPost,bask.length(),APK_NATIVE_LIB);
+            string argument = info[4];
+            size_t startPost = source.find(base);
+            string NativelibPath = info[0].replace(startPost,base.length(),APK_NATIVE_LIB);
             LOGE("source:%s",source.c_str());
             LOGE("NativelibPath:%s",NativelibPath.c_str());
-            AppinfoNative* appinfoNative = new AppinfoNative(pkgName,source,NativelibPath,Entry_class,Entry_method,hide);
+            AppinfoNative* appinfoNative = new AppinfoNative(pkgName,source,NativelibPath,Entry_class,Entry_method,hide,argument);
             AppinfoNative_vec.push_back(appinfoNative);
         }
     }
@@ -107,14 +109,20 @@ void rprocess::setAuthorityInfo(const char* arg_tmp){
     LOGE("providerHost_pkgName: %s",providerHost_pkgName.c_str());
     providerHost_providerName =arg[2];
     LOGE("providerHost_providerName: %s",providerHost_providerName.c_str());
-
 }
 
 bool rprocess::LoadModule(JNIEnv* env){
     DEBUG();
     for (auto appinfoNativeVec : AppinfoNative_vec)
     {
-        load_apk_And_Call_Class_Entry_Method(env, RxposedContext, appinfoNativeVec->source,appinfoNativeVec->NativelibPath,appinfoNativeVec->Entry_class,appinfoNativeVec->Entry_method,appinfoNativeVec->hide);
+        load_apk_And_Call_Class_Entry_Method(env, RxposedContext,
+                                             appinfoNativeVec->source
+                                             ,appinfoNativeVec->NativelibPath,
+                                             appinfoNativeVec->Entry_class,
+                                             appinfoNativeVec->Entry_method,
+                                             appinfoNativeVec->hide
+                                             appinfoNativeVec->argument
+                                             );
     }
 
     return true;

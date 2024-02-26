@@ -244,10 +244,10 @@ bool process_relocation_impl(Relocator& relocator, const rel_t& reloc) {
 //    LOGE("entry process_relocation_impl fun");
     if (r_sym != 0) {
         sym_name = relocator.get_string(relocator.si_symtab[r_sym].st_name);
-        if(strcmp("strcmp",sym_name)==0){
-            LOGE("debug symbol strcmp");
-
-        }
+//        if(strcmp("strcmp",sym_name)==0){
+//            LOGE("debug symbol strcmp");
+//
+//        }
     }
 
     // While relocating a DSO with text relocations (obsolete and 32-bit only), the .text segment is
@@ -517,7 +517,7 @@ static bool plain_relocate_impl(Relocator& relocator, rel_t* rels, size_t rel_co
         if (!process_relocation<Mode>(relocator, rels[i])) {
             return false;
         }
-//        LOGE("rel_count = %d",i);  //TEST
+//        LOGE("rel_count = %d type = %x",i,rels[i].r_info);  //TEST
 //        if(i==65361){
 //            LOGE("rel_count = %d",i);
 //        }

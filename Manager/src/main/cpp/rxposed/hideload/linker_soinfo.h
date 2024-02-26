@@ -24,7 +24,9 @@ extern ElfW(Addr) (*call_ifunc_resolver)(ElfW(Addr) resolver_addr);
 
 
 #define FLAG_PRELINKED        0x00000400 // prelink_image has successfully processed this soinfo
+#define FLAG_NEW_SOINFO       0x40000000 // new soinfo format
 
+#define SOINFO_VERSION 5
 #define powerof2(x)     ((((x) - 1) & (x)) == 0)
 
 

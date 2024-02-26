@@ -27,13 +27,15 @@ public:
     std::string Entry_class;
     std::string Entry_method;
     std::string hide;
-    AppinfoNative(std::string pkgName,std::string source,std::string NativelibPath,std::string Entry_class,std::string Entry_method,std::string hide){
+    std::string argument;
+    AppinfoNative(std::string pkgName,std::string source,std::string NativelibPath,std::string Entry_class,std::string Entry_method,std::string hide,std::string argument){
         this->source =source;
         this->pkgName = pkgName;
         this->Entry_class = Entry_class;
         this->Entry_method = Entry_method;
         this->NativelibPath = NativelibPath;
         this->hide = hide;
+        this->argument = argument;
 
     }
 };
