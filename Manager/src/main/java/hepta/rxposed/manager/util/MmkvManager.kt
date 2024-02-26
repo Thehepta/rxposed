@@ -94,7 +94,7 @@ object MmkvManager {
             if (app.metaData != null && app.metaData.containsKey("rxmodule")) {
                 Log.e("Rzx","rxmodule:"+app.packageName)
                 if(old.containsKey(app.packageName)){
-                    tmp.put(app.packageName,true)
+                    tmp.put(app.packageName,old.getValue(app.packageName))
                 }else{
                     tmp.put(app.packageName,false)
                 }
