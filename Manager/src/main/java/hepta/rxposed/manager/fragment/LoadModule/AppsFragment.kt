@@ -113,7 +113,7 @@ class AppsFragment : Fragment() {
         var applist: MutableList<AppItemInfo> = mutableListOf()
         for( it in SingApplist.get().global_applist!!){
             it.setEnable(MmkvManager.getAppEnableModuleStatus(it.packageName,moduleName))
-            Log.e("rzx",it.enable.toString()+":"+it.packageName.toString()+":"+moduleName)
+//            Log.e("rzx",it.enable.toString()+":"+it.packageName.toString()+":"+moduleName)
             applist.add(it)
         }
         return applist

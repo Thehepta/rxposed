@@ -116,11 +116,10 @@ bool rprocess::LoadModule(JNIEnv* env){
     for (auto appinfoNativeVec : AppinfoNative_vec)
     {
         load_apk_And_Call_Class_Entry_Method(env, RxposedContext,
-                                             appinfoNativeVec->source
-                                             ,appinfoNativeVec->NativelibPath,
+                                             appinfoNativeVec->source,appinfoNativeVec->NativelibPath,
                                              appinfoNativeVec->Entry_class,
                                              appinfoNativeVec->Entry_method,
-                                             appinfoNativeVec->hide
+                                             appinfoNativeVec->hide,
                                              appinfoNativeVec->argument
                                              );
     }
