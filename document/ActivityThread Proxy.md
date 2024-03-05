@@ -1,3 +1,5 @@
+另一种方法和思路，进行ActivityThread 代理
+
 6137          mBoundApplication = data;
 
 mBoundApplication 的结构体是  AppBindData
@@ -28,3 +30,4 @@ mBoundApplication 的结构体是  AppBindData
 779          String buildSerial;
 
 
+后续更
