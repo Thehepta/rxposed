@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10.2)
+cmake_minimum_required(VERSION 3.22.1)
 project (InjectTool)
 # The version number.
 set (Tutorial_VERSION_MAJOR 1)

@@ -11,7 +11,7 @@
     <string-array name="rxposetOptions">
         <item>系统软重启(r)</item>
         <item>应用重启</item>
-        <item>查看设备信息</item>
+        <item>注入测试</item>
         <item>使用说明</item>
     </string-array>
 

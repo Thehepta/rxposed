@@ -20,13 +20,11 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.text.InputType
-import android.util.Log
 import android.view.*
 import android.widget.*
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentResultListener
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import com.afollestad.materialdialogs.LayoutMode
@@ -34,10 +32,10 @@ import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.bottomsheets.BottomSheet
 import com.afollestad.materialdialogs.input.input
 import com.afollestad.materialdialogs.list.listItems
-import hepta.rxposed.manager.widget.DialogUtil
 import hepta.rxposed.manager.R
 import hepta.rxposed.manager.util.InjectTool
 import hepta.rxposed.manager.util.Util
+import hepta.rxposed.manager.widget.DialogUtil
 
 
 /**
@@ -112,6 +110,9 @@ class HomeFragment : Fragment() {
                                     1 -> DialogUtil.DidalogSimple(requireContext(),R.string.rebootMessage, {
                                         InjectTool.Application_reboot()
                                     })
+                                    2 -> DialogUtil.DidalogSimple(requireContext(),R.string.injectTestMessage, {
+                                        InjectTool.inject_text()
+                                    })
                                 }
 
                             }
@@ -132,7 +133,7 @@ class HomeFragment : Fragment() {
         val Image_icon = view?.findViewById<ImageView>(R.id.status_icon)
         val Text_status = view?.findViewById<TextView>(R.id.status_text)
 
-        var activity =  get_rxposed_activity()
+        var activity = get_rxposed_status();
 
         if (activity){
             btn_activity?.visibility=View.INVISIBLE
@@ -142,7 +143,7 @@ class HomeFragment : Fragment() {
             btn_activity?.setOnClickListener {
 
                 DialogUtil.DidalogSimple(requireContext(),R.string.activityMessage, {
-                    InjectTool.zygote_patrace()
+                    InjectTool.Start()
                     DialogUtil.DidalogSimple(requireContext(),R.string.rxrebootMessage, {
                         InjectTool.Application_reboot()
                     })
@@ -150,7 +151,15 @@ class HomeFragment : Fragment() {
             }
         }
     }
+    private fun get_rxposed_status(): Boolean {
 
-    external fun get_rxposed_activity():Boolean
+        val zygote_host_uid = android.os.Process.getUidForName(InjectTool.getStatusAuthority());
+        if(zygote_host_uid!=-1){
+            return true;
+        }
+        return false;
+    }
+
+//        external fun get_rxposed_activity():Boolean
 
 }

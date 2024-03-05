@@ -38,6 +38,7 @@ android {
     dataBinding {
         enabled = true
     }
+    namespace 'hepta.rxposed.loadxposed'
 
 
 }
@@ -50,7 +51,6 @@ dependencies {
 
     // 载入 pine
     implementation 'top.canyie.pine:core:+'
-
 
 
     implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:3.0.11'

@@ -32,10 +32,10 @@
     </fragment>
 
     <fragment
-        android:id="@+id/vpn_dest"
-        android:name="hepta.rxposed.manager.fragment.vpn.VpnFragment"
-        android:label="@string/vpn"
-        tools:layout="@layout/fragment_vpn" />
+        android:id="@+id/check_dest"
+        android:name="hepta.rxposed.manager.fragment.check.checkFragment"
+        android:label="@string/check"
+        tools:layout="@layout/fragment_check" />
 
     <fragment
         android:id="@+id/processlist_dest"
@@ -52,13 +52,13 @@
         tools:layout="@layout/fragment_settings" />
     <fragment
         android:id="@+id/modules_dest"
-        android:name="hepta.rxposed.manager.fragment.LoadExten.ExtenFragment"
+        android:name="hepta.rxposed.manager.fragment.LoadModule.ModuleFragment"
         android:label="@string/modules"
         tools:layout="@layout/fragment_modules" />
     <fragment
         android:id="@+id/pluginject_dest"
-        android:name="hepta.rxposed.manager.fragment.PlugInject.SupportFragment"
-        android:label="@string/frameworks"
+        android:name="hepta.rxposed.manager.fragment.InjectPlug.PlugFragment"
+        android:label="@string/Plugs"
         tools:layout="@layout/fragment_frameworks" />
 
 
@@ -69,7 +69,7 @@
         tools:layout="@layout/fragment_userprocess" />
     <fragment
         android:id="@+id/extend_apps_dest"
-        android:name="hepta.rxposed.manager.fragment.LoadExten.apps.ExtenAppFragment"
+        android:name="hepta.rxposed.manager.fragment.LoadModule.AppsFragment"
         android:label="@string/apps"
         tools:layout="@layout/fragment_applist" />
 

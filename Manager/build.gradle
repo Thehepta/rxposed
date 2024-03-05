@@ -1,76 +1,41 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-
+    id 'kotlin-kapt'
 }
 
 
-
-
-def FileCopy(src_file,dst_dir,src_name,dst_name){
-
-    copy {
-        from src_file
-        into dst_dir
-        rename(src_name,dst_name)
-        println("copy file success:"+src_file)
-        println("copy file success:"+dst_dir+":"+dst_name)
-    }
-}
-
-def build_Module_copy_file(type,taskname,file_name){
-    def command
-    def Asset_dir
-    if(type.equals("debug")){
-        command = "../gradlew -p ../${taskname} externalNativeBuildDebug"
-        Asset_dir = "mergeDebugAssets"
-        println("rxposed gradle:"+"externalNativeBuildDebug")
-    }
-    if(type.equals("release")){
-        println("rxposed gradle:"+"externalNativeBuildRelease")
-        Asset_dir = "mergeReleaseAssets"
-        command = "../gradlew -p ../${taskname} externalNativeBuildRelease"
-    }
-    exec {
-        try {
-            executable 'bash'
-            args '-c', command
-            println("the command is execute success")
-        } catch (GradleException e) {
-            println("the command is execute failed")
-        }
-
-    }
-    def arch_arm64 = "arm64-v8a"
-    def arm64_fromFile = rootProject.file("${taskname}/build/intermediates/cmake/${type}/obj/${arch_arm64}/${file_name}")
-    def arm64_intoDir = rootProject.file("Manager/build/intermediates/assets/${type}/${Asset_dir}")
-    FileCopy(arm64_fromFile,arm64_intoDir,file_name,"arm64_${file_name}")
-
-    def arch_armv7 = "armeabi-v7a"
-    def armv7_fromFile = rootProject.file("${taskname}/build/intermediates/cmake/${type}/obj/${arch_armv7}/${file_name}")
-    def armv7_intoDir = rootProject.file("Manager/build/intermediates/assets/${type}/${Asset_dir}")
-    FileCopy(armv7_fromFile,armv7_intoDir,file_name,"armv7_${file_name}")
-
-}
 
 android {
-    compileSdk 32
+    compileSdk 34
 
     defaultConfig {
         applicationId "hepta.rxposed.manager"
         minSdk 28
-        targetSdk 32
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
+
             cmake {
-                cppFlags ''
+                arguments "-DRXDEBUG=OFF" ,"-DTEXTSO=${Rxposed_InjectTest_So}" , "-DINJECTSO=${Rxposed_Inject_So}" //给cmake传参数
+                cppFlags '-DRXDEBUG=1'      //给c++传递编译参数 源文件文件编译宏参数
+                abiFilters 'armeabi-v7a', 'arm64-v8a'
+            }
+
+            //android.mk 配置
+            ndk {
+                abiFilters 'armeabi-v7a','arm64-v8a'           //写在这里
             }
         }
-        buildConfigField "String", "Rxposed_Inject_So", "\"${Rxposed_Inject_So}\""
 
+        //给java传递参数
+        buildConfigField "String", "Rxposed_InjectTest_So", "\"${Rxposed_InjectTest_So}\""
+        buildConfigField "String", "Rxposed_Inject_So", "\"${Rxposed_Inject_So}\""      // 要注入到zygote进程中的so的名字，会写到配置文件中，方便修改名字
+                                                                                        //Rxposed_Inject_So 遍历在 上层 build.gradle 文件中定义
+                                                                                        //需要同步修改 cmake 中so 的名字（rxposed）
     }
 
     buildTypes {
@@ -86,7 +51,7 @@ android {
     externalNativeBuild {
         cmake {
             path file('src/main/cpp/CMakeLists.txt')
-            version '3.18.1'
+            version '3.22.1'
         }
     }
 
@@ -95,28 +60,37 @@ android {
     }
     buildFeatures {
         viewBinding true
+        aidl true
+        buildConfig true
     }
 
     dataBinding {
         enabled = true
     }
+    ndkVersion '23.1.7779620' //这个需要高一点的版本，因为编译中使用了自定的linker，有部分elf的宏，只有在新版本中才会存在
+    namespace 'hepta.rxposed.manager'
+
 
     android.applicationVariants.all { variant ->
         variant.outputs.each { variantOutput ->
             println("applicationVariants.name----------------${variant.name}")
-//            println("applicationVariants.description----------------${variant.description}")
-//            println("applicationVariants.mergeAssets----------------${variant.mergeAssets}")
-//            println("applicationVariants.name----------------${variant.mergeAssets.name}")
 
-            variant.mergeAssetsProvider.get().doLast {
-                println("mergeAssetsProvider.name----------------${variant.name}")
-                build_Module_copy_file(variant.name,"nativeloader","${Rxposed_Inject_So_name}")
-                build_Module_copy_file(variant.name,"Tool","InjectTool")
+            def mergeAssetsTask = variant.mergeAssetsProvider
 
+            mergeAssetsTask.configure {
+                if(variant.name == "debug"){
+                    dependsOn ":Tool:externalNativeBuildDebug"
+                }
+                if(variant.name == "release"){
+                    dependsOn ":Tool:externalNativeBuildRelease"
+                }
             }
-
+            mergeAssetsTask.get().doLast {
+                copy_file_to_assets(variant.name,"Tool","InjectTool")
+            }
         }
     }
+
 }
 
 
@@ -124,9 +98,11 @@ android {
 
 dependencies {
 
-    implementation 'androidx.appcompat:appcompat:1.5.1'
-    implementation 'com.google.android.material:material:1.7.0'
+
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'com.github.ChickenHook:RestrictionBypass:2.2'
 
 
     //appbar toolbarlayout
@@ -135,14 +111,69 @@ dependencies {
     //RecyclerView
     implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:3.0.11'
     //Navigation
-    implementation "androidx.navigation:navigation-fragment-ktx:2.5.3"
-    implementation "androidx.navigation:navigation-ui-ktx:2.5.3"
+    implementation "androidx.navigation:navigation-fragment-ktx:2.7.7"
+    implementation "androidx.navigation:navigation-ui-ktx:2.7.7"
 
     //dialogs
     implementation 'com.afollestad.material-dialogs:bottomsheets:3.3.0'
     implementation 'com.afollestad.material-dialogs:input:3.3.0'
 
+
+    implementation 'com.tencent:mmkv:1.2.15'
+    implementation 'com.google.code.gson:gson:2.10.1'
+
+
     testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}
+
+
+task encodeBase64 {
+    doLast {
+        def text = "__dl__ZNK6soinfo12get_realpathEv"
+        def encodedText = Base64.getEncoder().encodeToString(text.bytes)
+        println "Encoded text: ${encodedText}"
+    }
+}
+
+
+task decodeBase64 {
+    doLast {
+        def encodedText = "X19kbF9fWk5LNnNvaW5mbzEyZ2V0X3JlYWxwYXRoRXY="
+        def decodedText = new String(Base64.getDecoder().decode(encodedText))
+        println "Decoded text: ${decodedText}"
+    }
+}
+
+
+def FileCopy(src_file,dst_dir,src_name,dst_name){
+
+    def copySpec = copy {
+        from src_file
+        into dst_dir
+        rename(src_name,dst_name)
+    }.didWork
+    if(copySpec){
+        println("copy file success:"+src_file)
+        println("copy file success:"+dst_dir+":"+dst_name)
+    }else {
+        throw new GradleException("copy file failed: "+src_file+" -> "+dst_dir)
+    }
+
+}
+
+
+def copy_file_to_assets(type, taskname, file_name){
+
+    def arch_arm64 = "arm64-v8a"
+    def arm64_fromFile = rootProject.file("${taskname}/build/intermediates/cmake/${type}/obj/${arch_arm64}/${file_name}")
+    def arm64_intoDir = rootProject.file("Manager/build/intermediates/assets/${type}")
+    FileCopy(arm64_fromFile,arm64_intoDir,file_name,"arm64_${file_name}")
+
+    def arch_armv7 = "armeabi-v7a"
+    def armv7_fromFile = rootProject.file("${taskname}/build/intermediates/cmake/${type}/obj/${arch_armv7}/${file_name}")
+    def armv7_intoDir = rootProject.file("Manager/build/intermediates/assets/${type}")
+    FileCopy(armv7_fromFile,armv7_intoDir,file_name,"armv7_${file_name}")
+
 }

@@ -25,11 +25,7 @@ struct process_libs{
     const char *libdl_path;
 } process_libs = {"","",""};
 
-// selinux状态
-struct process_selinux{
-    const char *selinux_mnt;
-    int enforce;
-} process_selinux = {nullptr, -1};
+
 
 /**
  * @brief 处理各架构预定义的库文件
@@ -70,133 +66,26 @@ void handle_libs(){ // __attribute__((constructor))修饰 最先执行
     printf("[+] libdl_path is %s\n", process_libs.libdl_path);
     printf("[+] system libs is OK\n");
 }
-
-/**
- * @brief 处理各SELinux判断的初始化
- */
-__unused __attribute__((constructor(102)))
-void handle_selinux_init(){ // 执行优先级 102 切记执行优先级越低 越先执行
-    // code from AOSP
-    char buf[BUFSIZ], *p;
-    FILE *fp = nullptr;
-    struct statfs sfbuf;
-    int rc;
-    char *bufp;
-    int exists = 0;
-
-    if (process_selinux.selinux_mnt){ // 如果selinux_state有值了 就终止下面的行为
-        return;
+//不能用文件写入的方式，经过测试会有延迟问题，设置了以后代码会立即执行，这个时候，selinux策略还没有生效导致注入失败
+int get_selinux_status(){
+    FILE *fp;
+    char buffer[1024];
+    // 执行shell命令并获取输出结果
+    fp = popen("getenforce", "r");
+    if (fp == NULL) {
+        printf("Failed to run command\n");
+        return 1;
     }
 
-    /* We check to see if the preferred mount point for selinux file
-	 * system has a selinuxfs. */
-    do {
-        rc = statfs("/sys/fs/selinux", &sfbuf);
-    } while (rc < 0 && errno == EINTR);
-    if (rc == 0) {
-        if ((uint32_t)sfbuf.f_type == (uint32_t)SELINUX_MAGIC) {
-            process_selinux.selinux_mnt = strdup("/sys/fs/selinux"); // 为 selinux_mnt 赋值
-            return;
-        }
+    // 读取输出结果并打印
+    fgets(buffer, sizeof(buffer), fp);
+    pclose(fp);
+    if(strncmp(buffer,"Enforcing", strlen("Enforcing")) == 0){
+        return 1;
+    } else{
+        return 0;
     }
-
-    /* Drop back to detecting it the long way. */
-    fp = fopen("/proc/filesystems", "r");
-    if (!fp){
-        return;
-    }
-
-    while ((bufp = fgets(buf, sizeof buf - 1, fp)) != nullptr) {
-        if (strstr(buf, "selinuxfs")) {
-            exists = 1;
-            break;
-        }
-    }
-
-    if (!exists){
-        goto out;
-    }
-
-    fclose(fp);
-
-    /* At this point, the usual spot doesn't have an selinuxfs so
-	 * we look around for it */
-    fp = fopen("/proc/mounts", "r");
-    if (!fp){
-        goto out;
-    }
-
-    while ((bufp = fgets(buf, sizeof buf - 1, fp)) != nullptr) {
-        char *tmp;
-        p = strchr(buf, ' ');
-        if (!p){
-            goto out;
-        }
-        p++;
-        tmp = strchr(p, ' ');
-        if (!tmp){
-            goto out;
-        }
-        if (!strncmp(tmp + 1, "selinuxfs ", 10)) {
-            *tmp = '\0';
-            break;
-        }
-    }
-
-    /* If we found something, dup it */
-    if (bufp){
-        process_selinux.selinux_mnt = strdup(p);
-    }
-
-    out:
-    if (fp){
-        fclose(fp);
-    }
-
-    return;
 }
-
-/**
- * @brief 检测SELinux是否为宽容模式 如果不是 则设置为宽容模式
- */
-__unused __attribute__((constructor(103)))
-void handle_selinux_detect() {
-    // code from AOSP
-    int fd, ret;
-    char path[PATH_MAX];
-    char buf[20];
-
-    if (!process_selinux.selinux_mnt) { // selinux_mnt不为空
-        errno = ENOENT;
-        printf("[-] selinux_mnt is nullptr\n");
-        return ;
-    }
-
-    snprintf(path, sizeof path, "%s/enforce", process_selinux.selinux_mnt);
-    fd = open(path, O_RDONLY);
-    if (fd < 0){ // 如果打开文件失败 那么终止
-        printf("[-] Failed to open enforce\n");
-        return ;
-    }
-
-    memset(buf, 0, sizeof buf);
-    ret = read(fd, buf, sizeof buf - 1);
-    close(fd);
-    if (ret < 0){ // 如果值小于0 那么返回
-        printf("[-] SELinux ret error\n");
-        return ;
-    }
-
-    // 将buf写入到enforce
-    if (sscanf(buf, "%d", (int*)&process_selinux.enforce) != 1){ // 如果失败 则终止
-        printf("[-] sscanf error\n");
-        return ;
-    }
-    printf("[+] handle_selinux_init is OK\n");
-    return ;
-}
-
-
 
 /**
  *
@@ -205,26 +94,6 @@ void handle_selinux_detect() {
  */
 bool set_selinux_state(int value) {
     bool succ = true;
-//    int fd;
-//    char path[PATH_MAX];
-//    char buf[20];
-//
-//    if (!process_selinux.selinux_mnt) {
-//        errno = ENOENT;
-//        return -1;
-//    }
-//
-//    snprintf(path, sizeof path, "%s/enforce", process_selinux.selinux_mnt);
-//    fd = open(path, O_RDWR);
-//    if (fd < 0)
-//        return -1;
-//
-//    snprintf(buf, sizeof buf, "%d", (int)value);
-//    int ret = write(fd, buf, strlen(buf));
-//    close(fd);
-//    if (ret < 0)
-//        succ = false;
-
     char cmd[20];
     snprintf(cmd, 20, "setenforce %d", value);
     system(cmd);
@@ -246,8 +115,8 @@ bool get_pid_by_name(pid_t *pid, char *task_name){
     DIR *dir;
     struct dirent *ptr;
     FILE *fp;
-    char filepath[50];
-    char cur_task_name[50];
+    char filepath[150];
+    char cur_task_name[1024];
     char buf[1024];
 
     dir = opendir("/proc");
@@ -277,7 +146,6 @@ bool get_pid_by_name(pid_t *pid, char *task_name){
         }
         closedir(dir);
     }
-
     return false;
 }
 
@@ -405,7 +273,7 @@ void *get_remote_func_addr(pid_t pid, const char *ModuleName, void *LocalFuncAdd
     // local_addr - local_handle的值为指定函数(如mmap)在该模块中的偏移量，然后再加上remote_handle，结果就为指定函数在目标进程的虚拟地址
     RemoteFuncAddr = (void *)((uintptr_t)LocalFuncAddr - (uintptr_t)LocalModuleAddr + (uintptr_t)RemoteModuleAddr);
 
-    printf("[+] [get_remote_func_addr] lmod=0x%lX, rmod=0x%lX, lfunc=0x%lX, rfunc=0x%lX\n", LocalModuleAddr, RemoteModuleAddr, LocalFuncAddr, RemoteFuncAddr);
+    printf("[+][get_remote_func_addr] lmod=0x%lX, rmod=0x%lX, lfunc=0x%lX, rfunc=0x%lX\n", LocalModuleAddr, RemoteModuleAddr, LocalFuncAddr, RemoteFuncAddr);
     return RemoteFuncAddr;
 }
 
