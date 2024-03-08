@@ -1,10 +1,10 @@
 # rxposed
 
-#### 介绍
+### 介绍
 rxposed,是一个Android平台全局注入框架，通过ptrace zygote进程的方式，对应用app进行注入。
 
 
-#### 平台支持
+### 平台支持
 目前只支持android 13 ,后续可能会对android 11 和12 兼容，但是不会兼容11以下，主要是因为andrid11以上开始有包可见性问题，这样就可以隐藏安装在手机上的管理app。
 
 ### 工具定位
@@ -18,13 +18,11 @@ rxposed,是一个Android平台全局注入框架，通过ptrace zygote进程的�
 
 + 内存痕迹对抗：没有任何内存痕迹，不存在hook了某些内存，或者改变了内存布局，数据被检测到的问题
 + 特征检测对抗：在工程构建的时候，就考虑到了以后可能存在的特征对抗问题，比如符号，字符串，so名字，所以，工程小，容易修改，只有一个so文件。
-+ 模块隐藏：不仅本身提供了反检测功能，所有的模块也提供了隐藏加载功能
++ 模块隐藏：不仅本身提供了反检测功能，所有的模块也提供了隐藏加载功能（https://github.com/Thehepta/HideApk）
 + 依赖检测：既没有外部so依赖，工具本身也不依赖于magisk或者kernerlsu的模块，只需要root权限即可，不会因为别的工具被检测而无法使用
-+ app检测：本身只支持android11以上，所有不会被检测到管理app。
 
-#### 不黏牙
-
-本身是通过ptrace zygote的方式注入到应用中，如果不使用，可以通过软重启（杀死zygote进程让他自动重启）的方式关闭注入功能。
+#### 稳定不黏牙
+本身是通过ptrace zygote的方式注入到应用中，如果不使用，可以通过软重启（杀死zygote进程让他自动重启）的方式关闭注入功能。代码量小，内存改动极小，所有的改动都会在app运行时恢复，已经使用了一年多了，测试过各大厂商，均未出现崩溃情况。
 
 ### 缺点
 
@@ -50,11 +48,11 @@ rxposed,是一个Android平台全局注入框架，通过ptrace zygote进程的�
 
 
 
-#### 模块
+### 模块地址
 https://github.com/Thehepta/Rxmodule
 
 
-## 致谢
+### 致谢
 https://github.com/sanfengAndroid/fake-linker
 
 https://github.com/LSPosed/LSPosed
@@ -63,6 +61,6 @@ https://github.com/frida/frida
 
 
 
-## License
+### License
 
 LSPosed is licensed under the **GNU General Public License v3 (GPL-3)** (http://www.gnu.org/copyleft/gpl.html).
