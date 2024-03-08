@@ -51,6 +51,16 @@ rxposed,是一个Android平台全局注入框架，通过ptrace zygote进程的�
 ### 模块地址
 https://github.com/Thehepta/Rxmodule
 
+### 公众号和知识星球
+主要以对抗为主题希望大家支持一下
+
+![输入图片说明](document/images/wx.jpg)
+
+知识星球（没免费卷，想支持就支持一下，不想支持也没事，主要是希望可以接触到更多的问题，收集更多的样本）
+![输入图片说明](document/images/start.jpg)
+
+如果在使用中遇到任何问题，或者有什么不懂的地方，可以主动联系我
+
 
 ### 致谢
 https://github.com/sanfengAndroid/fake-linker
