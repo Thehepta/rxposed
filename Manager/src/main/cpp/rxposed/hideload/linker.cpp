@@ -17,23 +17,18 @@
 #include <sys/utsname.h>
 #include "jni_hook.h"
 
-android_namespace_t* g_default_namespace = static_cast<android_namespace_t *>(linkerResolveElfInternalSymbol(
-        get_android_linker_path(), "__dl_g_default_namespace"));
+android_namespace_t* g_default_namespace = static_cast<android_namespace_t *>(linkerResolveElfInternalSymbol(get_android_linker_path(), "__dl_g_default_namespace"));
 
 soinfo* (*soinf_alloc_fun)(android_namespace_t* , const char* ,const struct stat* , off64_t ,uint32_t ) = (soinfo* (*)(android_namespace_t* , const char* ,const struct stat* , off64_t ,uint32_t )) linkerResolveElfInternalSymbol(
         get_android_linker_path(), "__dl__Z12soinfo_allocP19android_namespace_tPKcPK4statlj");
 
-soinfo* (*solist_get_head)() = (soinfo* (*)()) linkerResolveElfInternalSymbol(
-        get_android_linker_path(), "__dl__Z15solist_get_headv");
+soinfo* (*solist_get_head)() = (soinfo* (*)()) linkerResolveElfInternalSymbol(get_android_linker_path(), "__dl__Z15solist_get_headv");
 
-soinfo* (*solist_get_somain)() = (soinfo* (*)()) linkerResolveElfInternalSymbol(
-        get_android_linker_path(), "__dl__Z17solist_get_somainv");
+soinfo* (*solist_get_somain)() = (soinfo* (*)()) linkerResolveElfInternalSymbol(get_android_linker_path(), "__dl__Z17solist_get_somainv");
 
-char* (*soinfo_get_soname)(soinfo*) = (char* (*)(soinfo*)) linkerResolveElfInternalSymbol(
-        get_android_linker_path(), "__dl__ZNK6soinfo10get_sonameEv");
+char* (*soinfo_get_soname)(soinfo*) = (char* (*)(soinfo*)) linkerResolveElfInternalSymbol(get_android_linker_path(), "__dl__ZNK6soinfo10get_sonameEv");
 
-bool (*solist_remove_soinfo)(soinfo*) = (bool  (*)(soinfo*)) linkerResolveElfInternalSymbol(
-        get_android_linker_path(), "__dl__Z20solist_remove_soinfoP6soinfo");
+bool (*solist_remove_soinfo)(soinfo*) = (bool  (*)(soinfo*)) linkerResolveElfInternalSymbol(get_android_linker_path(), "__dl__Z20solist_remove_soinfoP6soinfo");
 
 
 

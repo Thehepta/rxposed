@@ -50,14 +50,19 @@ public class checkFragment extends Fragment {
     private void all_check() {
         checkTool = new CheckTool();
         if(checkTool.chekc_GetArtmethodNative_init()){
-
             itemBeans.add(new ItemBean("chekc_GetArtmethodNative_init",true));
-
-            itemBeans.add(new ItemBean("chekc_android_os_Process_getUidForName",checkTool.chekc_android_os_Process_getUidForName()));
-
         }else {
             itemBeans.add(new ItemBean("chekc_GetArtmethodNative_init",false));
         }
+
+        if(CheckTool.get_rxposed_status()) {
+            itemBeans.add(new ItemBean("chekc_android_os_Process_getUidForName",true));
+        }else {
+            itemBeans.add(new ItemBean("chekc_android_os_Process_getUidForName",checkTool.chekc_android_os_Process_getUidForName()));
+
+        }
+
+
 
         itemBeans.add(new ItemBean("chekc_PreGetenv", checkTool.chekcPreGetenv()));
         itemBeans.add(new ItemBean("linkerResolveElfInternalSymbol",checkTool.ELFresolveSymbol()));
@@ -83,7 +88,7 @@ public class checkFragment extends Fragment {
             Class<?>[] IContentProvider_call_parameter= {String.class,String.class,String.class,String.class,String.class,Bundle.class};
             itemBeans.add(checkTool.Found_javaMethod("android.content.IContentProvider","call",IContentProvider_call_parameter));
         }
-        Class<?>[] getContentProviderExternal_parameter= {String.class,int.class,IBinder.class,String.class};
+            Class<?>[] getContentProviderExternal_parameter= {String.class,int.class,IBinder.class,String.class};
         itemBeans.add(checkTool.Found_javaMethod("android.app.IActivityManager","getContentProviderExternal",getContentProviderExternal_parameter));
         Class<?>[] setArgV0Native_parameter= {String.class};
 

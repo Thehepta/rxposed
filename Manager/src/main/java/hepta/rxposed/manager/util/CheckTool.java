@@ -3,6 +3,7 @@ package hepta.rxposed.manager.util;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.os.Process;
 import android.util.Log;
 
 import java.lang.reflect.Field;
@@ -15,13 +16,28 @@ public class CheckTool {
 
 
     static {
-        System.loadLibrary("check");
+
     }
 
     public  native boolean chekcPreGetenv();
     public  native void  jni_hook();
     public  native void   jni_unhook();
     public  native boolean jni_hook_test();
+
+
+    public CheckTool(){
+        Log.e("CheckTool","load chek so");
+        System.loadLibrary("check");
+    }
+
+
+    public static boolean get_rxposed_status(){
+        int zygote_host_uid = Process.getUidForName(InjectTool.getStatusAuthority());
+        if(zygote_host_uid!=-1){
+            return true;
+        }
+        return false;
+    }
 
     public  boolean check_jni_hook() {
         boolean no_hook_ret =  jni_hook_test();

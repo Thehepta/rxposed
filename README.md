@@ -21,7 +21,8 @@ rxposed,是一个无感知的Android平台应用注入框架，主要用来对�
 
 
 
-
+### 注意事项
+同类型工具冲突，如果你的手机中存在修改zygote进程的插件，请关闭了在使用本工具
 
 
 ### 可能需要者
@@ -65,4 +66,4 @@ https://github.com/frida/frida
 
 ### License
 
-LSPosed is licensed under the **GNU General Public License v3 (GPL-3)** (http://www.gnu.org/copyleft/gpl.html).
+rxposed is licensed under the **GNU General Public License v3 (GPL-3)** (http://www.gnu.org/copyleft/gpl.html).
