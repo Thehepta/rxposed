@@ -89,9 +89,13 @@ public class RxConfigProvider extends ContentProvider {
     public Bundle call(@NonNull String method, @Nullable String uid, @Nullable Bundle extras) {
         Bundle bundle = new Bundle();
         Log.e("getRxConfig","method:"+method);
-        Log.e("getRxConfig","ProcessName:"+uid);
+        Log.e("getRxConfig","Processuid:"+uid);
 
         String req_packageName = getContext().getPackageManager().getNameForUid(Integer.parseInt(uid));
+        int find_index = req_packageName.indexOf(":");
+        if(find_index!=-1){
+            req_packageName = req_packageName.split(":")[0];
+        }
         List<String> enableModuleList = MmkvManager.INSTANCE.getAppEnableModuleList(req_packageName);
         ArrayList<String> stringList = new ArrayList<>();
         PackageManager pm = RxposedApp.getInstance().getBaseContext().getPackageManager();

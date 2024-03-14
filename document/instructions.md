@@ -232,6 +232,15 @@ rxposed_hide    是否隐藏加载，如果不隐藏，会用PathClassLoader 直
       ```
       这样打出来的包，就没有liblog.so了
 
+## android studio Instant Run
+
+android studio 3.5 的Instant Run
+打开设置 -> Build,Execution,Deployment -> Debugger -> HotSwap 选中右面的 Enable hot-swap agent for Groovy code
+你直接搜Instant Run是搜不到的，用HotSwap代替了
+
+![img.png](InstantRun.png)
+
+
 ## 关闭rxposed
 ![输入图片说明](images/9.png)
 
