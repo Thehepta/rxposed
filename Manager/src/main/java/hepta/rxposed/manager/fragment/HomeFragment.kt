@@ -33,7 +33,7 @@ import com.afollestad.materialdialogs.bottomsheets.BottomSheet
 import com.afollestad.materialdialogs.input.input
 import com.afollestad.materialdialogs.list.listItems
 import hepta.rxposed.manager.R
-import hepta.rxposed.manager.util.CheckTool
+import hepta.rxposed.manager.util.CheckTool11
 import hepta.rxposed.manager.util.InjectTool
 import hepta.rxposed.manager.util.Util
 import hepta.rxposed.manager.widget.DialogUtil
@@ -134,7 +134,7 @@ class HomeFragment : Fragment() {
         val Image_icon = view?.findViewById<ImageView>(R.id.status_icon)
         val Text_status = view?.findViewById<TextView>(R.id.status_text)
 
-        var activity = CheckTool.get_rxposed_status();
+        var activity = CheckTool11.get_rxposed_status();
 
         if (activity){
             btn_activity?.visibility=View.INVISIBLE

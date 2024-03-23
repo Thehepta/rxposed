@@ -80,8 +80,7 @@ public class RxConfigProvider extends ContentProvider {
     public ParcelFileDescriptor openFile(@NonNull Uri uri, @NonNull String mode) throws FileNotFoundException {
         File configNameFile =new File(getContext().getFilesDir(),configName);
 
-        return ParcelFileDescriptor.open(configNameFile,
-                ParcelFileDescriptor.MODE_READ_ONLY);
+        return ParcelFileDescriptor.open(configNameFile, ParcelFileDescriptor.MODE_READ_ONLY);
     }
 
     @Nullable

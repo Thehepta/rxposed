@@ -43,6 +43,7 @@ add_library( # Sets the name of the library.
         SHARED
         # Provides a relative path to your source file(s).
         android13_hook.cpp
+        android11_hook.cpp
         android_util_api.cpp
         artmethod_native_hook.cpp
 #        hideload/elf_symbol_resolver.cpp

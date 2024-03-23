@@ -99,7 +99,7 @@ Java_hepta_rxposed_manager_util_CheckTool_jni_1unhook(JNIEnv *env, jobject thiz)
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_hepta_rxposed_manager_util_CheckTool_chekc_1GetArtmethodNative_1init(JNIEnv *env,
-                                                                          jobject thiz) {
+                                                                            jobject thiz) {
     jclass  cls = env->GetObjectClass(thiz);
     jmethodID javamethod  =  env->GetMethodID(cls,"chekc_GetArtmethodNative_init", "()Z");
     uintptr_t native_fun_addr = reinterpret_cast<uintptr_t>(Java_hepta_rxposed_manager_util_CheckTool_chekc_1GetArtmethodNative_1init);
@@ -114,7 +114,7 @@ Java_hepta_rxposed_manager_util_CheckTool_chekc_1GetArtmethodNative_1init(JNIEnv
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_hepta_rxposed_manager_util_CheckTool_chekc_1android_1os_1Process_1getUidForName(JNIEnv *env,
-                                                                                     jobject thiz) {
+                                                                                       jobject thiz) {
     //如果rxposed已经激活了，那么这个检测应该是失败的
     jclass  Process_cls = env->FindClass("android/os/Process");
     jmethodID javamethod = env->GetStaticMethodID(Process_cls,"getUidForName", "(Ljava/lang/String;)I");
