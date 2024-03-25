@@ -46,15 +46,11 @@ public class CheckTool11 extends CheckTool {
     }
 
 
-    private void chekc_java_method(ArrayList<ItemBean> itemBeans){
+    public void chekc_java_method(ArrayList<ItemBean> itemBeans){
 
         Class<?>[] nativeSpecializeAppProcess_parameter={int.class,int.class,int[].class,int.class,int[][].class,int.class,String.class, String.class,
                 boolean.class,String.class,String.class,boolean.class,String[].class,String[].class,boolean.class,boolean.class};
         itemBeans.add(Found_javaMethod("com.android.internal.os.Zygote","nativeSpecializeAppProcess",nativeSpecializeAppProcess_parameter));
-
-        Class<?>[] IContentProvider_call_parameter= {String.class,String.class,String.class,String.class,String.class,Bundle.class};
-        itemBeans.add(Found_javaMethod("android.content.IContentProvider","call",IContentProvider_call_parameter));
-
 
         Class<?>[] getContentProviderExternal_parameter= {String.class,int.class, IBinder.class,String.class};
         itemBeans.add(Found_javaMethod("android.app.IActivityManager","getContentProviderExternal",getContentProviderExternal_parameter));
@@ -63,6 +59,10 @@ public class CheckTool11 extends CheckTool {
         itemBeans.add(Found_javaMethod("android.os.Process","setArgV0",setArgV0Native_parameter));
 
         itemBeans.add(Java_CreateApplicationContext());
+
+        Class<?>[] IContentProvider_call_parameter= {String.class,String.class,String.class,String.class,String.class,Bundle.class};
+        itemBeans.add(Found_javaMethod("android.content.IContentProvider","call",IContentProvider_call_parameter));
+
 
 
     }

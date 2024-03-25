@@ -390,6 +390,8 @@ void handle_parameter(int argc, char *argv[]){
     char *lib_path = NULL;
     char *func_symbols = NULL;
     char *func_args=NULL;
+    char *func_args2=NULL;
+    char *func_args3=NULL;
     int hidemaps = 0 ;
     bool start_app_flag = false;
 
@@ -439,20 +441,35 @@ void handle_parameter(int argc, char *argv[]){
             index++;
             func_symbols = argv[index]; // so中的调用的函数符号
             if (index + 1 >= argc){
-                printf("[-] function: %s not params\n",func_symbols);
+                printf("[-] function: %s not params1\n",func_symbols);
             }else{
                 index++;
-                func_args = argv[index]; // so中的调用的函数
+                func_args = argv[index];
             }
+//            index++;
+//            if (index + 1 >= argc){
+//                printf("[-] function: %s not params2\n",func_symbols);
+//            }else{
+//                index++;
+//                func_args2 = argv[index];
+//            }
+//            index++;
+//
+//            if (index + 1 >= argc){
+//                printf("[-] function: %s not params3\n",func_symbols);
+//            }else{
+//                index++;
+//                func_args3 = argv[index];
+//            }
         }
 
-        if (strcmp("-hidemaps", argv[index]) == 0) { // 判断是否传入so路径
+        if (strcmp("-hidemaps", argv[index]) == 0) { // 是否隐藏so的maps
             if (index + 1 >= argc){
                 printf("[-] Missing parameter -hidemaps\n");
                 exit(-1);
             }
             index++;
-            hidemaps = atoi(argv[index]); // 是否隐藏so的maps
+            hidemaps = atoi(argv[index]);
         }
 
         index++;

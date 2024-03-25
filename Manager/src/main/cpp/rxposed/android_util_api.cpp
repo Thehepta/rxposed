@@ -63,7 +63,7 @@ void load_apk_And_Call_Class_Entry_Method(JNIEnv *pEnv, jobject android_context,
     jstring apkSource = pEnv->NewStringUTF(source.c_str());
     jstring rxposed_argument = pEnv->NewStringUTF(argument.c_str());
     if(strncmp(hide.c_str(),"true", strlen("true"))==0){
-        ApkClassLoader = hideLoadApkModule(pEnv, (char*)source.c_str());
+        ApkClassLoader = FilehideLoadApkModule(pEnv, (char*)source.c_str());
     } else{
         jstring nativelib = pEnv->NewStringUTF(NativelibPath.c_str());
         ApkClassLoader = PathClassLoaderLoadAPK(pEnv, apkSource, nativelib);

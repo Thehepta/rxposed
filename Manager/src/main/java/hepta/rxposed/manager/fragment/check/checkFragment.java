@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import hepta.rxposed.manager.util.CheckTool;
 import hepta.rxposed.manager.util.CheckTool11;
 import hepta.rxposed.manager.R;
+import hepta.rxposed.manager.util.CheckTool12;
 import hepta.rxposed.manager.util.CheckTool13;
 
 public class checkFragment extends Fragment {
@@ -52,7 +53,7 @@ public class checkFragment extends Fragment {
             //这里做你想做的事
             checkTool = new CheckTool13();
         }else if(android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
-
+            checkTool = new CheckTool12();
         }else if(android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
             checkTool = new CheckTool11();
 

@@ -9,6 +9,7 @@
 #include "artmethod_native_hook.h"
 
 namespace android11 {
+    void HOOK_Process_getUidForName(JNIEnv *env) ;
 
     void (*android_os_Process_setArg_org)(JNIEnv *env, jclass clazz, jstring name);
 
@@ -40,32 +41,7 @@ namespace android11 {
         DEBUG()
     }
 
-    jint (*android_os_Process_getUidForName_org)(JNIEnv *env, jclass clazz, jstring name);
 
-    jint android_os_Process_getUidForName_hook(JNIEnv *env, jclass clazz, jstring name) {
-        DEBUG()
-        const char *Authority_arg = const_cast<char *>(env->GetStringUTFChars(name, nullptr));
-        const char *Authority = rprocess::GetInstance()->getStatusAuthority();
-        int ret = 0;
-        if (strncmp(Authority_arg, Authority, strlen(Authority_arg)) == 0) {
-            ret = rprocess::GetInstance()->getHostUid();
-        } else {
-            ret = android_os_Process_getUidForName_org(env, clazz, name);
-        }
-        DEBUG()
-        return ret;
-    }
-
-    void HOOK_Process_getUidForName(JNIEnv *env) {
-        jclass Process_cls = env->FindClass("android/os/Process");
-        jmethodID getUidForName_Jmethod = env->GetStaticMethodID(Process_cls, "getUidForName",
-                                                                 "(Ljava/lang/String;)I");
-
-        android_os_Process_getUidForName_org = reinterpret_cast<jint (*)(JNIEnv *, jclass,
-                                                                         jstring)>(HookJmethod_JniFunction(
-                env, Process_cls, getUidForName_Jmethod,
-                (uintptr_t) android_os_Process_getUidForName_hook));
-    }
 
 
     void (*nativeSpecializeAppProcess_org)(JNIEnv *env, jclass clazz, jint uid, jint gid, jintArray gids,
@@ -165,37 +141,78 @@ namespace android11 {
     }
 
 
-    jobject getConfigByProvider(JNIEnv *env, string providerHost_providerName, string callName,
-                                string method, string uid_str) {
+// android version code adaptation
+    bool art_method_hook_init() {
+
+        JNIEnv *env = Pre_GetEnv();
+        jclass Process_cls = env->FindClass("android/os/Process");
+        jmethodID javamethod = env->GetStaticMethodID(Process_cls, "getUidForName",
+                                                      "(Ljava/lang/String;)I");
+        void *libandroid_runtime = dlopen("libandroid_runtime.so", RTLD_NOW);
+        uintptr_t getUidForName = reinterpret_cast<uintptr_t>(dlsym(libandroid_runtime,
+                                                                    "_Z32android_os_Process_getUidForNameP7_JNIEnvP8_jobjectP8_jstring"));
+        INIT_HOOK_PlatformABI(env, nullptr, javamethod, (uintptr_t *) getUidForName, 0x109);
+
+        uintptr_t art_javamethod_method = GetArtMethod(env, Process_cls, javamethod);
+        uintptr_t native_art_art_javamethod_method = GetOriginalNativeFunction(
+                (uintptr_t *) art_javamethod_method);
+
+        if (native_art_art_javamethod_method == getUidForName) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
+    // hook getUidForName 函数是为了进行rxposed进程激活状态
+    jint (*android_os_Process_getUidForName_org)(JNIEnv *env, jclass clazz, jstring name);
+
+    jint android_os_Process_getUidForName_hook(JNIEnv *env, jclass clazz, jstring name) {
+        DEBUG()
+        const char *Authority_arg = const_cast<char *>(env->GetStringUTFChars(name, nullptr));
+        const char *Authority = rprocess::GetInstance()->getStatusAuthority();
+        int ret = 0;
+        if (strncmp(Authority_arg, Authority, strlen(Authority_arg)) == 0) {
+            ret = rprocess::GetInstance()->getHostUid();
+        } else {
+            ret = android_os_Process_getUidForName_org(env, clazz, name);
+        }
+        DEBUG()
+        return ret;
+    }
+
+    void HOOK_Process_getUidForName(JNIEnv *env) {
+        jclass Process_cls = env->FindClass("android/os/Process");
+        jmethodID getUidForName_Jmethod = env->GetStaticMethodID(Process_cls, "getUidForName",
+                                                                 "(Ljava/lang/String;)I");
+
+        android_os_Process_getUidForName_org = reinterpret_cast<jint (*)(JNIEnv *, jclass,
+                                                                         jstring)>(HookJmethod_JniFunction(
+                env, Process_cls, getUidForName_Jmethod,
+                (uintptr_t) android_os_Process_getUidForName_hook));
+    }
+
+
+    jobject getConfigByProvider(JNIEnv* env, string providerHost_providerName , string callName, string method , string uid_str){
         DEBUG()
         jclass ServiceManager_cls = env->FindClass("android/app/ActivityManager");
         auto IActivityManager_class = env->FindClass("android/app/IActivityManager");
-        auto IActivityManager_getContentProviderExternal_method = env->GetMethodID(
-                IActivityManager_class, "getContentProviderExternal",
-                "(Ljava/lang/String;ILandroid/os/IBinder;Ljava/lang/String;)Landroid/app/ContentProviderHolder;");
-        auto IActivityManager_removeContentProviderExternalAsUser_method = env->GetMethodID(
-                IActivityManager_class, "removeContentProviderExternalAsUser",
-                "(Ljava/lang/String;Landroid/os/IBinder;I)V");
+        auto IActivityManager_getContentProviderExternal_method = env->GetMethodID(IActivityManager_class,"getContentProviderExternal","(Ljava/lang/String;ILandroid/os/IBinder;Ljava/lang/String;)Landroid/app/ContentProviderHolder;");
+        auto IActivityManager_removeContentProviderExternalAsUser_method = env->GetMethodID(IActivityManager_class,"removeContentProviderExternalAsUser","(Ljava/lang/String;Landroid/os/IBinder;I)V");
         auto ContentProviderHolder_class = env->FindClass("android/app/ContentProviderHolder");
         auto Binder_class = env->FindClass("android/os/Binder");
         auto Bundle_class = env->FindClass("android/os/Bundle");
-        jmethodID Binder_init = env->GetMethodID(Binder_class, "<init>", "()V");
-        jmethodID Binder_getCallingUid = env->GetStaticMethodID(Binder_class, "getCallingUid",
-                                                                "()I");
-        jmethodID Bundle_init = env->GetMethodID(Bundle_class, "<init>", "()V");
-        jmethodID Bundle_getString_method = env->GetMethodID(Bundle_class, "getString",
-                                                             "(Ljava/lang/String;)Ljava/lang/String;");
+        jmethodID Binder_init = env->GetMethodID(Binder_class, "<init>","()V");
+        jmethodID Binder_getCallingUid = env->GetStaticMethodID(Binder_class, "getCallingUid", "()I");
+        jmethodID Bundle_init = env->GetMethodID(Bundle_class, "<init>","()V");
+        jmethodID Bundle_getString_method = env->GetMethodID(Bundle_class, "getString","(Ljava/lang/String;)Ljava/lang/String;");
         auto IContentProvider_class = env->FindClass("android/content/IContentProvider");
-        auto ContentProviderHolder_provider_filed = env->GetFieldID(ContentProviderHolder_class,
-                                                                    "provider",
-                                                                    "Landroid/content/IContentProvider;");
-        jmethodID ActivityManager_getservice_method_ = env->GetStaticMethodID(ServiceManager_cls,
-                                                                              "getService",
-                                                                              "()Landroid/app/IActivityManager;");
-        jobject IActivityManager_Obj = env->CallStaticObjectMethod(ServiceManager_cls,
-                                                                   ActivityManager_getservice_method_);
-        if (IActivityManager_Obj == nullptr) {
-            NDK_ExceptionCheck(env, "ActivityManager_getservice_method_ is null");
+        auto ContentProviderHolder_provider_filed = env->GetFieldID(ContentProviderHolder_class,"provider","Landroid/content/IContentProvider;");
+        jmethodID ActivityManager_getservice_method_ = env->GetStaticMethodID(ServiceManager_cls, "getService", "()Landroid/app/IActivityManager;");
+        jobject IActivityManager_Obj = env->CallStaticObjectMethod(ServiceManager_cls, ActivityManager_getservice_method_);
+        if(IActivityManager_Obj == nullptr){
+            NDK_ExceptionCheck(env,"ActivityManager_getservice_method_ is null");
         }
 //    jstring AUTHORITY_jstring = env->NewStringUTF("hepta.rxposed.manager.Provider");
         jstring j_providerHost_providerName = env->NewStringUTF(providerHost_providerName.c_str());
@@ -204,50 +221,22 @@ namespace android11 {
         jstring j_method = env->NewStringUTF(method.c_str());
         jstring j_uid = env->NewStringUTF(uid_str.c_str());
 
-        auto token_ibinderObj = env->NewObject(Binder_class, Binder_init);
-        auto mExtras_BundleObj = env->NewObject(Bundle_class, Bundle_init);
+        auto token_ibinderObj = env->NewObject(Binder_class,Binder_init);
+        auto mExtras_BundleObj = env->NewObject(Bundle_class,Bundle_init);
 
         DEBUG()
         LOGE("j_providerHost_providerName : %s", providerHost_providerName.c_str());
-        jobject holder_ContentProviderHolderObj = env->CallObjectMethod(IActivityManager_Obj,
-                                                                        IActivityManager_getContentProviderExternal_method,
-                                                                        j_providerHost_providerName,
-                                                                        0, token_ibinderObj,
-                                                                        tag_jstring);
+        jobject holder_ContentProviderHolderObj = env->CallObjectMethod(IActivityManager_Obj, IActivityManager_getContentProviderExternal_method, j_providerHost_providerName, 0, token_ibinderObj, tag_jstring);
         DEBUG()
-        jobject provider_IContentProviderObj = env->GetObjectField(holder_ContentProviderHolderObj,
-                                                                   ContentProviderHolder_provider_filed);
+        jobject  provider_IContentProviderObj = env->GetObjectField(holder_ContentProviderHolderObj,ContentProviderHolder_provider_filed);
         DEBUG()
         jobject ret_bundle;
-        if (android_get_device_api_level() == 33) {
-            jstring root_jstring = env->NewStringUTF("root");
-            auto AttributionSource_class = env->FindClass("android/content/AttributionSource");
-            jmethodID AttributionSource_init = env->GetMethodID(AttributionSource_class, "<init>",
-                                                                "(ILjava/lang/String;Ljava/lang/String;)V");
-            jint uid = env->CallStaticIntMethod(Binder_class, Binder_getCallingUid);
-            auto attributionSourceObj = env->NewObject(AttributionSource_class,
-                                                       AttributionSource_init, uid, j_callingPkg,
-                                                       nullptr);
 
-            auto IContentProvider_call_method = env->GetMethodID(IContentProvider_class, "call",
-                                                                 "(Landroid/content/AttributionSource;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroid/os/Bundle;)Landroid/os/Bundle;");
-            ret_bundle = env->CallObjectMethod(provider_IContentProviderObj,
-                                               IContentProvider_call_method, attributionSourceObj,
-                                               j_providerHost_providerName, j_method, j_uid,
-                                               mExtras_BundleObj);
-            env->CallObjectMethod(IActivityManager_Obj,
-                                  IActivityManager_removeContentProviderExternalAsUser_method,
-                                  j_providerHost_providerName, token_ibinderObj, 0);
 
-        } else {
+        auto IContentProvider_call_method = env->GetMethodID(IContentProvider_class,"call","(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroid/os/Bundle;)Landroid/os/Bundle;");
+        ret_bundle = env->CallObjectMethod(provider_IContentProviderObj, IContentProvider_call_method, j_callingPkg,
+                                           nullptr, j_providerHost_providerName, j_method, j_uid, mExtras_BundleObj);
 
-            auto IContentProvider_call_method = env->GetMethodID(IContentProvider_class, "call",
-                                                                 "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroid/os/Bundle;)Landroid/os/Bundle;");
-            ret_bundle = env->CallObjectMethod(provider_IContentProviderObj,
-                                               IContentProvider_call_method, j_callingPkg,
-                                               nullptr, j_providerHost_providerName, j_method,
-                                               j_uid, mExtras_BundleObj);
-        }
 
 //    jstring config = static_cast<jstring>(env->CallObjectMethod(ret_bundle, Bundle_getString_method,j_key));
 //    const char *  enableUidList_str = env->GetStringUTFChars(config, nullptr);
@@ -288,26 +277,5 @@ namespace android11 {
     }
 
 
-// android version code adaptation
-    bool art_method_hook_init() {
 
-        JNIEnv *env = Pre_GetEnv();
-        jclass Process_cls = env->FindClass("android/os/Process");
-        jmethodID javamethod = env->GetStaticMethodID(Process_cls, "getUidForName",
-                                                      "(Ljava/lang/String;)I");
-        void *libandroid_runtime = dlopen("libandroid_runtime.so", RTLD_NOW);
-        uintptr_t getUidForName = reinterpret_cast<uintptr_t>(dlsym(libandroid_runtime,
-                                                                    "_Z32android_os_Process_getUidForNameP7_JNIEnvP8_jobjectP8_jstring"));
-        INIT_HOOK_PlatformABI(env, nullptr, javamethod, (uintptr_t *) getUidForName, 0x109);
-
-        uintptr_t art_javamethod_method = GetArtMethod(env, Process_cls, javamethod);
-        uintptr_t native_art_art_javamethod_method = GetOriginalNativeFunction(
-                (uintptr_t *) art_javamethod_method);
-
-        if (native_art_art_javamethod_method == getUidForName) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 }

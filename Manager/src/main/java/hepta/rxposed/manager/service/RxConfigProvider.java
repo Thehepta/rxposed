@@ -87,6 +87,10 @@ public class RxConfigProvider extends ContentProvider {
     @Override
     public Bundle call(@NonNull String method, @Nullable String uid, @Nullable Bundle extras) {
         Bundle bundle = new Bundle();
+        if(method.contains("test")){
+            bundle.putBoolean("test",true);
+            return bundle;
+        }
         Log.e("getRxConfig","method:"+method);
         Log.e("getRxConfig","Processuid:"+uid);
 

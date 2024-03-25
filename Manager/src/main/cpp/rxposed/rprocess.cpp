@@ -21,14 +21,14 @@ void rprocess::setProcessInfo(char* nice_name, uid_t uid, gid_t arg_gid) {
     this->gid = arg_gid;
 }
 
-string rprocess::getCurrentAppRxposedConfig(JNIEnv* env, string providerHost_providerName , string callName, string method , uid_t currentUid) {
+string rprocess::getCurrentAppRxposedConfig(JNIEnv* env, string rxposed_providerName , string callName, string method , uid_t currentUid) {
 
     DEBUG();
     jstring key = env->NewStringUTF("ModuleList");
     DEBUG();
     string uid_str = std::to_string(currentUid);
     DEBUG();
-    jobject obj_bundle = getConfigByProvider(env, providerHost_providerName, callName  , method, uid_str);
+    jobject obj_bundle = getConfigByProvider(env, rxposed_providerName, callName  , method, uid_str);
     DEBUG();
     jclass Bundle_cls = env->FindClass("android/os/Bundle");
     jmethodID Bundle_getStringArrayList_method = env->GetMethodID(Bundle_cls, "getStringArrayList","(Ljava/lang/String;)Ljava/util/ArrayList;");
@@ -63,7 +63,7 @@ bool rprocess::InitModuleInfo(JNIEnv *env) {
     if (pid == 0) {
         // 子进程读取数据
         std::string Provider_call_method = "getConfig";
-        std::string appinfoList = getCurrentAppRxposedConfig(env,  providerHost_providerName,processName  ,Provider_call_method,currentUid);
+        std::string appinfoList = getCurrentAppRxposedConfig(env, m_rxposed_providerName, processName  , Provider_call_method, currentUid);
         memcpy(buf,appinfoList.c_str(),appinfoList.length());
         _exit(0);
     }else if (pid > 0) {
@@ -105,10 +105,10 @@ void rprocess::setAuthorityInfo(const char* arg_tmp){
     AUTHORITY = arg_tmp;
     hostUid = atoi(arg[0].c_str());
     LOGE("UID: %d",hostUid);
-    providerHost_pkgName=arg[1];
-    LOGE("providerHost_pkgName: %s",providerHost_pkgName.c_str());
-    providerHost_providerName =arg[2];
-    LOGE("providerHost_providerName: %s",providerHost_providerName.c_str());
+    m_rxposed_pkgName=arg[1];
+    LOGE("m_rxposed_pkgName: %s", m_rxposed_pkgName.c_str());
+    m_rxposed_providerName =arg[2];
+    LOGE("m_rxposed_providerName: %s", m_rxposed_providerName.c_str());
 }
 
 bool rprocess::LoadModule(JNIEnv* env){

@@ -46,18 +46,13 @@ public class CheckTool13 extends CheckTool{
     }
 
 
-    private void chekc_java_method(ArrayList<ItemBean> itemBeans){
+    public void chekc_java_method(ArrayList<ItemBean> itemBeans){
 
         Class<?>[] nativeSpecializeAppProcess_parameter={int.class,int.class,int[].class,int.class,int[][].class,int.class,String.class, String.class,
                 boolean.class,String.class,String.class,boolean.class,String[].class,String[].class,boolean.class,boolean.class};
 
         itemBeans.add(Found_javaMethod("com.android.internal.os.Zygote","nativeSpecializeAppProcess",nativeSpecializeAppProcess_parameter));
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-            Class<?>[] AttributionSource_parameter= {int.class,String.class,String.class};
-            itemBeans.add(Found_getConstructorsMethod("android.content.AttributionSource","<init>",AttributionSource_parameter));
-            Class<?>[] IContentProvider_call_parameter= {AttributionSource.class,String.class,String.class,String.class, Bundle.class};
-            itemBeans.add(Found_javaMethod("android.content.IContentProvider","call",IContentProvider_call_parameter));
-        }
+
         Class<?>[] getContentProviderExternal_parameter= {String.class,int.class, IBinder.class,String.class};
         itemBeans.add(Found_javaMethod("android.app.IActivityManager","getContentProviderExternal",getContentProviderExternal_parameter));
         Class<?>[] setArgV0Native_parameter= {String.class};
@@ -66,6 +61,12 @@ public class CheckTool13 extends CheckTool{
         itemBeans.add(Found_javaMethod("android.os.Process","setArgV0Native",setArgV0Native_parameter));
         itemBeans.add(Java_CreateApplicationContext());
 
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            Class<?>[] AttributionSource_parameter= {int.class,String.class,String.class};
+            itemBeans.add(Found_getConstructorsMethod("android.content.AttributionSource","<init>",AttributionSource_parameter));
+            Class<?>[] IContentProvider_call_parameter= {AttributionSource.class,String.class,String.class,String.class,Bundle.class};
+            itemBeans.add(Found_javaMethod("android.content.IContentProvider","call",IContentProvider_call_parameter));
+        }
 
     }
 

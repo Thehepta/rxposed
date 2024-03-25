@@ -8,7 +8,7 @@
 #include "android_util_api.h"
 #include "artmethod_native_hook.h"
 
-namespace android13{
+namespace android12{
     void (*android_os_Process_setArg_org)(JNIEnv* env, jclass clazz, jstring name);
     void android_os_Process_setArg_hook(JNIEnv* env, jclass clazz, jstring name){
         DEBUG()
@@ -16,7 +16,7 @@ namespace android13{
         if(rprocess::GetInstance()->is_Start(env, pkgName)){
             rprocess::GetInstance()->LoadModule(env);
             android_os_Process_setArg_org(env,clazz,name);
-            jmethodID javamethod = env->GetStaticMethodID(clazz,"setArgV0Native", "(Ljava/lang/String;)V");
+            jmethodID javamethod = env->GetStaticMethodID(clazz,"setArgV0", "(Ljava/lang/String;)V");
             unHookJmethod_JniFunction(env,clazz,javamethod);
         } else{
             android_os_Process_setArg_org(env,clazz,name);
@@ -28,7 +28,7 @@ namespace android13{
     void HOOK_Process_setArgv0(JNIEnv* env) {
         DEBUG()
         jclass  Process_cls = env->FindClass("android/os/Process");
-        jmethodID javamethod = env->GetStaticMethodID(Process_cls,"setArgV0Native", "(Ljava/lang/String;)V");
+        jmethodID javamethod = env->GetStaticMethodID(Process_cls,"setArgV0", "(Ljava/lang/String;)V");
         android_os_Process_setArg_org = reinterpret_cast<void (*)(JNIEnv *, jclass ,jstring)>(HookJmethod_JniFunction(env,Process_cls,javamethod,(uintptr_t) android_os_Process_setArg_hook));
 
         DEBUG()
@@ -115,7 +115,7 @@ namespace android13{
         DEBUG()
         JNIEnv* env = Pre_GetEnv();
         if(env != nullptr){
-
+//        if(art_method_hook_init(env)){
             jclass Zygote_cls =  env->FindClass("com/android/internal/os/Zygote");                        //                    "(II[II[[IILjava/lang/String;Ljava/lang/String;[I[IZLjava/lang/String;Ljava/lang/String;Z[Ljava/lang/String;[Ljava/lang/String;ZZ)I"
             jmethodID nativeSpecializeAppProcess_method = env->GetStaticMethodID(Zygote_cls,"nativeSpecializeAppProcess",  "(II[II[[IILjava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;Z[Ljava/lang/String;[Ljava/lang/String;ZZ)V");
             nativeSpecializeAppProcess_org = reinterpret_cast<void (*)(JNIEnv *, jclass, jint, jint,
@@ -125,6 +125,9 @@ namespace android13{
                                                                        jobjectArray, jobjectArray, jboolean,
                                                                        jboolean)>(HookJmethod_JniFunction(
                     env, Zygote_cls, nativeSpecializeAppProcess_method,(uintptr_t) nativeSpecializeAppProcess_hook));
+//        } else{
+//            LOGE("art_method_hook_init failed");
+//        }
         } else {
             LOGE("ptrace zygote  Pre_GetEnv failed");
 
@@ -132,6 +135,7 @@ namespace android13{
 
         DEBUG()
     }
+
 
 // android version code adaptation
     bool art_method_hook_init(){
@@ -201,7 +205,6 @@ namespace android13{
         ret_bundle = env->CallObjectMethod(provider_IContentProviderObj, IContentProvider_call_method, attributionSourceObj, j_providerHost_providerName, j_method, j_uid, mExtras_BundleObj);
         env->CallObjectMethod(IActivityManager_Obj, IActivityManager_removeContentProviderExternalAsUser_method, j_providerHost_providerName, token_ibinderObj, 0);
 
-
 //    jstring config = static_cast<jstring>(env->CallObjectMethod(ret_bundle, Bundle_getString_method,j_key));
 //    const char *  enableUidList_str = env->GetStringUTFChars(config, nullptr);
 //    LOGE("get RxConfigPrvider is %s",enableUidList_str);
@@ -239,8 +242,6 @@ namespace android13{
 
         return ret_bundle;
     }
-
-
 
 
 }
