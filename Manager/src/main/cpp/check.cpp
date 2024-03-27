@@ -110,7 +110,8 @@ Java_hepta_rxposed_manager_util_CheckTool_chekc_1GetArtmethodNative_1init(JNIEnv
         return true;
     } else{
         return false;
-    }}
+    }
+}
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_hepta_rxposed_manager_util_CheckTool_chekc_1android_1os_1Process_1getUidForName(JNIEnv *env,

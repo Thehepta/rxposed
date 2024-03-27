@@ -443,7 +443,13 @@ jobject memhideLoadApkModule(JNIEnv *env, unsigned char *zip_data, size_t zip_si
 
 }
 
+uintptr_t ToPathLoadSoGetSymbolAddr(char * sopath,char *topath,char*call_arg){
 
+}
+
+uintptr_t ToMemLoadSoGetSymbolAddr(char * sopath,char*call_arg){
+
+}
 
 
 
