@@ -157,7 +157,9 @@ namespace android12{
         }
 
     }
-
+    void zygote_hook(){
+        zygote_nativeSpecializeAppProcess_hook();
+    }
 
     jobject getConfigByProvider(JNIEnv* env, string providerHost_providerName , string callName, string method , string uid_str){
         DEBUG()

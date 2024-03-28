@@ -162,6 +162,34 @@ jobject CreateApplicationContext(JNIEnv *env, string pkgName,uid_t currentUid) {
 }
 
 
+void print_java_stack(JNIEnv *env){
+    DEBUG("");
+    jclass throwableClass = env->FindClass("java/lang/Throwable");
+    jmethodID getStackTraceMethod = env->GetMethodID(throwableClass, "getStackTrace", "()[Ljava/lang/StackTraceElement;");
+    jthrowable exception = env->ExceptionOccurred();
+    if (exception != NULL) {
+        env->ExceptionClear();
+    }
+    jthrowable newException = (jthrowable)env->NewGlobalRef(exception);
+    jobjectArray stackTrace = (jobjectArray)env->CallObjectMethod(newException, getStackTraceMethod);
+
+    // 打印Java堆栈信息
+    jsize stackTraceLength = env->GetArrayLength(stackTrace);
+    for (int i = 0; i < stackTraceLength; i++) {
+        DEBUG("");
+
+        jobject stackTraceElement = env->GetObjectArrayElement(stackTrace, i);
+        jstring stackTraceElementString = (jstring)env->CallObjectMethod(stackTraceElement, env->GetMethodID(env->FindClass("java/lang/StackTraceElement"), "toString", "()Ljava/lang/String;"));
+        const char* stackTraceElementChars = env->GetStringUTFChars(stackTraceElementString, NULL);
+        LOGE("Java Stack Trace Element %d: %s", i, stackTraceElementChars);
+        env->ReleaseStringUTFChars(stackTraceElementString, stackTraceElementChars);
+    }
+    DEBUG("");
+    // 释放资源
+    env->DeleteGlobalRef(newException);
+
+}
+
 
 
 

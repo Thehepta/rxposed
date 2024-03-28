@@ -60,6 +60,97 @@ namespace android13{
                 (uintptr_t) android_os_Process_getUidForName_hook));
     }
 
+    JNIEnv *Pre_GetEnv() {
+        //这个函数有使用限制可能无法在zygote以外的应用进程中使用，主要是因为so命名限制的问题 dlopen 无法打开libandroid_runtime.so
+        //如果想要在任何地方使用，需要突破dlopen限制，比如使用dobby的全局符号查找工具
+        void * libandroid_runtime =  dlopen("libandroid_runtime.so",RTLD_NOW);
+        if(libandroid_runtime == nullptr){
+            return nullptr;
+        }
+        void *getAndroidRuntimeEnv = reinterpret_cast<void *>(dlsym(libandroid_runtime,"_ZN7android14AndroidRuntime9getJNIEnvEv"));
+        if(getAndroidRuntimeEnv == nullptr){
+            return nullptr;
+        }
+        dlclose(libandroid_runtime);
+        return ((JNIEnv*(*)())getAndroidRuntimeEnv)();
+    }
+
+
+    void rxposed_unhook(JNIEnv* env, jclass clazz){
+
+        jmethodID nativeForkAndSpecialize_method = env->GetStaticMethodID(clazz,"nativeForkAndSpecialize",  "(II[II[[IILjava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;Z[Ljava/lang/String;[Ljava/lang/String;ZZ)V");
+        unHookJmethod_JniFunction(env,clazz,nativeForkAndSpecialize_method);
+
+        jmethodID nativeSpecializeAppProcess_method = env->GetStaticMethodID(clazz,"nativeSpecializeAppProcess",  "(II[II[[IILjava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;Z[Ljava/lang/String;[Ljava/lang/String;ZZ)V");
+        unHookJmethod_JniFunction(env,clazz,nativeSpecializeAppProcess_method);
+    }
+
+    jint (*nativeForkAndSpecialize_org)(JNIEnv* env, jclass, jint uid, jint gid, jintArray gids,
+                                        jint runtime_flags, jobjectArray rlimits,
+                                        jint mount_external, jstring se_info, jstring nice_name,
+                                        jintArray managed_fds_to_close, jintArray managed_fds_to_ignore, jboolean is_child_zygote,
+                                        jstring instruction_set, jstring app_data_dir, jboolean is_top_app,
+                                        jobjectArray pkg_data_info_list, jobjectArray whitelisted_data_info_list,
+                                        jboolean mount_data_dirs, jboolean mount_storage_dirs);
+
+    jint nativeForkAndSpecialize_hook(JNIEnv* env, jclass clazz, jint uid, jint gid, jintArray gids,
+                                      jint runtime_flags, jobjectArray rlimits,
+                                      jint mount_external, jstring se_info, jstring nice_name,
+                                      jintArray managed_fds_to_close, jintArray managed_fds_to_ignore, jboolean is_child_zygote,
+                                      jstring instruction_set, jstring app_data_dir, jboolean is_top_app,
+                                      jobjectArray pkg_data_info_list, jobjectArray whitelisted_data_info_list,
+                                      jboolean mount_data_dirs, jboolean mount_storage_dirs){
+        DEBUG()
+        LOGE("nativeForkAndSpecialize_hook start uid = %d currentuid = %d ",uid,getuid());
+        char * pkgName = const_cast<char *>(env->GetStringUTFChars(nice_name, nullptr));
+
+        rprocess::GetInstance()->setProcessInfo(pkgName, uid, gid);
+
+        if( rprocess::GetInstance()->is_HostProcess()){
+            HOOK_Process_getUidForName(env);
+        } else if (rprocess::GetInstance()->InitEnable(env)) {
+            HOOK_Process_setArgv0(env);
+        }
+//    nativeForkAndSpecialize_org 函数必须后调用，发起contextprovider请求才能成功
+        int ret_jint = nativeForkAndSpecialize_org(  env,  clazz,  uid,  gid,  gids,runtime_flags,  rlimits,
+                                                     mount_external,  se_info,  nice_name,managed_fds_to_close,
+                                                     managed_fds_to_ignore,  is_child_zygote,instruction_set,  app_data_dir,
+                                                     is_top_app,pkg_data_info_list,  whitelisted_data_info_list,
+                                                     mount_data_dirs,  mount_storage_dirs);
+        rxposed_unhook(env,clazz);
+        DEBUG()
+        return ret_jint;
+    };
+
+
+
+
+    void zygote_nativeForkAndSpecialize_hook(){
+        DEBUG()
+        JNIEnv* env = Pre_GetEnv();
+        if(env != nullptr){
+
+            jclass Zygote_cls =  env->FindClass("com/android/internal/os/Zygote");                        //                      "(II[II[[IILjava/lang/String;Ljava/lang/String;[I[IZLjava/lang/String;Ljava/lang/String;Z[Ljava/lang/String;[Ljava/lang/String;ZZ)I"
+            jmethodID nativeSpecializeAppProcess_method = env->GetStaticMethodID(Zygote_cls,"nativeForkAndSpecialize",  "(II[II[[IILjava/lang/String;Ljava/lang/String;[I[IZLjava/lang/String;Ljava/lang/String;Z[Ljava/lang/String;[Ljava/lang/String;ZZ)I");
+            nativeForkAndSpecialize_org = reinterpret_cast<jint (*)(JNIEnv *, jclass, jint, jint,
+                                                                    jintArray, jint, jobjectArray,
+                                                                    jint, jstring, jstring,
+                                                                    jintArray, jintArray, jboolean,
+                                                                    jstring, jstring, jboolean,
+                                                                    jobjectArray, jobjectArray,
+                                                                    jboolean,
+                                                                    jboolean)>(HookJmethod_JniFunction(
+                    env, Zygote_cls, nativeSpecializeAppProcess_method,
+                    (uintptr_t) nativeForkAndSpecialize_hook));
+        } else {
+            LOGE("ptrace zygote  Pre_GetEnv failed");
+        }
+        DEBUG()
+    }
+
+
+
+
 
     void (*nativeSpecializeAppProcess_org)(JNIEnv* env, jclass clazz, jint uid, jint gid, jintArray gids, jint runtime_flags,
                                            jobjectArray rlimits, jint mount_external, jstring se_info, jstring nice_name,
@@ -89,27 +180,10 @@ namespace android13{
 //    nativeSpecializeAppProcess_org 函数必须后调用，发起contextprovider请求才能成功
         nativeSpecializeAppProcess_org( env,  clazz,  uid,  gid,  gids,  runtime_flags,rlimits,  mount_external,  se_info,  nice_name,is_child_zygote,
                                         instruction_set,  app_data_dir,is_top_app,  pkg_data_info_list,allowlisted_data_info_list,  mount_data_dirs,mount_storage_dirs);
-        jmethodID nativeSpecializeAppProcess_method = env->GetStaticMethodID(clazz,"nativeSpecializeAppProcess",  "(II[II[[IILjava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;Z[Ljava/lang/String;[Ljava/lang/String;ZZ)V");
-        unHookJmethod_JniFunction(env,clazz,nativeSpecializeAppProcess_method);
-
+        rxposed_unhook(env,clazz);
         DEBUG()
         return;
     };
-
-    JNIEnv *Pre_GetEnv() {
-        //这个函数有使用限制可能无法在zygote以外的应用进程中使用，主要是因为so命名限制的问题 dlopen 无法打开libandroid_runtime.so
-        //如果想要在任何地方使用，需要突破dlopen限制，比如使用dobby的全局符号查找工具
-        void * libandroid_runtime =  dlopen("libandroid_runtime.so",RTLD_NOW);
-        if(libandroid_runtime == nullptr){
-            return nullptr;
-        }
-        void *getAndroidRuntimeEnv = reinterpret_cast<void *>(dlsym(libandroid_runtime,"_ZN7android14AndroidRuntime9getJNIEnvEv"));
-        if(getAndroidRuntimeEnv == nullptr){
-            return nullptr;
-        }
-        dlclose(libandroid_runtime);
-        return ((JNIEnv*(*)())getAndroidRuntimeEnv)();
-    }
 
     void zygote_nativeSpecializeAppProcess_hook() {
         DEBUG()
@@ -133,6 +207,8 @@ namespace android13{
         DEBUG()
     }
 
+
+
 // android version code adaptation
     bool art_method_hook_init(){
 
@@ -151,9 +227,15 @@ namespace android13{
         } else{
             return false;
         }
-
     }
 
+
+
+
+    void zygote_hook(){
+        zygote_nativeSpecializeAppProcess_hook();
+        zygote_nativeForkAndSpecialize_hook();
+    }
 
     jobject getConfigByProvider(JNIEnv* env, string providerHost_providerName , string callName, string method , string uid_str){
         DEBUG()

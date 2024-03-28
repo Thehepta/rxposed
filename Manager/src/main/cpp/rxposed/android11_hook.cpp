@@ -9,12 +9,17 @@
 #include "artmethod_native_hook.h"
 
 namespace android11 {
+    int i=2;
     void HOOK_Process_getUidForName(JNIEnv *env) ;
 
     void (*android_os_Process_setArg_org)(JNIEnv *env, jclass clazz, jstring name);
 
     void android_os_Process_setArg_hook(JNIEnv *env, jclass clazz, jstring name) {
         DEBUG()
+//        i=i-1;
+//        if(i==0){
+//            print_java_stack(env);
+//        }
         char *pkgName = const_cast<char *>(env->GetStringUTFChars(name, nullptr));
         if (rprocess::GetInstance()->is_Start(env, pkgName)) {
             rprocess::GetInstance()->LoadModule(env);
@@ -111,10 +116,10 @@ namespace android11 {
     void zygote_nativeSpecializeAppProcess_hook() {
         DEBUG()
         JNIEnv *env = Pre_GetEnv();
+//        HOOK_Process_setArgv0(env);
         if (env != nullptr) {
 //        if(art_method_hook_init(env)){
-            jclass Zygote_cls = env->FindClass(
-                    "com/android/internal/os/Zygote");                        //                    "(II[II[[IILjava/lang/String;Ljava/lang/String;[I[IZLjava/lang/String;Ljava/lang/String;Z[Ljava/lang/String;[Ljava/lang/String;ZZ)I"
+            jclass Zygote_cls = env->FindClass("com/android/internal/os/Zygote");                        //                    "(II[II[[IILjava/lang/String;Ljava/lang/String;[I[IZLjava/lang/String;Ljava/lang/String;Z[Ljava/lang/String;[Ljava/lang/String;ZZ)I"
             jmethodID nativeSpecializeAppProcess_method = env->GetStaticMethodID(Zygote_cls,
                                                                                  "nativeSpecializeAppProcess",
                                                                                  "(II[II[[IILjava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;Z[Ljava/lang/String;[Ljava/lang/String;ZZ)V");
@@ -129,6 +134,7 @@ namespace android11 {
                                                                        jboolean)>(HookJmethod_JniFunction(
                     env, Zygote_cls, nativeSpecializeAppProcess_method,
                     (uintptr_t) nativeSpecializeAppProcess_hook));
+            LOGE("nativeSpecializeAppProcess addr:%p",nativeSpecializeAppProcess_org);
 //        } else{
 //            LOGE("art_method_hook_init failed");
 //        }
@@ -191,6 +197,10 @@ namespace android11 {
                                                                          jstring)>(HookJmethod_JniFunction(
                 env, Process_cls, getUidForName_Jmethod,
                 (uintptr_t) android_os_Process_getUidForName_hook));
+    }
+
+    void zygote_hook(){
+        zygote_nativeSpecializeAppProcess_hook();
     }
 
 

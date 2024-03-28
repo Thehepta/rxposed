@@ -50,7 +50,21 @@ public class CheckTool11 extends CheckTool {
 
         Class<?>[] nativeSpecializeAppProcess_parameter={int.class,int.class,int[].class,int.class,int[][].class,int.class,String.class, String.class,
                 boolean.class,String.class,String.class,boolean.class,String[].class,String[].class,boolean.class,boolean.class};
+
+
         itemBeans.add(Found_javaMethod("com.android.internal.os.Zygote","nativeSpecializeAppProcess",nativeSpecializeAppProcess_parameter));
+
+
+        Class<?>[] nativeForkAndSpecialize_parameter={int.class, int.class, int[].class,
+                int.class, int[][].class, int.class, String.class, String.class,
+                int[].class, int[].class, boolean.class, String.class,
+                String.class, boolean.class, String[].class,
+                String[].class, boolean.class,
+                boolean.class};
+
+        itemBeans.add(Found_javaMethod("com.android.internal.os.Zygote","nativeForkAndSpecialize",nativeForkAndSpecialize_parameter));
+
+
 
         Class<?>[] getContentProviderExternal_parameter= {String.class,int.class, IBinder.class,String.class};
         itemBeans.add(Found_javaMethod("android.app.IActivityManager","getContentProviderExternal",getContentProviderExternal_parameter));
