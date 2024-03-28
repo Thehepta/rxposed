@@ -43,6 +43,24 @@ bool NDK_ExceptionCheck(JNIEnv *env,const char* message){
 }
 
 
+JNIEnv *Pre_GetEnv() {
+    //这个函数有使用限制可能无法在zygote以外的应用进程中使用，主要是因为so命名限制的问题 dlopen 无法打开libandroid_runtime.so
+    //如果想要在任何地方使用，需要突破dlopen限制，比如使用dobby的全局符号查找工具
+    void *libandroid_runtime = dlopen("libandroid_runtime.so", RTLD_NOW);
+    if (libandroid_runtime == nullptr) {
+        return nullptr;
+    }
+    void *getAndroidRuntimeEnv = reinterpret_cast<void *>(dlsym(libandroid_runtime,
+                                                                "_ZN7android14AndroidRuntime9getJNIEnvEv"));
+    if (getAndroidRuntimeEnv == nullptr) {
+        return nullptr;
+    }
+    dlclose(libandroid_runtime);
+    return ((JNIEnv *(*)()) getAndroidRuntimeEnv)();
+}
+
+
+
 jobject PathClassLoaderLoadAPK(JNIEnv *pEnv,jstring apkSource,jstring nativelib){
 
     jclass PathClassLoader_cls = pEnv->FindClass("dalvik/system/PathClassLoader");

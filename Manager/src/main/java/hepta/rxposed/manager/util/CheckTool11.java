@@ -50,8 +50,6 @@ public class CheckTool11 extends CheckTool {
 
         Class<?>[] nativeSpecializeAppProcess_parameter={int.class,int.class,int[].class,int.class,int[][].class,int.class,String.class, String.class,
                 boolean.class,String.class,String.class,boolean.class,String[].class,String[].class,boolean.class,boolean.class};
-
-
         itemBeans.add(Found_javaMethod("com.android.internal.os.Zygote","nativeSpecializeAppProcess",nativeSpecializeAppProcess_parameter));
 
 
@@ -61,7 +59,6 @@ public class CheckTool11 extends CheckTool {
                 String.class, boolean.class, String[].class,
                 String[].class, boolean.class,
                 boolean.class};
-
         itemBeans.add(Found_javaMethod("com.android.internal.os.Zygote","nativeForkAndSpecialize",nativeForkAndSpecialize_parameter));
 
 

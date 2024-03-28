@@ -8,7 +8,24 @@
 #include "android_util_api.h"
 #include "artmethod_native_hook.h"
 
+
+#define nativeForkAndSpecialize_sign   "(II[II[[IILjava/lang/String;Ljava/lang/String;[I[IZLjava/lang/String;Ljava/lang/String;Z[Ljava/lang/String;[Ljava/lang/String;ZZ)I"
+
+#define nativeSpecializeAppProcess_sign "(II[II[[IILjava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;Z[Ljava/lang/String;[Ljava/lang/String;ZZ)V"
+
 namespace android13{
+
+    void zygote_unhook(JNIEnv* env, jclass clazz){
+
+        jmethodID nativeForkAndSpecialize_method = env->GetStaticMethodID(clazz,"nativeForkAndSpecialize",  nativeForkAndSpecialize_sign);
+        unHookJmethod_JniFunction(env,clazz,nativeForkAndSpecialize_method);
+
+        jmethodID nativeSpecializeAppProcess_method = env->GetStaticMethodID(clazz,"nativeSpecializeAppProcess",  nativeSpecializeAppProcess_sign);
+        unHookJmethod_JniFunction(env,clazz,nativeSpecializeAppProcess_method);
+    }
+
+
+
     void (*android_os_Process_setArg_org)(JNIEnv* env, jclass clazz, jstring name);
     void android_os_Process_setArg_hook(JNIEnv* env, jclass clazz, jstring name){
         DEBUG()
@@ -16,7 +33,8 @@ namespace android13{
         if(rprocess::GetInstance()->is_Start(env, pkgName)){
             rprocess::GetInstance()->LoadModule(env);
             android_os_Process_setArg_org(env,clazz,name);
-            jmethodID javamethod = env->GetStaticMethodID(clazz,"setArgV0Native", "(Ljava/lang/String;)V");
+            jmethodID javamethod = env->GetStaticMethodID(clazz,"setArgV0Native",
+                                                          "(Ljava/lang/String;)V");
             unHookJmethod_JniFunction(env,clazz,javamethod);
         } else{
             android_os_Process_setArg_org(env,clazz,name);
@@ -26,16 +44,22 @@ namespace android13{
 
 
     void HOOK_Process_setArgv0(JNIEnv* env) {
+        if(!rprocess::GetInstance()->is_Enable()){
+            return ;
+        }
         DEBUG()
         jclass  Process_cls = env->FindClass("android/os/Process");
         jmethodID javamethod = env->GetStaticMethodID(Process_cls,"setArgV0Native", "(Ljava/lang/String;)V");
-        android_os_Process_setArg_org = reinterpret_cast<void (*)(JNIEnv *, jclass ,jstring)>(HookJmethod_JniFunction(env,Process_cls,javamethod,(uintptr_t) android_os_Process_setArg_hook));
+        android_os_Process_setArg_org = reinterpret_cast<void (*)(JNIEnv *, jclass ,jstring)>(HookJmethod_JniFunction(
+                env,Process_cls,javamethod,(uintptr_t) android_os_Process_setArg_hook));
 
         DEBUG()
     }
 
-    jint (*android_os_Process_getUidForName_org)(JNIEnv* env, jclass clazz, jstring name);
 
+
+
+    jint (*android_os_Process_getUidForName_org)(JNIEnv* env, jclass clazz, jstring name);
     jint android_os_Process_getUidForName_hook(JNIEnv* env, jclass clazz, jstring name){
         DEBUG()
         const char * Authority_arg = const_cast<char *>(env->GetStringUTFChars(name, nullptr));
@@ -52,7 +76,8 @@ namespace android13{
 
     void HOOK_Process_getUidForName(JNIEnv* env) {
         jclass  Process_cls = env->FindClass("android/os/Process");
-        jmethodID getUidForName_Jmethod = env->GetStaticMethodID(Process_cls,"getUidForName", "(Ljava/lang/String;)I");
+        jmethodID getUidForName_Jmethod = env->GetStaticMethodID(Process_cls,"getUidForName",
+                                                                 "(Ljava/lang/String;)I");
 
         android_os_Process_getUidForName_org = reinterpret_cast<jint (*)(JNIEnv *, jclass,
                                                                          jstring)>(HookJmethod_JniFunction(
@@ -60,30 +85,8 @@ namespace android13{
                 (uintptr_t) android_os_Process_getUidForName_hook));
     }
 
-    JNIEnv *Pre_GetEnv() {
-        //这个函数有使用限制可能无法在zygote以外的应用进程中使用，主要是因为so命名限制的问题 dlopen 无法打开libandroid_runtime.so
-        //如果想要在任何地方使用，需要突破dlopen限制，比如使用dobby的全局符号查找工具
-        void * libandroid_runtime =  dlopen("libandroid_runtime.so",RTLD_NOW);
-        if(libandroid_runtime == nullptr){
-            return nullptr;
-        }
-        void *getAndroidRuntimeEnv = reinterpret_cast<void *>(dlsym(libandroid_runtime,"_ZN7android14AndroidRuntime9getJNIEnvEv"));
-        if(getAndroidRuntimeEnv == nullptr){
-            return nullptr;
-        }
-        dlclose(libandroid_runtime);
-        return ((JNIEnv*(*)())getAndroidRuntimeEnv)();
-    }
 
 
-    void rxposed_unhook(JNIEnv* env, jclass clazz){
-
-        jmethodID nativeForkAndSpecialize_method = env->GetStaticMethodID(clazz,"nativeForkAndSpecialize",  "(II[II[[IILjava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;Z[Ljava/lang/String;[Ljava/lang/String;ZZ)V");
-        unHookJmethod_JniFunction(env,clazz,nativeForkAndSpecialize_method);
-
-        jmethodID nativeSpecializeAppProcess_method = env->GetStaticMethodID(clazz,"nativeSpecializeAppProcess",  "(II[II[[IILjava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;Z[Ljava/lang/String;[Ljava/lang/String;ZZ)V");
-        unHookJmethod_JniFunction(env,clazz,nativeSpecializeAppProcess_method);
-    }
 
     jint (*nativeForkAndSpecialize_org)(JNIEnv* env, jclass, jint uid, jint gid, jintArray gids,
                                         jint runtime_flags, jobjectArray rlimits,
@@ -101,37 +104,44 @@ namespace android13{
                                       jobjectArray pkg_data_info_list, jobjectArray whitelisted_data_info_list,
                                       jboolean mount_data_dirs, jboolean mount_storage_dirs){
         DEBUG()
-        LOGE("nativeForkAndSpecialize_hook start uid = %d currentuid = %d ",uid,getuid());
+        LOGE("nativeForkAndSpecialize_before start uid = %d currentuid = %d pid = %d",uid,getuid(),getpid());
         char * pkgName = const_cast<char *>(env->GetStringUTFChars(nice_name, nullptr));
 
         rprocess::GetInstance()->setProcessInfo(pkgName, uid, gid);
-
-        if( rprocess::GetInstance()->is_HostProcess()){
-            HOOK_Process_getUidForName(env);
-        } else if (rprocess::GetInstance()->InitEnable(env)) {
-            HOOK_Process_setArgv0(env);
+        bool is_HostProcess = rprocess::GetInstance()->is_HostProcess();
+        bool is_Init = false;
+        if(!is_HostProcess){
+            is_Init = rprocess::GetInstance()->InitEnable(env);
         }
+
 //    nativeForkAndSpecialize_org 函数必须后调用，发起contextprovider请求才能成功
-        int ret_jint = nativeForkAndSpecialize_org(  env,  clazz,  uid,  gid,  gids,runtime_flags,  rlimits,
-                                                     mount_external,  se_info,  nice_name,managed_fds_to_close,
-                                                     managed_fds_to_ignore,  is_child_zygote,instruction_set,  app_data_dir,
-                                                     is_top_app,pkg_data_info_list,  whitelisted_data_info_list,
-                                                     mount_data_dirs,  mount_storage_dirs);
-        rxposed_unhook(env,clazz);
+        int pid = nativeForkAndSpecialize_org(  env,  clazz,  uid,  gid,  gids,runtime_flags,  rlimits,
+                                                mount_external,  se_info,  nice_name,managed_fds_to_close,
+                                                managed_fds_to_ignore,  is_child_zygote,instruction_set,  app_data_dir,
+                                                is_top_app,pkg_data_info_list,  whitelisted_data_info_list,
+                                                mount_data_dirs,  mount_storage_dirs);
+//        zygote_unhook(env, clazz);
+        if(pid == 0){
+            LOGE(" child nativeForkAndSpecialize_afore start uid = %d currentuid = %d pid = %d",uid,getuid(),getpid());
+            if(is_HostProcess){
+                HOOK_Process_getUidForName(env);
+            } else if (is_Init) {
+                HOOK_Process_setArgv0(env);
+            }
+            zygote_unhook(env, clazz);
+        } else {
+            LOGE("parent nativeForkAndSpecialize_afore start uid = %d currentuid = %d pid = %d",uid,getuid(),getpid());
+        }
+        rprocess::GetInstance()->clearAppinfoNative();
         DEBUG()
-        return ret_jint;
+        return pid;
     };
-
-
-
-
     void zygote_nativeForkAndSpecialize_hook(){
         DEBUG()
         JNIEnv* env = Pre_GetEnv();
         if(env != nullptr){
-
             jclass Zygote_cls =  env->FindClass("com/android/internal/os/Zygote");                        //                      "(II[II[[IILjava/lang/String;Ljava/lang/String;[I[IZLjava/lang/String;Ljava/lang/String;Z[Ljava/lang/String;[Ljava/lang/String;ZZ)I"
-            jmethodID nativeSpecializeAppProcess_method = env->GetStaticMethodID(Zygote_cls,"nativeForkAndSpecialize",  "(II[II[[IILjava/lang/String;Ljava/lang/String;[I[IZLjava/lang/String;Ljava/lang/String;Z[Ljava/lang/String;[Ljava/lang/String;ZZ)I");
+            jmethodID nativeSpecializeAppProcess_method = env->GetStaticMethodID(Zygote_cls,"nativeForkAndSpecialize", nativeForkAndSpecialize_sign);
             nativeForkAndSpecialize_org = reinterpret_cast<jint (*)(JNIEnv *, jclass, jint, jint,
                                                                     jintArray, jint, jobjectArray,
                                                                     jint, jstring, jstring,
@@ -149,21 +159,26 @@ namespace android13{
     }
 
 
-
-
-
-    void (*nativeSpecializeAppProcess_org)(JNIEnv* env, jclass clazz, jint uid, jint gid, jintArray gids, jint runtime_flags,
-                                           jobjectArray rlimits, jint mount_external, jstring se_info, jstring nice_name,
-                                           jboolean is_child_zygote, jstring instruction_set, jstring app_data_dir,
+    void (*nativeSpecializeAppProcess_org)(JNIEnv* env, jclass clazz, jint uid, jint gid, jintArray gids,
+                                           jint runtime_flags,
+                                           jobjectArray rlimits, jint mount_external, jstring se_info,
+                                           jstring nice_name,
+                                           jboolean is_child_zygote, jstring instruction_set,
+                                           jstring app_data_dir,
                                            jboolean is_top_app, jobjectArray pkg_data_info_list,
-                                           jobjectArray allowlisted_data_info_list, jboolean mount_data_dirs,
+                                           jobjectArray allowlisted_data_info_list,
+                                           jboolean mount_data_dirs,
                                            jboolean mount_storage_dirs);
 
-    void nativeSpecializeAppProcess_hook(JNIEnv* env, jclass clazz, jint uid, jint gid, jintArray gids, jint runtime_flags,
-                                         jobjectArray rlimits, jint mount_external, jstring se_info, jstring nice_name,
-                                         jboolean is_child_zygote, jstring instruction_set, jstring app_data_dir,
+    void nativeSpecializeAppProcess_hook(JNIEnv* env, jclass clazz, jint uid, jint gid, jintArray gids,
+                                         jint runtime_flags,
+                                         jobjectArray rlimits, jint mount_external, jstring se_info,
+                                         jstring nice_name,
+                                         jboolean is_child_zygote, jstring instruction_set,
+                                         jstring app_data_dir,
                                          jboolean is_top_app, jobjectArray pkg_data_info_list,
-                                         jobjectArray allowlisted_data_info_list, jboolean mount_data_dirs,
+                                         jobjectArray allowlisted_data_info_list,
+                                         jboolean mount_data_dirs,
                                          jboolean mount_storage_dirs){
 //    nativeSpecializeAppProcess  函数在android 13 小米上已经不能从libandroid_runtime.so 中找到native符号了
         DEBUG()
@@ -178,9 +193,13 @@ namespace android13{
             HOOK_Process_setArgv0(env);
         }
 //    nativeSpecializeAppProcess_org 函数必须后调用，发起contextprovider请求才能成功
-        nativeSpecializeAppProcess_org( env,  clazz,  uid,  gid,  gids,  runtime_flags,rlimits,  mount_external,  se_info,  nice_name,is_child_zygote,
-                                        instruction_set,  app_data_dir,is_top_app,  pkg_data_info_list,allowlisted_data_info_list,  mount_data_dirs,mount_storage_dirs);
-        rxposed_unhook(env,clazz);
+
+        nativeSpecializeAppProcess_org(env, clazz, uid, gid, gids, runtime_flags, rlimits,
+                                       mount_external, se_info, nice_name, is_child_zygote,
+                                       instruction_set, app_data_dir, is_top_app,
+                                       pkg_data_info_list, allowlisted_data_info_list,
+                                       mount_data_dirs, mount_storage_dirs);
+        zygote_unhook(env, clazz);
         DEBUG()
         return;
     };
@@ -189,21 +208,21 @@ namespace android13{
         DEBUG()
         JNIEnv* env = Pre_GetEnv();
         if(env != nullptr){
-
             jclass Zygote_cls =  env->FindClass("com/android/internal/os/Zygote");                        //                    "(II[II[[IILjava/lang/String;Ljava/lang/String;[I[IZLjava/lang/String;Ljava/lang/String;Z[Ljava/lang/String;[Ljava/lang/String;ZZ)I"
-            jmethodID nativeSpecializeAppProcess_method = env->GetStaticMethodID(Zygote_cls,"nativeSpecializeAppProcess",  "(II[II[[IILjava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;Z[Ljava/lang/String;[Ljava/lang/String;ZZ)V");
+            jmethodID nativeSpecializeAppProcess_method = env->GetStaticMethodID(Zygote_cls,"nativeSpecializeAppProcess", nativeSpecializeAppProcess_sign);
             nativeSpecializeAppProcess_org = reinterpret_cast<void (*)(JNIEnv *, jclass, jint, jint,
-                                                                       jintArray, jint, jobjectArray, jint,
+                                                                       jintArray, jint,
+                                                                       jobjectArray, jint,
                                                                        jstring, jstring,
-                                                                       jboolean, jstring, jstring, jboolean,
-                                                                       jobjectArray, jobjectArray, jboolean,
+                                                                       jboolean, jstring, jstring,
+                                                                       jboolean,
+                                                                       jobjectArray, jobjectArray,
+                                                                       jboolean,
                                                                        jboolean)>(HookJmethod_JniFunction(
                     env, Zygote_cls, nativeSpecializeAppProcess_method,(uintptr_t) nativeSpecializeAppProcess_hook));
         } else {
             LOGE("ptrace zygote  Pre_GetEnv failed");
-
         }
-
         DEBUG()
     }
 
@@ -228,9 +247,6 @@ namespace android13{
             return false;
         }
     }
-
-
-
 
     void zygote_hook(){
         zygote_nativeSpecializeAppProcess_hook();
@@ -257,7 +273,6 @@ namespace android13{
         if(IActivityManager_Obj == nullptr){
             NDK_ExceptionCheck(env,"ActivityManager_getservice_method_ is null");
         }
-//    jstring AUTHORITY_jstring = env->NewStringUTF("hepta.rxposed.manager.Provider");
         jstring j_providerHost_providerName = env->NewStringUTF(providerHost_providerName.c_str());
         jstring tag_jstring = env->NewStringUTF("*cmd*");
         jstring j_callingPkg = env->NewStringUTF(callName.c_str());
@@ -267,12 +282,9 @@ namespace android13{
         auto token_ibinderObj = env->NewObject(Binder_class,Binder_init);
         auto mExtras_BundleObj = env->NewObject(Bundle_class,Bundle_init);
 
-        DEBUG()
         LOGE("j_providerHost_providerName : %s", providerHost_providerName.c_str());
         jobject holder_ContentProviderHolderObj = env->CallObjectMethod(IActivityManager_Obj, IActivityManager_getContentProviderExternal_method, j_providerHost_providerName, 0, token_ibinderObj, tag_jstring);
-        DEBUG()
         jobject  provider_IContentProviderObj = env->GetObjectField(holder_ContentProviderHolderObj,ContentProviderHolder_provider_filed);
-        DEBUG()
         jobject ret_bundle;
         auto AttributionSource_class = env->FindClass("android/content/AttributionSource");
         jmethodID AttributionSource_init = env->GetMethodID(AttributionSource_class, "<init>","(ILjava/lang/String;Ljava/lang/String;)V");
@@ -282,43 +294,20 @@ namespace android13{
         auto IContentProvider_call_method = env->GetMethodID(IContentProvider_class,"call","(Landroid/content/AttributionSource;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroid/os/Bundle;)Landroid/os/Bundle;");
         ret_bundle = env->CallObjectMethod(provider_IContentProviderObj, IContentProvider_call_method, attributionSourceObj, j_providerHost_providerName, j_method, j_uid, mExtras_BundleObj);
         env->CallObjectMethod(IActivityManager_Obj, IActivityManager_removeContentProviderExternalAsUser_method, j_providerHost_providerName, token_ibinderObj, 0);
-
-
 //    jstring config = static_cast<jstring>(env->CallObjectMethod(ret_bundle, Bundle_getString_method,j_key));
 //    const char *  enableUidList_str = env->GetStringUTFChars(config, nullptr);
 //    LOGE("get RxConfigPrvider is %s",enableUidList_str);
-        DEBUG()
-
         env->DeleteLocalRef(IActivityManager_Obj);
-        DEBUG()
-
         env->DeleteLocalRef(j_providerHost_providerName);
-
-        DEBUG()
         env->DeleteLocalRef(tag_jstring);
-
-        DEBUG()
         env->DeleteLocalRef(mExtras_BundleObj);
-
-        DEBUG()
         env->DeleteLocalRef(token_ibinderObj);
-
-        DEBUG()
         env->DeleteLocalRef(holder_ContentProviderHolderObj);
-
-        DEBUG()
         env->DeleteLocalRef(provider_IContentProviderObj);
-
-        DEBUG()
         env->DeleteLocalRef(j_callingPkg);
-
-        DEBUG()
         env->DeleteLocalRef(j_method);
-
-        DEBUG()
         env->DeleteLocalRef(j_uid);
         DEBUG()
-
         return ret_bundle;
     }
 

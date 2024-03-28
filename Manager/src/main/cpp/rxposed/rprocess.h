@@ -64,9 +64,11 @@ public:
     bool is_Start(JNIEnv* env, char * name);
     bool is_isIsolatedProcess();
     bool is_HostProcess();
+    bool is_Enable();
     const char* getStatusAuthority();
     uint getHostUid();
     void setAuthorityInfo(const char* arg_tmp);
+    void clearAppinfoNative();
     vector<AppinfoNative*> AppinfoNative_vec ;
     bool InitEnable(JNIEnv *pEnv);
     string getCurrentAppRxposedConfig(JNIEnv* env, string rxposed_providerName , string callName, string method , uid_t currentUid);

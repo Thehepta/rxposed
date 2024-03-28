@@ -50,6 +50,7 @@ string rprocess::getCurrentAppRxposedConfig(JNIEnv* env, string rxposed_provider
     return appinfoList;
 }
 
+
 bool rprocess::InitModuleInfo(JNIEnv *env) {
 
     char* buf;
@@ -95,7 +96,7 @@ bool rprocess::InitModuleInfo(JNIEnv *env) {
         }
     }
     close_shared_memory(ufd,buf);
-    DEBUG()
+
     return true;
 }
 
@@ -113,15 +114,16 @@ void rprocess::setAuthorityInfo(const char* arg_tmp){
 
 bool rprocess::LoadModule(JNIEnv* env){
     DEBUG();
-    for (auto appinfoNativeVec : AppinfoNative_vec)
+    for (auto appinfoNative : AppinfoNative_vec)
     {
         load_apk_And_Call_Class_Entry_Method(env, RxposedContext,
-                                             appinfoNativeVec->source,appinfoNativeVec->NativelibPath,
-                                             appinfoNativeVec->Entry_class,
-                                             appinfoNativeVec->Entry_method,
-                                             appinfoNativeVec->hide,
-                                             appinfoNativeVec->argument
-                                             );
+                                             appinfoNative->source,appinfoNative->NativelibPath,
+                                             appinfoNative->Entry_class,
+                                             appinfoNative->Entry_method,
+                                             appinfoNative->hide,
+                                             appinfoNative->argument
+        );
+        delete appinfoNative;
     }
 
     return true;
@@ -167,5 +169,20 @@ bool rprocess::is_Start(JNIEnv* env, char * name) {
 
 uint rprocess::getHostUid() {
     return hostUid;
+}
+
+void rprocess::clearAppinfoNative() {
+    for (auto appinfoNative : AppinfoNative_vec)
+    {
+        delete appinfoNative;
+    }
+    AppinfoNative_vec.clear();
+}
+
+bool rprocess::is_Enable() {
+    if(AppinfoNative_vec.size() >0){
+        return true;
+    }
+    return false;
 }
 
