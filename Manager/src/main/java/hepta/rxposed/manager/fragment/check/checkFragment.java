@@ -49,8 +49,7 @@ public class checkFragment extends Fragment {
 
     private void all_check() {
 
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            //这里做你想做的事
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.S_V2) {
             checkTool = new CheckTool13();
         }else if(android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
             checkTool = new CheckTool12();
@@ -59,7 +58,6 @@ public class checkFragment extends Fragment {
 
         }
         checkTool.addCheckItem(itemBeans);
-
 
     }
 

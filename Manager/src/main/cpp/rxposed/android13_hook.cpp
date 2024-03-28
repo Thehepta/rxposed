@@ -182,8 +182,8 @@ namespace android13{
                                          jboolean mount_storage_dirs){
 //    nativeSpecializeAppProcess  函数在android 13 小米上已经不能从libandroid_runtime.so 中找到native符号了
         DEBUG()
-        LOGE("nativeSpecializeAppProcess_hook start uid = %d currentuid = %d ",uid,getuid());
-        char * pkgName = const_cast<char *>(env->GetStringUTFChars(nice_name, nullptr));
+        LOGE("nativeSpecializeAppProcess_hook start uid = %d currentuid = %d pid = %d", uid, getuid(),getpid());
+        char *pkgName = const_cast<char *>(env->GetStringUTFChars(nice_name, nullptr));
 
         rprocess::GetInstance()->setProcessInfo(pkgName, uid, gid);
 

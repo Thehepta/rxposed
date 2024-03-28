@@ -31,14 +31,18 @@ void Inject_Porcess(const char* AUTHORITY_pkgName){
 
 
 void rxposed_init() __attribute__((constructor)) {
-
-
-    if(android_get_device_api_level() == 33){
+    if(android_get_device_api_level() == 34){
+        android13::art_method_hook_init();
+        rprocess::GetInstance()->zygote_nativeSpecializeAppProcess_hook = android13::zygote_hook;
+        rprocess::GetInstance()->getConfigByProvider = android13::getConfigByProvider;
+    } else if (android_get_device_api_level() == 33){
         android13::art_method_hook_init();
         rprocess::GetInstance()->zygote_nativeSpecializeAppProcess_hook = android13::zygote_hook;
         rprocess::GetInstance()->getConfigByProvider = android13::getConfigByProvider;
     } else if (android_get_device_api_level() == 32){
-
+        android13::art_method_hook_init();
+        rprocess::GetInstance()->zygote_nativeSpecializeAppProcess_hook = android13::zygote_hook;
+        rprocess::GetInstance()->getConfigByProvider = android13::getConfigByProvider;
     } else if (android_get_device_api_level() == 31){
         android12::art_method_hook_init();
         rprocess::GetInstance()->zygote_nativeSpecializeAppProcess_hook = android12::zygote_hook;
@@ -47,7 +51,6 @@ void rxposed_init() __attribute__((constructor)) {
         android11::art_method_hook_init();
         rprocess::GetInstance()->zygote_nativeSpecializeAppProcess_hook = android11::zygote_hook;
         rprocess::GetInstance()->getConfigByProvider = android11::getConfigByProvider;
-
     }
 }
 

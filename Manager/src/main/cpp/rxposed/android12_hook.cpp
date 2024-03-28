@@ -219,7 +219,6 @@ namespace android12 {
                                                                        jboolean,
                                                                        jboolean)>(HookJmethod_JniFunction(
                     env, Zygote_cls, nativeSpecializeAppProcess_method,(uintptr_t) nativeSpecializeAppProcess_hook));
-            LOGE("nativeSpecializeAppProcess addr:%p",nativeSpecializeAppProcess_org);
         } else {
             LOGE("ptrace zygote  Pre_GetEnv failed");
         }
@@ -274,7 +273,6 @@ namespace android12 {
         if(IActivityManager_Obj == nullptr){
             NDK_ExceptionCheck(env,"ActivityManager_getservice_method_ is null");
         }
-//    jstring AUTHORITY_jstring = env->NewStringUTF("hepta.rxposed.manager.Provider");
         jstring j_providerHost_providerName = env->NewStringUTF(providerHost_providerName.c_str());
         jstring tag_jstring = env->NewStringUTF("*cmd*");
         jstring j_callingPkg = env->NewStringUTF(callName.c_str());
@@ -284,12 +282,9 @@ namespace android12 {
         auto token_ibinderObj = env->NewObject(Binder_class,Binder_init);
         auto mExtras_BundleObj = env->NewObject(Bundle_class,Bundle_init);
 
-        DEBUG()
         LOGE("j_providerHost_providerName : %s", providerHost_providerName.c_str());
         jobject holder_ContentProviderHolderObj = env->CallObjectMethod(IActivityManager_Obj, IActivityManager_getContentProviderExternal_method, j_providerHost_providerName, 0, token_ibinderObj, tag_jstring);
-        DEBUG()
         jobject  provider_IContentProviderObj = env->GetObjectField(holder_ContentProviderHolderObj,ContentProviderHolder_provider_filed);
-        DEBUG()
         jobject ret_bundle;
         auto AttributionSource_class = env->FindClass("android/content/AttributionSource");
         jmethodID AttributionSource_init = env->GetMethodID(AttributionSource_class, "<init>","(ILjava/lang/String;Ljava/lang/String;)V");
@@ -299,44 +294,24 @@ namespace android12 {
         auto IContentProvider_call_method = env->GetMethodID(IContentProvider_class,"call","(Landroid/content/AttributionSource;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroid/os/Bundle;)Landroid/os/Bundle;");
         ret_bundle = env->CallObjectMethod(provider_IContentProviderObj, IContentProvider_call_method, attributionSourceObj, j_providerHost_providerName, j_method, j_uid, mExtras_BundleObj);
         env->CallObjectMethod(IActivityManager_Obj, IActivityManager_removeContentProviderExternalAsUser_method, j_providerHost_providerName, token_ibinderObj, 0);
-
 //    jstring config = static_cast<jstring>(env->CallObjectMethod(ret_bundle, Bundle_getString_method,j_key));
 //    const char *  enableUidList_str = env->GetStringUTFChars(config, nullptr);
 //    LOGE("get RxConfigPrvider is %s",enableUidList_str);
-        DEBUG()
-
         env->DeleteLocalRef(IActivityManager_Obj);
-        DEBUG()
-
         env->DeleteLocalRef(j_providerHost_providerName);
-
-        DEBUG()
         env->DeleteLocalRef(tag_jstring);
-
-        DEBUG()
         env->DeleteLocalRef(mExtras_BundleObj);
-
-        DEBUG()
         env->DeleteLocalRef(token_ibinderObj);
-
-        DEBUG()
         env->DeleteLocalRef(holder_ContentProviderHolderObj);
-
-        DEBUG()
         env->DeleteLocalRef(provider_IContentProviderObj);
-
-        DEBUG()
         env->DeleteLocalRef(j_callingPkg);
-
-        DEBUG()
         env->DeleteLocalRef(j_method);
-
-        DEBUG()
         env->DeleteLocalRef(j_uid);
         DEBUG()
-
         return ret_bundle;
     }
+
+
 
 
 }
