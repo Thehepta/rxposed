@@ -208,7 +208,28 @@ void print_java_stack(JNIEnv *env){
 
 }
 
+const char* get_Process_setArgV0(JNIEnv *env) {
+    // TODO: implement check_Process_setArgV0()
 
+    jclass  Process_cls = env->FindClass("android/os/Process");
+    jmethodID javamethod = env->GetStaticMethodID(Process_cls,"setArgV0Native", "(Ljava/lang/String;)V");
+    if (javamethod == nullptr) {
+        if(env->ExceptionCheck()) {
+            env->ExceptionClear();
+            javamethod = env->GetStaticMethodID(Process_cls, "setArgV0", "(Ljava/lang/String;)V");
+            if(javamethod == nullptr){
+                if(env->ExceptionCheck()) {
+                    env->ExceptionClear();
+                    return nullptr;
+                }
+            } else{
+                return "setArgV0";
+            }
+        }
+    } else{
+        return "setArgV0Native";
+    }
+}
 
 
 

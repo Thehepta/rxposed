@@ -49,16 +49,12 @@ public class checkFragment extends Fragment {
 
     private void all_check() {
 
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.S_V2) {
-            checkTool = new CheckTool13();
-        }else if(android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             checkTool = new CheckTool12();
         }else if(android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
             checkTool = new CheckTool11();
-
         }
         checkTool.addCheckItem(itemBeans);
-
     }
 
 

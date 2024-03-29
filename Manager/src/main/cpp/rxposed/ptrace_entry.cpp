@@ -11,7 +11,6 @@
 #include <sys/mman.h>
 #include "rprocess.h"
 #include "android_util_api.h"
-#include "android13_hook.h"
 #include "android12_hook.h"
 #include "android11_hook.h"
 
@@ -31,19 +30,7 @@ void Inject_Porcess(const char* AUTHORITY_pkgName){
 
 
 void rxposed_init() __attribute__((constructor)) {
-    if(android_get_device_api_level() == 34){
-        android13::art_method_hook_init();
-        rprocess::GetInstance()->zygote_nativeSpecializeAppProcess_hook = android13::zygote_hook;
-        rprocess::GetInstance()->getConfigByProvider = android13::getConfigByProvider;
-    } else if (android_get_device_api_level() == 33){
-        android13::art_method_hook_init();
-        rprocess::GetInstance()->zygote_nativeSpecializeAppProcess_hook = android13::zygote_hook;
-        rprocess::GetInstance()->getConfigByProvider = android13::getConfigByProvider;
-    } else if (android_get_device_api_level() == 32){
-        android13::art_method_hook_init();
-        rprocess::GetInstance()->zygote_nativeSpecializeAppProcess_hook = android13::zygote_hook;
-        rprocess::GetInstance()->getConfigByProvider = android13::getConfigByProvider;
-    } else if (android_get_device_api_level() == 31){
+    if(android_get_device_api_level() >= 31){
         android12::art_method_hook_init();
         rprocess::GetInstance()->zygote_nativeSpecializeAppProcess_hook = android12::zygote_hook;
         rprocess::GetInstance()->getConfigByProvider = android12::getConfigByProvider;

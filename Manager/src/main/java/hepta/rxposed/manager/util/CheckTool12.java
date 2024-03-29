@@ -40,6 +40,9 @@ public class CheckTool12 extends CheckTool{
         itemBeans.add(new ItemBean("chekc_PreGetenv", chekcPreGetenv()));
         itemBeans.add(new ItemBean("linkerResolveElfInternalSymbol",ELFresolveSymbol()));
         itemBeans.add(new ItemBean("check_artmethod_jni_hook",check_jni_hook()));
+
+        itemBeans.add(new ItemBean("Process."+check_Process_setArgV0(),true));
+
         chekc_java_method(itemBeans);
     }
 
@@ -64,9 +67,6 @@ public class CheckTool12 extends CheckTool{
 
         Class<?>[] getContentProviderExternal_parameter= {String.class,int.class, IBinder.class,String.class};
         itemBeans.add(Found_javaMethod("android.app.IActivityManager","getContentProviderExternal",getContentProviderExternal_parameter));
-
-        Class<?>[] setArgV0Native_parameter= {String.class};
-        itemBeans.add(Found_javaMethod("android.os.Process","setArgV0",setArgV0Native_parameter));
 
         itemBeans.add(Java_CreateApplicationContext());
 

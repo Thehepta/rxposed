@@ -12,7 +12,10 @@
 
 #define nativeSpecializeAppProcess_sign "(II[II[[IILjava/lang/String;Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;Z[Ljava/lang/String;[Ljava/lang/String;ZZ)V"
 
+
 namespace android12 {
+    string setArgV0_method_name = "";
+
 
     void zygote_unhook(JNIEnv* env, jclass clazz){
 
@@ -32,7 +35,7 @@ namespace android12 {
         if (rprocess::GetInstance()->is_Start(env, pkgName)) {
             rprocess::GetInstance()->LoadModule(env);
             android_os_Process_setArg_org(env, clazz, name);
-            jmethodID javamethod = env->GetStaticMethodID(clazz, "setArgV0",
+            jmethodID javamethod = env->GetStaticMethodID(clazz, setArgV0_method_name.c_str(),
                                                           "(Ljava/lang/String;)V");
             unHookJmethod_JniFunction(env, clazz, javamethod);
         } else {
@@ -48,7 +51,7 @@ namespace android12 {
         }
         DEBUG()
         jclass Process_cls = env->FindClass("android/os/Process");
-        jmethodID javamethod = env->GetStaticMethodID(Process_cls, "setArgV0","(Ljava/lang/String;)V");
+        jmethodID javamethod = env->GetStaticMethodID(Process_cls, setArgV0_method_name.c_str(),"(Ljava/lang/String;)V");
         android_os_Process_setArg_org = reinterpret_cast<void (*)(JNIEnv *, jclass,jstring)>(HookJmethod_JniFunction(
                 env, Process_cls, javamethod, (uintptr_t) android_os_Process_setArg_hook));
         DEBUG()
@@ -135,9 +138,8 @@ namespace android12 {
         DEBUG()
         return pid;
     };
-    void zygote_nativeForkAndSpecialize_hook(){
+    void zygote_nativeForkAndSpecialize_hook(JNIEnv* env){
         DEBUG()
-        JNIEnv* env = Pre_GetEnv();
         if(env != nullptr){
             jclass Zygote_cls =  env->FindClass("com/android/internal/os/Zygote");                        //                      "(II[II[[IILjava/lang/String;Ljava/lang/String;[I[IZLjava/lang/String;Ljava/lang/String;Z[Ljava/lang/String;[Ljava/lang/String;ZZ)I"
             jmethodID nativeSpecializeAppProcess_method = env->GetStaticMethodID(Zygote_cls,"nativeForkAndSpecialize", nativeForkAndSpecialize_sign);
@@ -203,9 +205,8 @@ namespace android12 {
         return;
     };
 
-    void zygote_nativeSpecializeAppProcess_hook() {
+    void zygote_nativeSpecializeAppProcess_hook(JNIEnv *env) {
         DEBUG()
-        JNIEnv *env = Pre_GetEnv();
         if (env != nullptr) {
             jclass Zygote_cls = env->FindClass("com/android/internal/os/Zygote");                        //                    "(II[II[[IILjava/lang/String;Ljava/lang/String;[I[IZLjava/lang/String;Ljava/lang/String;Z[Ljava/lang/String;[Ljava/lang/String;ZZ)I"
             jmethodID nativeSpecializeAppProcess_method = env->GetStaticMethodID(Zygote_cls,"nativeSpecializeAppProcess", nativeSpecializeAppProcess_sign);
@@ -247,8 +248,10 @@ namespace android12 {
     }
 
     void zygote_hook(){
-        zygote_nativeSpecializeAppProcess_hook();
-        zygote_nativeForkAndSpecialize_hook();
+        JNIEnv *env = Pre_GetEnv();
+        setArgV0_method_name = get_Process_setArgV0(env);
+        zygote_nativeSpecializeAppProcess_hook(env);
+        zygote_nativeForkAndSpecialize_hook(env);
     }
 
 

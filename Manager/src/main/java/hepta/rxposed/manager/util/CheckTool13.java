@@ -42,6 +42,11 @@ public class CheckTool13 extends CheckTool{
         itemBeans.add(new ItemBean("chekc_PreGetenv", chekcPreGetenv()));
         itemBeans.add(new ItemBean("linkerResolveElfInternalSymbol",ELFresolveSymbol()));
         itemBeans.add(new ItemBean("check_artmethod_jni_hook",check_jni_hook()));
+
+        Class<?>[] setArgV0Native_parameter= {String.class};
+//        itemBeans.add(new ItemBean("Process.setArgV0Native",isNativeFunction(Process.class,"setArgV0Native",setArgV0Native_parameter)));
+        itemBeans.add(new ItemBean("Process."+check_Process_setArgV0(),true));
+
         chekc_java_method(itemBeans);
     }
 
@@ -67,8 +72,6 @@ public class CheckTool13 extends CheckTool{
         itemBeans.add(Found_javaMethod("android.app.IActivityManager","getContentProviderExternal",getContentProviderExternal_parameter));
         Class<?>[] setArgV0Native_parameter= {String.class};
 
-        //Process.setArgV0Native 这个函数隐藏了
-        itemBeans.add(Found_javaMethod("android.os.Process","setArgV0Native",setArgV0Native_parameter));
         itemBeans.add(Java_CreateApplicationContext());
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {

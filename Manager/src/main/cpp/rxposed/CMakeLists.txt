@@ -42,7 +42,6 @@ add_library( # Sets the name of the library.
         # Sets the library as a shared library.
         SHARED
         # Provides a relative path to your source file(s).
-        android13_hook.cpp
         android12_hook.cpp
         android11_hook.cpp
         android_util_api.cpp

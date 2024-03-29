@@ -12,6 +12,7 @@ import android.util.Log;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 
 import hepta.rxposed.manager.RxposedApp;
@@ -56,6 +57,18 @@ public class CheckTool {
                 return true;
 
             }
+            return false;
+        }
+    }
+
+
+    public boolean isNativeFunction(Class<?> clazz, String methodName,Class<?>[] cmp_parameter) {
+        try {
+            Method method = clazz.getDeclaredMethod(methodName,cmp_parameter);
+            int modifiers = method.getModifiers();
+            return Modifier.isNative(modifiers);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
             return false;
         }
     }
@@ -147,6 +160,7 @@ public class CheckTool {
 
     public ItemBean Found_getConstructorsMethod(String className, String Method, Class<?>[] cmp_parameter){
 
+
         ItemBean itemBean = new ItemBean(className+":"+Method,true);
         try {
 
@@ -177,6 +191,8 @@ public class CheckTool {
 
 
     }
+
+    public native String check_Process_setArgV0();
 
     public void chekc_java_method(ArrayList<ItemBean> itemBeans){
 

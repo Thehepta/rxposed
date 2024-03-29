@@ -36,5 +36,6 @@ bool NDK_ExceptionCheck(JNIEnv *env,const char* message);
 void load_apk_And_Call_Class_Entry_Method(JNIEnv *pEnv, jobject android_context,std::string source,std::string NativelibPath,std::string Entry_class,std::string Entry_method,std::string hide,std::string argument);
 jobject CreateApplicationContext(JNIEnv *env, std::string pkgName,uid_t currentUid);
 JNIEnv *Pre_GetEnv();
+const char* get_Process_setArgV0(JNIEnv *env);
 void print_java_stack(JNIEnv *env);
 #endif //RXPOSED_ANDROID_UTIL_API_H
