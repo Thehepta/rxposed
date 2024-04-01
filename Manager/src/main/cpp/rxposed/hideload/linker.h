@@ -42,8 +42,8 @@ struct ApkNativeInfo {
     std::string libname;
     int fd;
 };
-
-jobject hideLoadApkModule(JNIEnv *env, char * apkSource);
+jobject FilehideLoadApkModule(JNIEnv *env, char * apkSource);
+jobject memhideLoadApkModule(JNIEnv *env, unsigned char *apkSource, size_t i);
 
 #define PAGE_START(x) ((x) & PAGE_MASK)
 
@@ -86,14 +86,6 @@ class ElfReader;
 
 class LoadTask {
 public:
-
-    static LoadTask* create(const char* name,
-                            soinfo* needed_by,
-                            android_namespace_t* start_from,
-                            std::unordered_map<const soinfo*, ElfReader>* readers_map) {
-        return new  LoadTask(name, needed_by, start_from, readers_map);
-    }
-
 
 
 
@@ -191,7 +183,9 @@ public:
 
     void soload(std::vector<LoadTask *> &load_tasks, JNIEnv *pEnv);
     void init_call(JNIEnv *pEnv, jobject pJobject);
-    void hideso();
+//    void hideso();
+
+    void hack();
 
 private:
 

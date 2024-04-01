@@ -292,7 +292,6 @@ void *linkerResolveElfInternalSymbol(const char *library_name, const char *symbo
         close(fd);
 
     }
-
     return result;
 }
 

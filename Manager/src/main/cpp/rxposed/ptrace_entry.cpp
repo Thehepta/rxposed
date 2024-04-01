@@ -11,7 +11,8 @@
 #include <sys/mman.h>
 #include "rprocess.h"
 #include "android_util_api.h"
-#include "android13_hook.h"
+#include "android12_hook.h"
+#include "android11_hook.h"
 
 //改这个函数名字记得一定要同步修改注入调用入口函数的符号，改 参数，const都会导致符号变更
 void Ptrace_Zygotes(const char* Authority_arg){
@@ -29,17 +30,15 @@ void Inject_Porcess(const char* AUTHORITY_pkgName){
 
 
 void rxposed_init() __attribute__((constructor)) {
-
-
-//    rprocess::GetInstance()->Init();
-    if(android_get_device_api_level() == 33){
-        art_method_hook_init13();
-        rprocess::GetInstance()->zygote_nativeSpecializeAppProcess_hook = zygote_nativeSpecializeAppProcess_hook13;
-        rprocess::GetInstance()->getConfigByProvider= getConfigByProvider13;
-    } else if (android_get_device_api_level() == 32){
-
+    if(android_get_device_api_level() >= 31){
+        android12::art_method_hook_init();
+        rprocess::GetInstance()->zygote_nativeSpecializeAppProcess_hook = android12::zygote_hook;
+        rprocess::GetInstance()->getConfigByProvider = android12::getConfigByProvider;
+    } else if (android_get_device_api_level() == 30){
+        android11::art_method_hook_init();
+        rprocess::GetInstance()->zygote_nativeSpecializeAppProcess_hook = android11::zygote_hook;
+        rprocess::GetInstance()->getConfigByProvider = android11::getConfigByProvider;
     }
-//    PPLOGD("Enter pp_init......");
 }
 
 

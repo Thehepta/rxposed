@@ -110,7 +110,8 @@ Java_hepta_rxposed_manager_util_CheckTool_chekc_1GetArtmethodNative_1init(JNIEnv
         return true;
     } else{
         return false;
-    }}
+    }
+}
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_hepta_rxposed_manager_util_CheckTool_chekc_1android_1os_1Process_1getUidForName(JNIEnv *env,
@@ -133,11 +134,56 @@ extern "C"
 JNIEXPORT jboolean JNICALL
 Java_hepta_rxposed_manager_util_CheckTool_ELFresolveSymbol(JNIEnv *env, jobject thiz) {
     // TODO: implement ELFresolveSymbol()
+
+    bool libc_resolve = false;
+    bool linker_resolve = false;
+    bool linker_resolve2 = false;
     uintptr_t __system_property_get_addr = reinterpret_cast<uintptr_t>(__system_property_get);
     uintptr_t __system_property_get_resolve_addr  = reinterpret_cast<uintptr_t>(linkerResolveElfInternalSymbol(
             "libc.so", "__system_property_get"));
     if(__system_property_get_addr == __system_property_get_resolve_addr){
+        libc_resolve = true;
+    }
+
+    uintptr_t solist_get_somain_addr  = reinterpret_cast<uintptr_t>(linkerResolveElfInternalSymbol(
+            get_android_linker_path(), "__dl__Z17solist_get_somainv"));
+    if(solist_get_somain_addr != NULL) {
+        linker_resolve = true;
+    }
+
+//    void * linker_handle = dlopen("linker",RTLD_GLOBAL);
+//    if(linker_handle!= NULL){
+//       void* __dl_rtld_db_dlactivity_addr = dlsym(linker_handle,"__dl_rtld_db_dlactivity");
+//       if(__dl_rtld_db_dlactivity_addr != NULL){
+//           linker_resolve2 = true;
+//       }
+//    }
+    if(linker_resolve&&libc_resolve ){
         return true;
     }
     return false;
+}
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_hepta_rxposed_manager_util_CheckTool_check_1Process_1setArgV0(JNIEnv *env, jobject thiz) {
+    // TODO: implement check_Process_setArgV0()
+
+    jclass  Process_cls = env->FindClass("android/os/Process");
+    jmethodID javamethod = env->GetStaticMethodID(Process_cls,"setArgV0Native", "(Ljava/lang/String;)V");
+    if (javamethod == nullptr) {
+        if(env->ExceptionCheck()) {
+            env->ExceptionClear();
+            javamethod = env->GetStaticMethodID(Process_cls, "setArgV0", "(Ljava/lang/String;)V");
+            if(javamethod == nullptr){
+                if(env->ExceptionCheck()) {
+                    env->ExceptionClear();
+                    return env->NewStringUTF("");
+                }
+            } else{
+                return env->NewStringUTF("setArgV0");
+            }
+        }
+    } else{
+        return env->NewStringUTF("setArgV0Native");
+    }
 }

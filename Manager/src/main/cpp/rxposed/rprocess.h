@@ -64,16 +64,18 @@ public:
     bool is_Start(JNIEnv* env, char * name);
     bool is_isIsolatedProcess();
     bool is_HostProcess();
+    bool is_Enable();
     const char* getStatusAuthority();
     uint getHostUid();
     void setAuthorityInfo(const char* arg_tmp);
+    void clearAppinfoNative();
     vector<AppinfoNative*> AppinfoNative_vec ;
     bool InitEnable(JNIEnv *pEnv);
-    string getCurrentAppRxposedConfig(JNIEnv* env, string providerHost_providerName , string callName, string method , uid_t currentUid);
+    string getCurrentAppRxposedConfig(JNIEnv* env, string rxposed_providerName , string callName, string method , uid_t currentUid);
 
 
     void (*zygote_nativeSpecializeAppProcess_hook)();
-    jobject (*getConfigByProvider)(JNIEnv* env, string providerHost_providerName , string callName, string method , string uid_str);
+    jobject (*getConfigByProvider)(JNIEnv* env, string rxposed_providerName , string callName, string method , string uid_str);
 
 
 protected:
@@ -89,8 +91,8 @@ private:
     gid_t gid;
     uid_t currentUid;
     string AUTHORITY;
-    string providerHost_pkgName;
-    string providerHost_providerName;
+    string m_rxposed_pkgName;
+    string m_rxposed_providerName;
     string UUID;
 };
 

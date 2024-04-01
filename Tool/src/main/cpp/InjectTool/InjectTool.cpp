@@ -23,6 +23,5 @@ int main(int argc, char *argv[]) {
     } else {
         printf("[-] Inject Erro\n");
     }
-
     return 0;
 }

@@ -17,11 +17,6 @@
 #include <sys/utsname.h>
 #include "jni_hook.h"
 
-android_namespace_t* g_default_namespace = static_cast<android_namespace_t *>(linkerResolveElfInternalSymbol(
-        get_android_linker_path(), "__dl_g_default_namespace"));
-
-soinfo* (*soinf_alloc_fun)(android_namespace_t* , const char* ,const struct stat* , off64_t ,uint32_t ) = (soinfo* (*)(android_namespace_t* , const char* ,const struct stat* , off64_t ,uint32_t )) linkerResolveElfInternalSymbol(
-        get_android_linker_path(), "__dl__Z12soinfo_allocP19android_namespace_tPKcPK4statlj");
 
 soinfo* (*solist_get_head)() = (soinfo* (*)()) linkerResolveElfInternalSymbol(
         get_android_linker_path(), "__dl__Z15solist_get_headv");
@@ -32,8 +27,6 @@ soinfo* (*solist_get_somain)() = (soinfo* (*)()) linkerResolveElfInternalSymbol(
 char* (*soinfo_get_soname)(soinfo*) = (char* (*)(soinfo*)) linkerResolveElfInternalSymbol(
         get_android_linker_path(), "__dl__ZNK6soinfo10get_sonameEv");
 
-bool (*solist_remove_soinfo)(soinfo*) = (bool  (*)(soinfo*)) linkerResolveElfInternalSymbol(
-        get_android_linker_path(), "__dl__Z20solist_remove_soinfoP6soinfo");
 
 
 
@@ -95,7 +88,6 @@ soinfo* find_all_library_byname(const char* soname){
 }
 
 soinfo* find_system_library_byname(const char* soname) {
-    LOGE("find_system_library_byname");
 
     for (soinfo* si = solist_get_head(); si != nullptr; si = si->next) {
         char* ret_name = soinfo_get_soname(si);
@@ -137,108 +129,6 @@ soinfo* find_containing_library(const void* p) {
     }
     return nullptr;
 }
-
-void linker_protect(){
-
-
-    void* g_soinfo_allocator = static_cast<void *>(linkerResolveElfInternalSymbol(
-            get_android_linker_path(), "__dl__ZL18g_soinfo_allocator"));
-    void* g_soinfo_links_allocator = static_cast<void *>(linkerResolveElfInternalSymbol(
-            get_android_linker_path(), "__dl__ZL24g_soinfo_links_allocator"));
-    void* g_namespace_allocator = static_cast<void *>(linkerResolveElfInternalSymbol(
-            get_android_linker_path(), "__dl__ZL21g_namespace_allocator"));
-    void* g_namespace_list_allocator = static_cast<void *>(linkerResolveElfInternalSymbol(
-            get_android_linker_path(), "__dl__ZL26g_namespace_list_allocator"));
-
-
-    void (*protect_all)(void*,int prot) = (void (*)(void*,int prot)) linkerResolveElfInternalSymbol(
-            get_android_linker_path(), "__dl__ZN20LinkerBlockAllocator11protect_allEi");
-    protect_all(g_soinfo_allocator,PROT_READ | PROT_WRITE);      //arg1 = 0x73480D23D8
-    protect_all(g_soinfo_links_allocator,PROT_READ | PROT_WRITE);
-    protect_all(g_namespace_allocator,PROT_READ | PROT_WRITE);
-    protect_all(g_namespace_list_allocator,PROT_READ | PROT_WRITE);
-}
-
-void linker_unprotect(){
-
-
-    void* g_soinfo_allocator = static_cast<void *>(linkerResolveElfInternalSymbol(
-            get_android_linker_path(), "__dl__ZL18g_soinfo_allocator"));
-    void* g_soinfo_links_allocator = static_cast<void *>(linkerResolveElfInternalSymbol(
-            get_android_linker_path(), "__dl__ZL24g_soinfo_links_allocator"));
-    void* g_namespace_allocator = static_cast<void *>(linkerResolveElfInternalSymbol(
-            get_android_linker_path(), "__dl__ZL21g_namespace_allocator"));
-    void* g_namespace_list_allocator = static_cast<void *>(linkerResolveElfInternalSymbol(
-            get_android_linker_path(), "__dl__ZL26g_namespace_list_allocator"));
-
-
-    void (*protect_all)(void*,int prot) = (void (*)(void*,int prot)) linkerResolveElfInternalSymbol(
-            get_android_linker_path(), "__dl__ZN20LinkerBlockAllocator11protect_allEi");
-    protect_all(g_soinfo_allocator,PROT_READ  );
-    protect_all(g_soinfo_links_allocator,PROT_READ  );
-    protect_all(g_namespace_allocator,PROT_READ  );
-    protect_all(g_namespace_list_allocator,PROT_READ  );
-}
-
-
-soinfo* soinfo_alloc(ApkNativeInfo &apkNativeInfo){
-
-
-    soinfo* (*soinf_alloc_fun)(android_namespace_t* , const char* ,const struct stat* , off64_t ,uint32_t ) = (soinfo* (*)(android_namespace_t* , const char* ,const struct stat* , off64_t ,uint32_t )) linkerResolveElfInternalSymbol(
-            get_android_linker_path(), "__dl__Z12soinfo_allocP19android_namespace_tPKcPK4statlj");
-    soinfo* si = soinf_alloc_fun(g_default_namespace, apkNativeInfo.libname.c_str(), nullptr, 0, RTLD_GLOBAL);
-    return si;
-}
-
-
-//void* LoadNativeSoByMem(ApkNativeInfo &apkNativeInfo){
-//
-//
-//
-//
-//
-//
-//
-////    LoadTask task = new LoadTask();
-//
-//
-//    soinfo * si_ = soinfo_alloc(apkNativeInfo);
-//    if (si_ == nullptr) {
-//        return nullptr;
-//    }
-//
-////    task->set_soinfo(si);
-//
-//
-//
-//    ElfReader * elf_reader = new ElfReader();
-//    apkNativeInfo.libname = apkNativeInfo.file_stat.m_filename;
-//
-//    if(!elf_reader->Read(apkNativeInfo.libname.c_str(),apkNativeInfo.fd,0,apkNativeInfo.file_stat.m_uncomp_size)){
-//        LOGE("elf_reader Read failed");
-//        return nullptr;
-//    }
-//
-//
-//
-//    address_space_params  default_params;
-//    elf_reader->Load(&default_params);
-//
-//
-//
-//    si_->base = elf_reader->load_start();
-//    si_->size = elf_reader->load_size();
-//    si_->set_mapped_by_caller(elf_reader->is_mapped_by_caller());
-//    si_->load_bias = elf_reader->load_bias();
-//    si_->phnum = elf_reader->phdr_count();
-//    si_->phdr = elf_reader->loaded_phdr();
-//
-//    si_->prelink_image();
-//    si_->set_dt_flags_1(si_->get_dt_flags_1() | DF_1_GLOBAL);
-//    si_->call_constructors();
-//
-//    LOGE("%s","successful");
-//}
 
 
 int memfd_create(const char* name, unsigned int flags) {
@@ -297,7 +187,7 @@ soinfo* find_library(std::vector<LoadTask*> &load_tasks,const char *soname) {
 //        return find_soinfo->get_soinfo();
 //
 //    }else{
-        return find_system_library_byname(soname);
+    return find_system_library_byname(soname);
 //    }
 
 }
@@ -322,37 +212,43 @@ const char* fix_dt_needed(const char* dt_needed, const char* sopath __unused) {
 }
 
 
-template<typename F>
-static void for_each_dt_needed(const ElfReader& elf_reader, F action) {
-    for (const ElfW(Dyn)* d = elf_reader.dynamic(); d->d_tag != DT_NULL; ++d) {
-        if (d->d_tag == DT_NEEDED) {
-            action(fix_dt_needed(elf_reader.get_string(d->d_un.d_val), elf_reader.name()));
-        }
-    }
-}
-
-
 void LoadTask::soload(std::vector<LoadTask *> &load_tasks, JNIEnv *pEnv) {
 
     SymbolLookupList lookup_list;
 
-    for_each_dt_needed(get_elf_reader(), [&](const char* name) {
-        LOGE("NEED name: %s",name);
-        soinfo* si = find_library(load_tasks, name);
-//        get_soinfo()->add_child(si);
-        SymbolLookupLib SyLib = si->get_lookup_lib();
-        lookup_list.addSymbolLib(SyLib);
-    });
+    for (const ElfW(Dyn)* d = get_elf_reader().dynamic(); d->d_tag != DT_NULL; ++d) {
+        if (d->d_tag == DT_NEEDED) {
+            const char* name = fix_dt_needed(get_elf_reader().get_string(d->d_un.d_val), get_elf_reader().name());
+            LOGE("NEED name: %s",name);
+            soinfo* system_si = find_library(load_tasks, name);
+            soinfo *custom_si  = new soinfo();
+            custom_si->set_soname(name);
+            custom_si->transform(system_si);
+            SymbolLookupLib SyLib = custom_si->get_lookup_lib(true);
+            lookup_list.addSymbolLib(SyLib);
+        }
+    }
+
 
     address_space_params  default_params;
     load(&default_params);
     get_soinfo()->prelink_image();
     get_soinfo()->set_dt_flags_1(get_soinfo()->get_dt_flags_1() | DF_1_GLOBAL);
-    lookup_list.addSymbolLib(get_soinfo()->get_lookup_lib());
+    lookup_list.addSymbolLib(get_soinfo()->get_lookup_lib(false));
     get_soinfo()->link_image(lookup_list);
     get_soinfo()->set_linked();
     get_soinfo()->call_constructors();
 
+    auto it =     lookup_list.getVectorSymLib().begin();
+    auto end = lookup_list.getVectorSymLib().end();
+    std::vector<SymbolLookupLib>::iterator  lib ;
+    while (true) {
+        if (it == end) return;
+        lib = it++;
+//        if(lib->system_sonifo){
+            delete lib->si_ ;
+//        }
+    }
 }
 
 void LoadTask::init_call(JNIEnv *pEnv, jobject g_currentDexLoad) {
@@ -371,13 +267,25 @@ void LoadTask::init_call(JNIEnv *pEnv, jobject g_currentDexLoad) {
     JNI_OnLoadFn(static_cast<JavaVM *>(linkerJniInvokeInterface), nullptr);
 }
 
-void LoadTask::hideso() {
-
-    solist_remove_soinfo(this->get_soinfo());
-
+void LoadTask::hack() {
+    ElfReader & elfReader = get_elf_reader();
+    elfReader.loaded_phdr();
 }
 
-jobject hideLoadApkModule(JNIEnv *env, char * apkSource){
+
+
+//void LoadTask::hideso() {
+//
+//    solist_remove_soinfo(this->get_soinfo());
+//
+//}
+
+
+
+
+
+
+jobject hideLoadApkModule(JNIEnv *env, mz_zip_archive& zip_archive){
 
     jobject currentDexLoad = nullptr;
     auto classloader = env->FindClass("java/lang/ClassLoader");
@@ -396,14 +304,7 @@ jobject hideLoadApkModule(JNIEnv *env, char * apkSource){
     std::unordered_map<const soinfo*, ElfReader> readers_map;
     std::vector<LoadTask*> load_tasks;
     std::vector<jobject> load_dexs;
-    mz_zip_archive zip_archive;
-    memset(&zip_archive, 0, sizeof(zip_archive));
 
-    mz_bool status = mz_zip_reader_init_file(&zip_archive, apkSource, 0);
-    if (!status) {
-        printf("Could not initialize zip reader.\n");
-        return nullptr;
-    }
     std::vector<ApkNativeInfo> vec_apkNativeInfo;
     int file_count = (int)mz_zip_reader_get_num_files(&zip_archive);
     for (int i = 0; i < file_count; i++) {
@@ -428,7 +329,7 @@ jobject hideLoadApkModule(JNIEnv *env, char * apkSource){
                 return nullptr;
             }
 
-            LoadTask* task =  LoadTask::create(file_stat.m_filename, nullptr,g_default_namespace, &readers_map);
+            LoadTask* task =  new LoadTask(file_stat.m_filename, nullptr, nullptr, &readers_map);
             task->set_fd(fd, false);
             task->set_file_offset(0);
             task->set_file_size(file_stat.m_uncomp_size);
@@ -464,12 +365,12 @@ jobject hideLoadApkModule(JNIEnv *env, char * apkSource){
     if (currentDexLoad != nullptr ) {
 
         jobject g_currentDexLoad =  env->NewGlobalRef(currentDexLoad);
-        linker_protect();
+//        linker_protect();
         for (size_t i = 0; i<load_tasks.size(); ++i) {
 
             LoadTask* task = load_tasks[i];
-            soinfo* si = soinf_alloc_fun(g_default_namespace, ""/*real path*/, nullptr, 0, RTLD_GLOBAL);
-//            soinfo* si = new soinfo(g_default_namespace, ""/*real path*/, nullptr, 0, RTLD_GLOBAL);
+//            soinfo* si = soinf_alloc_fun(g_default_namespace, ""/*real path*/, nullptr, 0, RTLD_GLOBAL);
+            soinfo* si = new soinfo(nullptr, ""/*real path*/, nullptr, 0, RTLD_GLOBAL);
             if (si == nullptr) {
                 return nullptr;
             }
@@ -495,10 +396,11 @@ jobject hideLoadApkModule(JNIEnv *env, char * apkSource){
         for (auto&& task : load_tasks) {
             task->soload(load_tasks, env);
             task->init_call(env, g_currentDexLoad);
-            task->hideso();
+            task->hack();
+            delete task;
         }
 
-        linker_unprotect();
+//        linker_unprotect();
         env->DeleteGlobalRef(g_currentDexLoad);
         return currentDexLoad;
     } else{
@@ -509,11 +411,45 @@ jobject hideLoadApkModule(JNIEnv *env, char * apkSource){
 
 
 
+jobject FilehideLoadApkModule(JNIEnv *env, char * apkSource){
 
 
+    mz_zip_archive zip_archive;
+    memset(&zip_archive, 0, sizeof(zip_archive));
+
+    mz_bool status = mz_zip_reader_init_file(&zip_archive, apkSource, 0);
+    if (!status) {
+        printf("Could not initialize zip reader.\n");
+        return nullptr;
+    }
+    return hideLoadApkModule(env,zip_archive);
+}
 
 
+jobject memhideLoadApkModule(JNIEnv *env, unsigned char *zip_data, size_t zip_size) {
 
+
+    // 使用 miniz 库解压缩内存中的 zip 文件
+    mz_zip_archive zip_archive;
+    memset(&zip_archive, 0, sizeof(zip_archive));
+    mz_bool status = mz_zip_reader_init_mem(&zip_archive, zip_data, zip_size, 0);
+    if (!status) {
+        printf("Could not initialize zip reader.\n");
+        return nullptr;
+    }
+    jobject resutl_classloader = hideLoadApkModule(env,zip_archive);
+    free(zip_data); // 释放内存
+    return resutl_classloader;
+
+}
+
+uintptr_t ToPathLoadSoGetSymbolAddr(char * sopath,char *topath,char*call_arg){
+
+}
+
+uintptr_t ToMemLoadSoGetSymbolAddr(char * sopath,char*call_arg){
+
+}
 
 
 

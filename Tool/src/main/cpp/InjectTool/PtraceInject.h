@@ -182,7 +182,8 @@ int map_hide(pid_t pid,char *path) {
  * @param NumParameter NumParameter为参数的个数
  * @return int 返回0表示注入成功，返回-1表示失败
  */
-int inject_remote_process(pid_t pid, char *LibPath, char *FunctionName, char *FunctionArgs,int hidemaps){
+int inject_remote_process(pid_t pid, char *LibPath, char *FunctionName, char *FunctionArgs,
+                          int hidemaps, int dlclose) {
     long parameters[6];
     // attach到目标进程
     if (ptrace_attach(pid) != 0){
@@ -256,14 +257,13 @@ int inject_remote_process(pid_t pid, char *LibPath, char *FunctionName, char *Fu
         // 设置dlopen的参数,返回值为模块加载的地址
         // void *dlopen(const char *filename, int flag);
         parameters[0] = (uintptr_t) RemoteMapMemoryAddr; // 写入的libPath
-        parameters[1] = RTLD_NOW | RTLD_GLOBAL; // dlopen的标识
+        parameters[1] = RTLD_NOW ; // dlopen的标识                            不能使用RTLD_GLOBAL ,会导致无法dlclose 无法关闭so库
 
         // 执行dlopen 载入so
         if (ptrace_call(pid, (uintptr_t) dlopen_addr, parameters, 2, &CurrentRegs) == -1) {
             printf("[+][function:%s] Call Remote dlopen Func Failed\n",__func__ );
             break;
         }
-
         // RemoteModuleAddr为远程进程加载注入模块的地址
         void *RemoteModuleAddr = (void *) ptrace_getret(&CurrentRegs);
         printf("[+][function:%s] ptrace_call dlopen success, Remote Process load module Addr:0x%lx\n",__func__ ,(long) RemoteModuleAddr);
@@ -332,6 +332,18 @@ int inject_remote_process(pid_t pid, char *LibPath, char *FunctionName, char *Fu
             printf("[+][function:%s] No func !!\n",__func__);
         }
 
+        if(dlclose == 1){
+            // 执行dlopen 载入so
+            printf("[+][function:%s] call dlclose close Addr:0x%lx\n",__func__,(long)RemoteModuleAddr);
+
+            parameters[0] = (uintptr_t) RemoteModuleAddr;
+            if (ptrace_call(pid, (uintptr_t) dlclose_addr, parameters, 1, &CurrentRegs) == -1) {
+                printf("[+][function:%s] Call Remote dlopen Func Failed\n",__func__ );
+                break;
+            }
+        }
+
+
 
         if (ptrace_setregs(pid, &OriginalRegs) == -1) {
             printf("[-][function:%s] Recover reges failed\n",__func__);
@@ -344,14 +356,6 @@ int inject_remote_process(pid_t pid, char *LibPath, char *FunctionName, char *Fu
         if (memcmp(&OriginalRegs, &CurrentRegs, sizeof(CurrentRegs)) != 0) {
             printf("[-][function:%s] Set Regs Error\n",__func__);
         }
-
-
-
-
-
-
-
-
         return 0;
     } while (false);
 
@@ -363,6 +367,9 @@ int inject_remote_process(pid_t pid, char *LibPath, char *FunctionName, char *Fu
 
 
 
+
+
+
 // so注入所需要的一些核心数据 组成一个数据结构
 struct process_inject{
     pid_t pid;
@@ -370,7 +377,8 @@ struct process_inject{
     char func_symbols[1024];
     char func_args[1024];
     int hidemaps;
-} process_inject = {0, "", "symbols",""};
+    int dlclose;
+} process_inject = {0, "", "symbols","",0,0};
 
 /**
  * @brief 参数处理
@@ -390,14 +398,12 @@ void handle_parameter(int argc, char *argv[]){
     char *lib_path = NULL;
     char *func_symbols = NULL;
     char *func_args=NULL;
-    int hidemaps = 0 ;
-    bool start_app_flag = false;
+    char *func_args2=NULL;
+    char *func_args3=NULL;
+
+
 
     while (index < argc){ // 循环判断参数
-
-        if (strcmp("-f", argv[index]) == 0){ // 是否强制开启App
-            start_app_flag = true; // 强制开启App
-        }
 
         if (strcmp("-p", argv[index]) == 0){ // 判断是否传入pid参数
             if (index + 1 >= argc){
@@ -416,10 +422,6 @@ void handle_parameter(int argc, char *argv[]){
             index++;
             pkg_name = argv[index]; // 包名
 
-            if (start_app_flag){ // 如果强制开启App参数开启
-                start_app(pkg_name); // 启动App
-                sleep(1);
-            }
         }
 
         if (strcmp("-so", argv[index]) == 0){ // 判断是否传入so路径
@@ -439,20 +441,33 @@ void handle_parameter(int argc, char *argv[]){
             index++;
             func_symbols = argv[index]; // so中的调用的函数符号
             if (index + 1 >= argc){
-                printf("[-] function: %s not params\n",func_symbols);
+                printf("[-] function: %s not params1\n",func_symbols);
             }else{
                 index++;
-                func_args = argv[index]; // so中的调用的函数
+                func_args = argv[index];
             }
+//            index++;
+//            if (index + 1 >= argc){
+//                printf("[-] function: %s not params2\n",func_symbols);
+//            }else{
+//                index++;
+//                func_args2 = argv[index];
+//            }
+//            index++;
+//
+//            if (index + 1 >= argc){
+//                printf("[-] function: %s not params3\n",func_symbols);
+//            }else{
+//                index++;
+//                func_args3 = argv[index];
+//            }
         }
 
-        if (strcmp("-hidemaps", argv[index]) == 0) { // 判断是否传入so路径
-            if (index + 1 >= argc){
-                printf("[-] Missing parameter -hidemaps\n");
-                exit(-1);
-            }
-            index++;
-            hidemaps = atoi(argv[index]); // 是否隐藏so的maps
+        if (strcmp("-hidemaps", argv[index]) == 0) { // 是否隐藏so的maps
+            process_inject.hidemaps = 1;
+        }
+        if (strcmp("-dlclose", argv[index]) == 0){ // so执行完以后会调用dlclose关闭
+            process_inject.dlclose = 1;
         }
 
         index++;
@@ -492,8 +507,8 @@ void handle_parameter(int argc, char *argv[]){
         printf("[+] func_args is [%s]\n", func_args);
         strcpy(process_inject.func_args,strdup(func_args)); // 传递功能名称到inject数据结构
     }
-    process_inject.hidemaps = hidemaps;
-    printf("[+] hidemaps is %d\n", hidemaps);
+    printf("[+] hidemaps is %d\n", process_inject.hidemaps);
+    printf("[+] dlclose is %d\n", process_inject.dlclose);
 
 }
 
@@ -522,7 +537,9 @@ int init_inject(int argc, char *argv[]){
         printf("[+][SELinux] SELinux is Permissive or Disabled\n");
     }
 //    int re;
-    int re = inject_remote_process(process_inject.pid, process_inject.lib_path, process_inject.func_symbols, process_inject.func_args,process_inject.hidemaps);
+    int re = inject_remote_process(process_inject.pid, process_inject.lib_path,
+                                   process_inject.func_symbols, process_inject.func_args,
+                                   process_inject.hidemaps, process_inject.dlclose);
     sleep(1);
     // 如果原SELinux状态为严格 则恢复状态
 

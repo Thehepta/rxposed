@@ -33,6 +33,7 @@ import com.afollestad.materialdialogs.bottomsheets.BottomSheet
 import com.afollestad.materialdialogs.input.input
 import com.afollestad.materialdialogs.list.listItems
 import hepta.rxposed.manager.R
+import hepta.rxposed.manager.util.CheckTool11
 import hepta.rxposed.manager.util.InjectTool
 import hepta.rxposed.manager.util.Util
 import hepta.rxposed.manager.widget.DialogUtil
@@ -133,7 +134,7 @@ class HomeFragment : Fragment() {
         val Image_icon = view?.findViewById<ImageView>(R.id.status_icon)
         val Text_status = view?.findViewById<TextView>(R.id.status_text)
 
-        var activity = get_rxposed_status();
+        var activity = CheckTool11.get_rxposed_status();
 
         if (activity){
             btn_activity?.visibility=View.INVISIBLE
@@ -151,15 +152,5 @@ class HomeFragment : Fragment() {
             }
         }
     }
-    private fun get_rxposed_status(): Boolean {
-
-        val zygote_host_uid = android.os.Process.getUidForName(InjectTool.getStatusAuthority());
-        if(zygote_host_uid!=-1){
-            return true;
-        }
-        return false;
-    }
-
-//        external fun get_rxposed_activity():Boolean
 
 }

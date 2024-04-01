@@ -1,12 +1,19 @@
 package hepta.rxposed.manager.util;
 
+import android.content.AttributionSource;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.os.Process;
 import android.util.Log;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 
 import hepta.rxposed.manager.RxposedApp;
 import hepta.rxposed.manager.fragment.check.ItemBean;
@@ -15,13 +22,27 @@ public class CheckTool {
 
 
     static {
-        System.loadLibrary("check");
+
     }
 
     public  native boolean chekcPreGetenv();
     public  native void  jni_hook();
     public  native void   jni_unhook();
     public  native boolean jni_hook_test();
+
+
+    public CheckTool(){
+        System.loadLibrary("check");
+    }
+
+
+    public static boolean get_rxposed_status(){
+        int zygote_host_uid = Process.getUidForName(InjectTool.getStatusAuthority());
+        if(zygote_host_uid!=-1){
+            return true;
+        }
+        return false;
+    }
 
     public  boolean check_jni_hook() {
         boolean no_hook_ret =  jni_hook_test();
@@ -36,6 +57,18 @@ public class CheckTool {
                 return true;
 
             }
+            return false;
+        }
+    }
+
+
+    public boolean isNativeFunction(Class<?> clazz, String methodName,Class<?>[] cmp_parameter) {
+        try {
+            Method method = clazz.getDeclaredMethod(methodName,cmp_parameter);
+            int modifiers = method.getModifiers();
+            return Modifier.isNative(modifiers);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
             return false;
         }
     }
@@ -106,8 +139,7 @@ public class CheckTool {
     }
 
     public ItemBean Found_javaMethod(String className, String Method, Class<?>[] cmp_parameter){
-
-        ItemBean itemBean = new ItemBean(className+":"+className,true);
+        ItemBean itemBean = new ItemBean(className+":"+Method,true);
         try {
 
             Class<?> cls_zygote = Class.forName(className);
@@ -128,7 +160,8 @@ public class CheckTool {
 
     public ItemBean Found_getConstructorsMethod(String className, String Method, Class<?>[] cmp_parameter){
 
-        ItemBean itemBean = new ItemBean(className+":"+className,true);
+
+        ItemBean itemBean = new ItemBean(className+":"+Method,true);
         try {
 
             Class<?> cls_zygote = Class.forName(className);
@@ -153,5 +186,18 @@ public class CheckTool {
     public native boolean chekc_android_os_Process_getUidForName();
 
     public native boolean  ELFresolveSymbol();
+
+    public void addCheckItem(ArrayList<ItemBean> itemBeans) {
+
+
+    }
+
+    public native String check_Process_setArgV0();
+
+    public void chekc_java_method(ArrayList<ItemBean> itemBeans){
+
+
+    }
+
 
 }

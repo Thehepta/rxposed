@@ -5,11 +5,7 @@ rxposed,是一个无感知的Android平台应用注入框架，主要用来对�
 
 
 ### 平台支持
-目前只支持android 13 ,后续可能会对android 11 和12 兼容，但是不会兼容11以下，主要是因为andrid11以上开始有包可见性问题，这样就可以隐藏安装在手机上的管理app。
-
-
-
-
+目前只支持android 11-14，以后不会兼容11以下，主要是因为andrid11以上开始有包可见性问题，这样就可以隐藏安装在手机上的管理app。
 
 | 项目       | rxposed | xposed                                                       | frida                    |
 | :--------: | :-----: | :----------------------------------------------------------: | :----------------------: |
@@ -21,11 +17,11 @@ rxposed,是一个无感知的Android平台应用注入框架，主要用来对�
 
 
 
-
-
+### 注意事项
++ 同类型工具冲突，如果你的手机中存在修改zygote进程的插件，请关闭了在使用本工具（比如lsposed,zygisk）
++ 不太好支持开机自启
 
 ### 可能需要者
-
 广大安全开发研究者，它的主要的目是用来无感知注入，有时候这可能需要修改特征，自行编译完成对抗。
 
 
@@ -65,4 +61,4 @@ https://github.com/frida/frida
 
 ### License
 
-LSPosed is licensed under the **GNU General Public License v3 (GPL-3)** (http://www.gnu.org/copyleft/gpl.html).
+rxposed is licensed under the **GNU General Public License v3 (GPL-3)** (http://www.gnu.org/copyleft/gpl.html).

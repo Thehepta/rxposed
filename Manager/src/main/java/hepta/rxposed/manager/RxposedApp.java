@@ -31,7 +31,6 @@ public class RxposedApp extends Application {
         super.onCreate();
         instance = this;
 
-
     }
 
     @Override

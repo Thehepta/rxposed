@@ -43,6 +43,9 @@ add_library( # Sets the name of the library.
         linker_symbol.cpp
         linker_relocate.cpp
         jni_hook.cpp
+        soinfo_12_transform.cpp
+        soinfo_11_transform.cpp
+        soinfo_121_transform.cpp
         )
 
 

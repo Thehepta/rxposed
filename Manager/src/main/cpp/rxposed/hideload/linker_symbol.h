@@ -28,7 +28,7 @@ struct SymbolLookupLib {
     uint32_t* gnu_bucket_;
 
     soinfo* si_ = nullptr;
-
+    bool system_sonifo = false;
     bool needs_sysv_lookup() const { return si_ != nullptr && gnu_bloom_filter_ == nullptr; }
 };
 

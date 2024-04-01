@@ -78,8 +78,7 @@ soinfo_do_lookup_impl(const char* name, const version_info* vi,
         // searching for.
 
         std::vector<SymbolLookupLib>::iterator  lib ;
-        const std::vector<SymbolLookupLib> vector =  lookup_list.getVectorSymLib();
-        ;
+//        const std::vector<SymbolLookupLib> vector =  lookup_list.getVectorSymLib();
         while (true) {
             if (it == end) return nullptr;
             lib = it++;
@@ -128,21 +127,18 @@ soinfo_do_lookup_impl(const char* name, const version_info* vi,
                     memcmp(lib->strtab_ + sym->st_name, name, name_len + 1) == 0 &&
                     is_symbol_global_and_defined(lib->si_, sym)) {
                     *si_found_in = lib->si_;
-//                    if (IsGeneral) {
-//                        TRACE_TYPE(LOOKUP, "FOUND %s in %s (%p) %zd",
-//                                   name, lib->si_->get_realpath(), reinterpret_cast<void*>(sym->st_value),
-//                                   static_cast<size_t>(sym->st_size));
-//                    }
+                    if (IsGeneral) {
+                        LOGE( "FOUND %s in %s (%p) %zd",name, lib->si_->get_realpath(), reinterpret_cast<void*>(sym->st_value),static_cast<size_t>(sym->st_size));
+                    }
                     return sym;
                 }
             }
             ++sym_idx;
         } while ((chain_value & 1) == 0);
 
-//        if (IsGeneral) {
-//            TRACE_TYPE(LOOKUP, "NOT FOUND %s in %s@%p",
-//                       name, lib->si_->get_realpath(), reinterpret_cast<void*>(lib->si_->base));
-//        }
+        if (IsGeneral) {
+            LOGE( "NOT FOUND %s @%p",name,  reinterpret_cast<void*>(lib->si_->base));
+        }
     }
 }
 
@@ -241,13 +237,8 @@ bool process_relocation_impl(Relocator& relocator, const rel_t& reloc) {
     const ElfW(Sym)* sym = nullptr;
     const char* sym_name = nullptr;
     ElfW(Addr) sym_addr = 0;
-//    LOGE("entry process_relocation_impl fun");
     if (r_sym != 0) {
         sym_name = relocator.get_string(relocator.si_symtab[r_sym].st_name);
-//        if(strcmp("strcmp",sym_name)==0){
-//            LOGE("debug symbol strcmp");
-//
-//        }
     }
 
     // While relocating a DSO with text relocations (obsolete and 32-bit only), the .text segment is
@@ -336,9 +327,7 @@ bool process_relocation_impl(Relocator& relocator, const rel_t& reloc) {
                 return false;
             }
             if (sym != nullptr) {
-                const bool should_protect_segments = handle_text_relocs &&
-                                                     found_in == relocator.si &&
-                                                     ELF_ST_TYPE(sym->st_info) == STT_GNU_IFUNC;
+                const bool should_protect_segments = handle_text_relocs &&found_in == relocator.si &&ELF_ST_TYPE(sym->st_info) == STT_GNU_IFUNC;
                 if (should_protect_segments && !protect_segments()) return false;
                 sym_addr = found_in->resolve_symbol_address(sym);
                 if (should_protect_segments && !unprotect_segments()) return false;

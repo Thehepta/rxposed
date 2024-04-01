@@ -21,14 +21,14 @@ void rprocess::setProcessInfo(char* nice_name, uid_t uid, gid_t arg_gid) {
     this->gid = arg_gid;
 }
 
-string rprocess::getCurrentAppRxposedConfig(JNIEnv* env, string providerHost_providerName , string callName, string method , uid_t currentUid) {
+string rprocess::getCurrentAppRxposedConfig(JNIEnv* env, string rxposed_providerName , string callName, string method , uid_t currentUid) {
 
     DEBUG();
     jstring key = env->NewStringUTF("ModuleList");
     DEBUG();
     string uid_str = std::to_string(currentUid);
     DEBUG();
-    jobject obj_bundle = getConfigByProvider(env, providerHost_providerName, callName  , method, uid_str);
+    jobject obj_bundle = getConfigByProvider(env, rxposed_providerName, callName  , method, uid_str);
     DEBUG();
     jclass Bundle_cls = env->FindClass("android/os/Bundle");
     jmethodID Bundle_getStringArrayList_method = env->GetMethodID(Bundle_cls, "getStringArrayList","(Ljava/lang/String;)Ljava/util/ArrayList;");
@@ -50,6 +50,7 @@ string rprocess::getCurrentAppRxposedConfig(JNIEnv* env, string providerHost_pro
     return appinfoList;
 }
 
+
 bool rprocess::InitModuleInfo(JNIEnv *env) {
 
     char* buf;
@@ -63,7 +64,7 @@ bool rprocess::InitModuleInfo(JNIEnv *env) {
     if (pid == 0) {
         // 子进程读取数据
         std::string Provider_call_method = "getConfig";
-        std::string appinfoList = getCurrentAppRxposedConfig(env,  providerHost_providerName,processName  ,Provider_call_method,currentUid);
+        std::string appinfoList = getCurrentAppRxposedConfig(env, m_rxposed_providerName, processName  , Provider_call_method, currentUid);
         memcpy(buf,appinfoList.c_str(),appinfoList.length());
         _exit(0);
     }else if (pid > 0) {
@@ -95,7 +96,7 @@ bool rprocess::InitModuleInfo(JNIEnv *env) {
         }
     }
     close_shared_memory(ufd,buf);
-    DEBUG()
+
     return true;
 }
 
@@ -105,23 +106,24 @@ void rprocess::setAuthorityInfo(const char* arg_tmp){
     AUTHORITY = arg_tmp;
     hostUid = atoi(arg[0].c_str());
     LOGE("UID: %d",hostUid);
-    providerHost_pkgName=arg[1];
-    LOGE("providerHost_pkgName: %s",providerHost_pkgName.c_str());
-    providerHost_providerName =arg[2];
-    LOGE("providerHost_providerName: %s",providerHost_providerName.c_str());
+    m_rxposed_pkgName=arg[1];
+    LOGE("m_rxposed_pkgName: %s", m_rxposed_pkgName.c_str());
+    m_rxposed_providerName =arg[2];
+    LOGE("m_rxposed_providerName: %s", m_rxposed_providerName.c_str());
 }
 
 bool rprocess::LoadModule(JNIEnv* env){
     DEBUG();
-    for (auto appinfoNativeVec : AppinfoNative_vec)
+    for (auto appinfoNative : AppinfoNative_vec)
     {
         load_apk_And_Call_Class_Entry_Method(env, RxposedContext,
-                                             appinfoNativeVec->source,appinfoNativeVec->NativelibPath,
-                                             appinfoNativeVec->Entry_class,
-                                             appinfoNativeVec->Entry_method,
-                                             appinfoNativeVec->hide,
-                                             appinfoNativeVec->argument
-                                             );
+                                             appinfoNative->source,appinfoNative->NativelibPath,
+                                             appinfoNative->Entry_class,
+                                             appinfoNative->Entry_method,
+                                             appinfoNative->hide,
+                                             appinfoNative->argument
+        );
+        delete appinfoNative;
     }
 
     return true;
@@ -167,5 +169,20 @@ bool rprocess::is_Start(JNIEnv* env, char * name) {
 
 uint rprocess::getHostUid() {
     return hostUid;
+}
+
+void rprocess::clearAppinfoNative() {
+    for (auto appinfoNative : AppinfoNative_vec)
+    {
+        delete appinfoNative;
+    }
+    AppinfoNative_vec.clear();
+}
+
+bool rprocess::is_Enable() {
+    if(AppinfoNative_vec.size() >0){
+        return true;
+    }
+    return false;
 }
 

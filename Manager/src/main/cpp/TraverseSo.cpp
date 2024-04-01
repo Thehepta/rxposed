@@ -38,10 +38,10 @@ void text(){
 
 
     if(*soinfo_get_realpath == *soinfo_get_realpath_bsee64){
-        LOGE("soinfo_get_realpath == soinfo_get_realpath_bsee64)");
+        LOGE("soinfo_get_realpath == soinfo_get_realpath_bsee64");
 
     } else{
-        LOGE("soinfo_get_realpath != soinfo_get_realpath_bsee64)");
+        LOGE("soinfo_get_realpath != soinfo_get_realpath_bsee64");
 
     }
 

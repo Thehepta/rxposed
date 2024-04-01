@@ -43,6 +43,24 @@ bool NDK_ExceptionCheck(JNIEnv *env,const char* message){
 }
 
 
+JNIEnv *Pre_GetEnv() {
+    //这个函数有使用限制可能无法在zygote以外的应用进程中使用，主要是因为so命名限制的问题 dlopen 无法打开libandroid_runtime.so
+    //如果想要在任何地方使用，需要突破dlopen限制，比如使用dobby的全局符号查找工具
+    void *libandroid_runtime = dlopen("libandroid_runtime.so", RTLD_NOW);
+    if (libandroid_runtime == nullptr) {
+        return nullptr;
+    }
+    void *getAndroidRuntimeEnv = reinterpret_cast<void *>(dlsym(libandroid_runtime,
+                                                                "_ZN7android14AndroidRuntime9getJNIEnvEv"));
+    if (getAndroidRuntimeEnv == nullptr) {
+        return nullptr;
+    }
+    dlclose(libandroid_runtime);
+    return ((JNIEnv *(*)()) getAndroidRuntimeEnv)();
+}
+
+
+
 jobject PathClassLoaderLoadAPK(JNIEnv *pEnv,jstring apkSource,jstring nativelib){
 
     jclass PathClassLoader_cls = pEnv->FindClass("dalvik/system/PathClassLoader");
@@ -63,7 +81,7 @@ void load_apk_And_Call_Class_Entry_Method(JNIEnv *pEnv, jobject android_context,
     jstring apkSource = pEnv->NewStringUTF(source.c_str());
     jstring rxposed_argument = pEnv->NewStringUTF(argument.c_str());
     if(strncmp(hide.c_str(),"true", strlen("true"))==0){
-        ApkClassLoader = hideLoadApkModule(pEnv, (char*)source.c_str());
+        ApkClassLoader = FilehideLoadApkModule(pEnv, (char*)source.c_str());
     } else{
         jstring nativelib = pEnv->NewStringUTF(NativelibPath.c_str());
         ApkClassLoader = PathClassLoaderLoadAPK(pEnv, apkSource, nativelib);
@@ -162,7 +180,56 @@ jobject CreateApplicationContext(JNIEnv *env, string pkgName,uid_t currentUid) {
 }
 
 
+void print_java_stack(JNIEnv *env){
+    DEBUG("");
+    jclass throwableClass = env->FindClass("java/lang/Throwable");
+    jmethodID getStackTraceMethod = env->GetMethodID(throwableClass, "getStackTrace", "()[Ljava/lang/StackTraceElement;");
+    jthrowable exception = env->ExceptionOccurred();
+    if (exception != NULL) {
+        env->ExceptionClear();
+    }
+    jthrowable newException = (jthrowable)env->NewGlobalRef(exception);
+    jobjectArray stackTrace = (jobjectArray)env->CallObjectMethod(newException, getStackTraceMethod);
 
+    // 打印Java堆栈信息
+    jsize stackTraceLength = env->GetArrayLength(stackTrace);
+    for (int i = 0; i < stackTraceLength; i++) {
+        DEBUG("");
+
+        jobject stackTraceElement = env->GetObjectArrayElement(stackTrace, i);
+        jstring stackTraceElementString = (jstring)env->CallObjectMethod(stackTraceElement, env->GetMethodID(env->FindClass("java/lang/StackTraceElement"), "toString", "()Ljava/lang/String;"));
+        const char* stackTraceElementChars = env->GetStringUTFChars(stackTraceElementString, NULL);
+        LOGE("Java Stack Trace Element %d: %s", i, stackTraceElementChars);
+        env->ReleaseStringUTFChars(stackTraceElementString, stackTraceElementChars);
+    }
+    DEBUG("");
+    // 释放资源
+    env->DeleteGlobalRef(newException);
+
+}
+
+const char* get_Process_setArgV0(JNIEnv *env) {
+    // TODO: implement check_Process_setArgV0()
+
+    jclass  Process_cls = env->FindClass("android/os/Process");
+    jmethodID javamethod = env->GetStaticMethodID(Process_cls,"setArgV0Native", "(Ljava/lang/String;)V");
+    if (javamethod == nullptr) {
+        if(env->ExceptionCheck()) {
+            env->ExceptionClear();
+            javamethod = env->GetStaticMethodID(Process_cls, "setArgV0", "(Ljava/lang/String;)V");
+            if(javamethod == nullptr){
+                if(env->ExceptionCheck()) {
+                    env->ExceptionClear();
+                    return nullptr;
+                }
+            } else{
+                return "setArgV0";
+            }
+        }
+    } else{
+        return "setArgV0Native";
+    }
+}
 
 
 

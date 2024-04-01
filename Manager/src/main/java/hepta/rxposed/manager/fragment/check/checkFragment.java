@@ -1,12 +1,9 @@
 package hepta.rxposed.manager.fragment.check;
 
 import android.content.AttributionSource;
-import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,12 +15,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
+
 import hepta.rxposed.manager.util.CheckTool;
+import hepta.rxposed.manager.util.CheckTool11;
 import hepta.rxposed.manager.R;
+import hepta.rxposed.manager.util.CheckTool12;
+import hepta.rxposed.manager.util.CheckTool13;
 
 public class checkFragment extends Fragment {
 
@@ -48,51 +48,18 @@ public class checkFragment extends Fragment {
     }
 
     private void all_check() {
-        checkTool = new CheckTool();
-        if(checkTool.chekc_GetArtmethodNative_init()){
 
-            itemBeans.add(new ItemBean("chekc_GetArtmethodNative_init",true));
-
-            itemBeans.add(new ItemBean("chekc_android_os_Process_getUidForName",checkTool.chekc_android_os_Process_getUidForName()));
-
-        }else {
-            itemBeans.add(new ItemBean("chekc_GetArtmethodNative_init",false));
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            checkTool = new CheckTool12();
+        }else if(android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
+            checkTool = new CheckTool11();
         }
-
-        itemBeans.add(new ItemBean("chekc_PreGetenv", checkTool.chekcPreGetenv()));
-        itemBeans.add(new ItemBean("linkerResolveElfInternalSymbol",checkTool.ELFresolveSymbol()));
-        itemBeans.add(new ItemBean("check_artmethod_jni_hook",checkTool.check_jni_hook()));
-        chekc_java_method();
-
+        checkTool.addCheckItem(itemBeans);
     }
 
 
 
-    private void chekc_java_method(){
 
-        Class<?>[] nativeSpecializeAppProcess_parameter={int.class,int.class,int[].class,int.class,int[][].class,int.class,String.class, String.class,
-                boolean.class,String.class,String.class,boolean.class,String[].class,String[].class,boolean.class,boolean.class};
-
-        itemBeans.add(checkTool.Found_javaMethod("com.android.internal.os.Zygote","nativeSpecializeAppProcess",nativeSpecializeAppProcess_parameter));
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-            Class<?>[] AttributionSource_parameter= {int.class,String.class,String.class};
-            itemBeans.add(checkTool.Found_getConstructorsMethod("android.content.AttributionSource","<init>",AttributionSource_parameter));
-            Class<?>[] IContentProvider_call_parameter= {AttributionSource.class,String.class,String.class,String.class,Bundle.class};
-            itemBeans.add(checkTool.Found_javaMethod("android.content.IContentProvider","call",IContentProvider_call_parameter));
-        }else {
-            Class<?>[] IContentProvider_call_parameter= {String.class,String.class,String.class,String.class,String.class,Bundle.class};
-            itemBeans.add(checkTool.Found_javaMethod("android.content.IContentProvider","call",IContentProvider_call_parameter));
-        }
-        Class<?>[] getContentProviderExternal_parameter= {String.class,int.class,IBinder.class,String.class};
-        itemBeans.add(checkTool.Found_javaMethod("android.app.IActivityManager","getContentProviderExternal",getContentProviderExternal_parameter));
-        Class<?>[] setArgV0Native_parameter= {String.class};
-
-        //Process.setArgV0Native 这个函数隐藏了
-        itemBeans.add(checkTool.Found_javaMethod("android.os.Process","setArgV0Native",getContentProviderExternal_parameter));
-        itemBeans.add(checkTool.Java_CreateApplicationContext());
-
-
-    }
 
 
 

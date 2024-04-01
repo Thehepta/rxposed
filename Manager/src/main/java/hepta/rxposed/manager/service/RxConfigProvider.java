@@ -80,18 +80,25 @@ public class RxConfigProvider extends ContentProvider {
     public ParcelFileDescriptor openFile(@NonNull Uri uri, @NonNull String mode) throws FileNotFoundException {
         File configNameFile =new File(getContext().getFilesDir(),configName);
 
-        return ParcelFileDescriptor.open(configNameFile,
-                ParcelFileDescriptor.MODE_READ_ONLY);
+        return ParcelFileDescriptor.open(configNameFile, ParcelFileDescriptor.MODE_READ_ONLY);
     }
 
     @Nullable
     @Override
     public Bundle call(@NonNull String method, @Nullable String uid, @Nullable Bundle extras) {
         Bundle bundle = new Bundle();
+        if(method.contains("test")){
+            bundle.putBoolean("test",true);
+            return bundle;
+        }
         Log.e("getRxConfig","method:"+method);
-        Log.e("getRxConfig","ProcessName:"+uid);
+        Log.e("getRxConfig","Processuid:"+uid);
 
         String req_packageName = getContext().getPackageManager().getNameForUid(Integer.parseInt(uid));
+        int find_index = req_packageName.indexOf(":");
+        if(find_index!=-1){
+            req_packageName = req_packageName.split(":")[0];
+        }
         List<String> enableModuleList = MmkvManager.INSTANCE.getAppEnableModuleList(req_packageName);
         ArrayList<String> stringList = new ArrayList<>();
         PackageManager pm = RxposedApp.getInstance().getBaseContext().getPackageManager();
