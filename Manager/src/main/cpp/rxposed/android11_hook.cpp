@@ -131,8 +131,8 @@ namespace android11 {
             zygote_unhook(env, clazz);
         } else {
             LOGE("parent nativeForkAndSpecialize_afore start uid = %d currentuid = %d pid = %d",uid,getuid(),getpid());
+            rprocess::GetInstance()->clearAppinfoNative();
         }
-        rprocess::GetInstance()->clearAppinfoNative();
         DEBUG()
         return pid;
     };
