@@ -20,23 +20,31 @@ rxposed,是一个无感知的Android平台应用注入框架，主要用来对�
 ### 注意事项
 + 同类型工具冲突，如果你的手机中存在修改zygote进程的插件，请关闭了在使用本工具（比如lsposed,zygisk）
 + 不太好支持开机自启
++ 隐藏功能已经无法支持frida-gadget.so
+
+### 使用说明
+
+[语雀文档链接][https://www.yuque.com/thehepta/kp2nla/ri2fh273kf5vyfz7?singleDoc# 《instructions》]
 
 ### 可能需要者
 广大安全开发研究者，它的主要的目是用来无感知注入，有时候这可能需要修改特征，自行编译完成对抗。
 
 
 
-[核心技术点具体实现说明文档](/document/android10.md)
+### 项目说明
 
-| 项目         | 描述                                                                 | 使用说明                                           |
-|------------|--------------------------------------------------------------------|------------------------------------------------|
-| `Manager`  | rxposed 行为管控app 以及要注入的so                                  | [Manager/README.md](https://www.yuque.com/thehepta/kp2nla/ri2fh273kf5vyfz7?singleDoc# 《instructions》) |
-| `Tool`     | 进行ptrace的注入工具，同时添加了将注入的so的内存段进行隐藏的功能       |                                                |
-| `loadxposed` | 一个rxposed的模块，用于注入加载xposed以及管理xposed模块（目前有些问题，正在处理hook框架的问题，高版本不可用）（感觉没啥用，后续可能删除了） | [loadxposed/README.md](/loadxposed/README.md)  |
++ Manager
+  + rxposed 行为管控app 以及要注入的so
++ Tool
+  + 进行ptrace的注入工具，同时添加了将注入的so的内存段进行隐藏的功能
++ loadxposed
+  + 一个rxposed的模块，用于注入加载xposed以及管理xposed模块（目前有些问题，正在处理hook框架的问题，高版本   不可用）（感觉没啥用，后续可能删除了）
+
+[核心技术点具体实现说明文档](/document/android10.md)（待更新）	
 
 
 
-### 模块地址
+### 模块demo地址
 https://github.com/Thehepta/Rxmodule
 
 ### 公众号和知识星球
@@ -62,3 +70,5 @@ https://github.com/frida/frida
 ### License
 
 rxposed is licensed under the **GNU General Public License v3 (GPL-3)** (http://www.gnu.org/copyleft/gpl.html).
+
+[https://www.yuque.com/thehepta/kp2nla/ri2fh273kf5vyfz7?singleDoc# 《instructions》]: 
