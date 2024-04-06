@@ -24,21 +24,10 @@ rxposed,是一个无感知的Android平台应用注入框架，主要用来对�
 
 ### 使用说明
 
-[语雀文档链接][https://www.yuque.com/thehepta/kp2nla/ri2fh273kf5vyfz7?singleDoc# 《instructions》]
+[语雀文档链接][https://www.yuque.com/thehepta/kp2nla/ri2fh273kf5vyfz7]
 
 ### 可能需要者
 广大安全开发研究者，它的主要的目是用来无感知注入，有时候这可能需要修改特征，自行编译完成对抗。
-
-
-
-### 项目说明
-
-+ Manager
-  + rxposed 行为管控app 以及要注入的so
-+ Tool
-  + 进行ptrace的注入工具，同时添加了将注入的so的内存段进行隐藏的功能
-+ loadxposed
-  + 一个rxposed的模块，用于注入加载xposed以及管理xposed模块（目前有些问题，正在处理hook框架的问题，高版本   不可用）（感觉没啥用，后续可能删除了）
 
 [核心技术点具体实现说明文档](/document/android10.md)（待更新）	
 
