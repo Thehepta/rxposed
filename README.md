@@ -23,7 +23,7 @@ rxposed,是一个无感知的Android平台应用注入框架，主要用来对�
 + 隐藏功能已经无法支持frida-gadget.so
 
 ### 使用说明
-
+！！！！看这个稳定，测试使用，模块注入测试，模块编写都写在文档里
 [语雀文档链接](https://www.yuque.com/thehepta/kp2nla/ri2fh273kf5vyfz7)
 
 ### 可能需要者
