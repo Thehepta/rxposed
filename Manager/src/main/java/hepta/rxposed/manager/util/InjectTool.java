@@ -107,6 +107,7 @@ public  class InjectTool {
 
     public static boolean Start()  {
         init();
+
         //修改selinux 规则
         set_selinux_context();
         //ptrace zygote
@@ -290,43 +291,6 @@ public  class InjectTool {
         return null;
     }
 
-//    public static String shell(String cmd)
-//    {
-//        Log.e(TAG,cmd);
-//        String Result  ="";
-//        try {
-//            // 申请获取root权限
-//            Process process = Runtime.getRuntime().exec(su_path); //"/system/xbin/su"
-//            // 获取输出流
-//            OutputStream outputStream = process.getOutputStream();
-//            InputStream is = process.getInputStream();
-//            InputStream es = process.getErrorStream();
-//            DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
-//            dataOutputStream.writeBytes(cmd);
-//            dataOutputStream.flush();
-//            dataOutputStream.close();
-//            outputStream.close();
-//            int code = process.waitFor();
-//            String is_line = null;
-//            String es_line = null;
-////            Log.d(TAG, "Run:\"" + cmd +"\", "+"process.waitFor() = " + code);
-//            BufferedReader br;
-//            br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-//            while ((is_line = br.readLine()) != null) {
-//                Log.d(TAG, "cmd > "+is_line);
-//                Result = Result+is_line+"\n";
-//            }
-//
-//            br = new BufferedReader(new InputStreamReader(es, "UTF-8"));
-//            while ((es_line = br.readLine()) != null) {
-////                Log.d(TAG, "cmd > "+es_line);
-////                Result += es_line;
-//            }
-//        } catch (Throwable t) {
-//            t.printStackTrace();
-//        }
-//        return Result;
-//    }
 
     public static String rootRun(String cmd)
     {
