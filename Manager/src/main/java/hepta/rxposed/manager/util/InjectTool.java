@@ -4,6 +4,7 @@ import static android.content.Context.MODE_PRIVATE;
 
 import android.content.Context;
 import android.content.Intent;
+import android.system.Os;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -106,12 +107,32 @@ public  class InjectTool {
 
     public static boolean Start()  {
         init();
-
         //修改selinux 规则
-        String selinux_policy = policy_path +" --apply "+policy_te+" --live ";
-        rootRun(selinux_policy);
+        set_selinux_context();
+        //ptrace zygote
         zygote_ptrace_hide_so_maps();
         return  true;
+    }
+
+    private static void set_selinux_context() {
+//
+        String selinux_policy = policy_path +" --apply "+policy_te+" --live ";
+        // magiskpolicy  --live "allow zygote unstrsfe binder {  call  transfer }"
+
+
+        rootRun(selinux_policy);
+        String selinux_domain = getDomain();
+        String selinux_policy_domain = policy_path +  " --live \"allow zygote "+selinux_domain +" binder { call transfer }\"";
+        rootRun(selinux_policy_domain);
+
+
+    }
+
+    private static String getDomain() {
+
+        String selinux = InjectTool.shell("id -Z");
+        String user_domain = selinux.split(":")[2];
+        return user_domain;
     }
 
     public static void inject_text(){
@@ -269,6 +290,43 @@ public  class InjectTool {
         return null;
     }
 
+//    public static String shell(String cmd)
+//    {
+//        Log.e(TAG,cmd);
+//        String Result  ="";
+//        try {
+//            // 申请获取root权限
+//            Process process = Runtime.getRuntime().exec(su_path); //"/system/xbin/su"
+//            // 获取输出流
+//            OutputStream outputStream = process.getOutputStream();
+//            InputStream is = process.getInputStream();
+//            InputStream es = process.getErrorStream();
+//            DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
+//            dataOutputStream.writeBytes(cmd);
+//            dataOutputStream.flush();
+//            dataOutputStream.close();
+//            outputStream.close();
+//            int code = process.waitFor();
+//            String is_line = null;
+//            String es_line = null;
+////            Log.d(TAG, "Run:\"" + cmd +"\", "+"process.waitFor() = " + code);
+//            BufferedReader br;
+//            br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+//            while ((is_line = br.readLine()) != null) {
+//                Log.d(TAG, "cmd > "+is_line);
+//                Result = Result+is_line+"\n";
+//            }
+//
+//            br = new BufferedReader(new InputStreamReader(es, "UTF-8"));
+//            while ((es_line = br.readLine()) != null) {
+////                Log.d(TAG, "cmd > "+es_line);
+////                Result += es_line;
+//            }
+//        } catch (Throwable t) {
+//            t.printStackTrace();
+//        }
+//        return Result;
+//    }
 
     public static String rootRun(String cmd)
     {
