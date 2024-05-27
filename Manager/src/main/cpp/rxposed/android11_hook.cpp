@@ -122,7 +122,7 @@ namespace android11 {
                                                 mount_data_dirs,  mount_storage_dirs);
 //        zygote_unhook(env, clazz);
         if(pid == 0){
-            LOGE(" child nativeForkAndSpecialize_afore start uid = %d currentuid = %d pid = %d",uid,getuid(),getpid());
+            LOGE("child nativeForkAndSpecialize_afore start uid = %d currentuid = %d pid = %d",uid,getuid(),getpid());
             if(is_HostProcess){
                 HOOK_Process_getUidForName(env);
             } else if (is_Init) {

@@ -4,6 +4,7 @@ import static android.content.Context.MODE_PRIVATE;
 
 import android.content.Context;
 import android.content.Intent;
+import android.system.Os;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -106,12 +107,23 @@ public  class InjectTool {
 
     public static boolean Start()  {
         init();
-
         //修改selinux 规则
-        String selinux_policy = policy_path +" --apply "+policy_te+" --live ";
-        rootRun(selinux_policy);
+        set_selinux_context();
+        //ptrace zygote
         zygote_ptrace_hide_so_maps();
         return  true;
+    }
+
+    private static void set_selinux_context() {
+//
+        String selinux_policy = policy_path +" --apply "+policy_te+" --live ";
+        // magiskpolicy  --live "allow zygote unstrsfe binder {  call  transfer }"
+        rootRun(selinux_policy);
+        String selinux_domain = "";
+        String selinux_policy_domain = policy_path +  " --live \"allow zygote "+selinux_domain +" binder { call transfer }\"";
+        rootRun(selinux_policy_domain);
+
+
     }
 
     public static void inject_text(){
