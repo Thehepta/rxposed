@@ -35,7 +35,6 @@ import com.afollestad.materialdialogs.list.listItems
 import hepta.rxposed.manager.R
 import hepta.rxposed.manager.util.CheckTool11
 import hepta.rxposed.manager.util.InjectTool
-import hepta.rxposed.manager.util.Util
 import hepta.rxposed.manager.widget.DialogUtil
 
 
@@ -49,7 +48,6 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
-        Util.LogD("onCreateView")
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
 
@@ -101,8 +99,7 @@ class HomeFragment : Fragment() {
                 when(menuItem.itemId){
                     R.id.id_toolbar_option->{
                         MaterialDialog(requireContext(), BottomSheet(LayoutMode.WRAP_CONTENT)).show {
-                            listItems(R.array.rxposetOptions, waitForPositiveButton = false) { _, index, text ->
-                                Util.LogD("$text")
+                            listItems(R.array.rxposetInjectOptions, waitForPositiveButton = false) { _, index, text ->
 
                                 when(index){
                                     0 -> DialogUtil.DidalogSimple(requireContext(),R.string.zygoteMessage, {
@@ -114,6 +111,10 @@ class HomeFragment : Fragment() {
                                     2 -> DialogUtil.DidalogSimple(requireContext(),R.string.injectTestMessage, {
                                         InjectTool.inject_text()
                                     })
+                                    3 ->  {
+                                        cancel()
+                                        findNavController().navigate(R.id.helplog_dest, null)
+                                    }
                                 }
 
                             }

@@ -152,8 +152,14 @@ public  class InjectTool {
         String cmd_arm64 = InjectTool_arm64_path+" -n zygote64 -hidemaps 1 -so "+ InjectSo_arm64_path+" -symbols _Z14Ptrace_ZygotesPKc "+uid+":"+InjectArg;
         String cmd_armv7 = InjectTool_armv7_path+" -n zygote -hidemaps 1 -so "  + InjectSo_armv7_path+" -symbols _Z14Ptrace_ZygotesPKc "+uid+":"+InjectArg;
 
-        rootRun(cmd_arm64);
-        rootRun(cmd_armv7);
+        LogFileHelper.writeLog(cmd_arm64);
+        String ret_cmd_64 = rootRun(cmd_arm64);
+        LogFileHelper.writeLog(ret_cmd_64);
+
+        LogFileHelper.writeLog(cmd_armv7);
+        String ret_cmd_32 = rootRun(cmd_armv7);
+        LogFileHelper.writeLog(ret_cmd_32);
+
     }
 
     public static  void zygote_ptrace()  {

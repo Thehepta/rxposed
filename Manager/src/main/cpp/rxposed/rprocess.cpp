@@ -10,8 +10,7 @@
 #include "android/log.h"
 #include "android_shm.h"
 #include <sys/mount.h>
-
-
+#include <mntent.h>
 
 
 rprocess * rprocess::instance_ =nullptr;
@@ -200,16 +199,16 @@ bool rprocess::hide_maps() {
     if (fp) {
         while ((mentry = getmntent(fp)) != NULL) {
             {
+                LOGE("Mounted on: %s\n", mentry->mnt_dir);
                 if(strncmp(cert_path,mentry->mnt_dir, strlen(cert_path)) == 0){
                     LOGE("Filesystem: %s\n", mentry->mnt_fsname);
-                    LOGE("Mounted on: %s\n", mentry->mnt_dir);
                     LOGE("Type: %s\n", mentry->mnt_type);
                     LOGE("Options: %s\n", mentry->mnt_opts);
                     LOGE("Dump frequency: %d\n", mentry->mnt_freq);
                     LOGE("Pass number: %d\n\n", mentry->mnt_passno);
 
                     if (umount2(mentry->mnt_dir, MNT_DETACH) != -1)
-                        LOGD("hide: Unmounted (%s)\n", mountpoint);
+                        LOGD("hide: Unmounted (%s)\n", mentry->mnt_dir);
                 }
 
             }

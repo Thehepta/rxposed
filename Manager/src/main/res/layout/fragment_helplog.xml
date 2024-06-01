@@ -15,20 +15,30 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:orientation="vertical"
     android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/text"
+    <HorizontalScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/settings_fragment_text"
-        android:textAlignment="center"
-        android:textSize="52sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.25" />
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <ScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fillViewport="true">
+
+            <TextView
+                android:id="@+id/filelog"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textColor="#000000"
+                android:scrollHorizontally="true"
+                android:singleLine="false"
+                android:breakStrategy="simple" />
+
+        </ScrollView>
+    </HorizontalScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

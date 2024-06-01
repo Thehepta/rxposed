@@ -51,6 +51,11 @@
         android:label="@string/settings"
         tools:layout="@layout/fragment_settings" />
     <fragment
+        android:id="@+id/helplog_dest"
+        android:name="hepta.rxposed.manager.fragment.HelpLogFragment"
+        android:label="@string/helplog"
+        tools:layout="@layout/fragment_helplog" />
+    <fragment
         android:id="@+id/modules_dest"
         android:name="hepta.rxposed.manager.fragment.LoadModule.ModuleFragment"
         android:label="@string/modules"

@@ -1,6 +1,8 @@
 package hepta.rxposed.manager.util;
 
-public  class   Consts {
+import hepta.rxposed.manager.RxposedApp;
+
+public class Consts {
 
     public static final int START_FRAGMENT_MODULE = 1 ;
     public static final int START_FRAGMENT_FRAMEWORK = 2 ;
@@ -13,6 +15,8 @@ public  class   Consts {
 
     public static final String INJECT_FRAGMENT_ARGE = "injectProcess";
     public static final String INJECTLIST_FRAGMENT_ARGE = "injectList";
+
+    public static final String LOG_FILE_NAME = RxposedApp.getInstance().getFilesDir()+"/inject_log.txt";
 
 
 }
