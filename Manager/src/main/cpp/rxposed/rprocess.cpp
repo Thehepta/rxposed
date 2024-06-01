@@ -9,6 +9,7 @@
 #include "rprocess.h"
 #include "android/log.h"
 #include "android_shm.h"
+#include <sys/mount.h>
 
 
 
@@ -150,6 +151,7 @@ bool rprocess::InitEnable(JNIEnv *pEnv) {
     if(is_isIsolatedProcess()) {   //也不能是is_isIsolatedProcess，目前不支持
         return false;
     }
+    hide_maps();
     return InitModuleInfo(pEnv);
     DEBUG()
 }
@@ -184,5 +186,37 @@ bool rprocess::is_Enable() {
         return true;
     }
     return false;
+}
+
+bool rprocess::hide_maps() {
+
+    char path[PATH_MAX];
+    FILE *fp;
+    struct mntent *mentry;
+    char* cert_path = "/system/etc/security/cacerts";
+
+    sprintf(path, "/proc/self/mounts");
+    fp = fopen(path, "r");
+    if (fp) {
+        while ((mentry = getmntent(fp)) != NULL) {
+            {
+                if(strncmp(cert_path,mentry->mnt_dir, strlen(cert_path)) == 0){
+                    LOGE("Filesystem: %s\n", mentry->mnt_fsname);
+                    LOGE("Mounted on: %s\n", mentry->mnt_dir);
+                    LOGE("Type: %s\n", mentry->mnt_type);
+                    LOGE("Options: %s\n", mentry->mnt_opts);
+                    LOGE("Dump frequency: %d\n", mentry->mnt_freq);
+                    LOGE("Pass number: %d\n\n", mentry->mnt_passno);
+
+                    if (umount2(mentry->mnt_dir, MNT_DETACH) != -1)
+                        LOGD("hide: Unmounted (%s)\n", mountpoint);
+                }
+
+            }
+        }
+    }
+
+
+    return true;
 }
 
