@@ -25,9 +25,6 @@ import hepta.rxposed.manager.util.CheckTool14;
 
 public class checkFragment extends Fragment {
 
-
-
-
     ArrayList<ItemBean> itemBeans = new ArrayList<>();
     CheckTool checkTool;
     @Nullable
