@@ -42,5 +42,7 @@
     <dimen name="dp_25">25dp</dimen>
     <dimen name="sp_13">13sp</dimen>
     <dimen name="dp_38">38dp</dimen>
+    <dimen name="layout_margin_top_height">30dp</dimen>
+    <dimen name="edit_height">50dp</dimen>
 
 </resources>

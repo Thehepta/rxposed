@@ -68,4 +68,9 @@
     <string name="password">password</string>
     <string name="showPassword">showPassword</string>
     <string name="connect">connect</string>
+    <string name="title_server">Configuration file</string>
+    <string name="server_lab_remarks">remarks</string>
+    <string name="server_lab_address">address</string>
+    <string name="server_lab_port">port</string>
+    <string name="server_lab_NetWork_Type">NetWork Type</string>
 </resources>

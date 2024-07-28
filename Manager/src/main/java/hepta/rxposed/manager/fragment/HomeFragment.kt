@@ -55,34 +55,19 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         rxposed_activity_ui_init()
-        val btn_modules = view.findViewById<Button>(R.id.btn_modules)
-        btn_modules?.setOnClickListener {
+        val btnModules = view.findViewById<Button>(R.id.btn_modules)
+        btnModules?.setOnClickListener {
             findNavController().navigate(R.id.modules_dest, null)
         }
 
-        val btn_root = view.findViewById<Button>(R.id.btn_root)
-        btn_root?.setOnClickListener {
+        val btnSetting = view.findViewById<Button>(R.id.btn_setting)
+        btnSetting?.setOnClickListener {
 
-            DialogUtil.DidalogSimple(requireContext(),"当前设置:"+ InjectTool.su_path,{
-                var search: CharSequence? = null
-                val dialog = MaterialDialog(requireContext(), BottomSheet(LayoutMode.WRAP_CONTENT)).show {
-                    title(R.string.setRootTips)
-                    input(hint = "当前root设置："+InjectTool.su_path, inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS) { _, text ->
-                        search = text
-                    }
-                    negativeButton(android.R.string.cancel)
-                    positiveButton(android.R.string.ok)
-                }
-                dialog.positiveButton {
-                    InjectTool.su_path = search.toString()
-                    requireContext().getSharedPreferences("rxposed", Context.MODE_PRIVATE).edit().putString("supath",InjectTool.su_path).commit()
-                }
-            }, Tips = R.string.RootShowTips, Ok = R.string.Edit)
+            findNavController().navigate(R.id.settings_dest, null)
 
-            true
         }
-        val btn_framework = view.findViewById<Button>(R.id.btn_framework)
-        btn_framework?.setOnClickListener {
+        val btnFramework = view.findViewById<Button>(R.id.btn_framework)
+        btnFramework?.setOnClickListener {
             findNavController().navigate(R.id.pluginject_dest, null)
 
         }
