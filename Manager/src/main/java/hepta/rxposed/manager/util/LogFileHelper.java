@@ -11,7 +11,6 @@ import hepta.rxposed.manager.RxposedApp;
 
 public class LogFileHelper {
 
-
     private static final String TAG = "LogFileHelper";
 
     public static void writeLog(String log) {

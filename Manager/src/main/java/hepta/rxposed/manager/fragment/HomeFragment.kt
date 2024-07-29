@@ -17,9 +17,7 @@
 package hepta.rxposed.manager.fragment
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Bundle
-import android.text.InputType
 import android.view.*
 import android.widget.*
 import androidx.core.view.MenuHost
@@ -30,7 +28,6 @@ import androidx.navigation.fragment.findNavController
 import com.afollestad.materialdialogs.LayoutMode
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.bottomsheets.BottomSheet
-import com.afollestad.materialdialogs.input.input
 import com.afollestad.materialdialogs.list.listItems
 import hepta.rxposed.manager.R
 import hepta.rxposed.manager.util.CheckTool11
@@ -51,7 +48,6 @@ class HomeFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
 
-    @SuppressLint("CheckResult")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         rxposed_activity_ui_init()
@@ -80,6 +76,9 @@ class HomeFragment : Fragment() {
 
             }
 
+
+
+            @SuppressLint("CheckResult")
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 when(menuItem.itemId){
                     R.id.id_toolbar_option->{
@@ -120,7 +119,7 @@ class HomeFragment : Fragment() {
         val Image_icon = view?.findViewById<ImageView>(R.id.status_icon)
         val Text_status = view?.findViewById<TextView>(R.id.status_text)
 
-        var activity = CheckTool11.get_rxposed_status();
+        val activity = CheckTool11.get_rxposed_status();
 
         if (activity){
             btn_activity?.visibility=View.INVISIBLE
@@ -130,7 +129,7 @@ class HomeFragment : Fragment() {
             btn_activity?.setOnClickListener {
 
                 DialogUtil.DidalogSimple(requireContext(),R.string.activityMessage, {
-                    InjectTool.Start()
+                    InjectTool.StartInject()
                     DialogUtil.DidalogSimple(requireContext(),R.string.rxrebootMessage, {
                         InjectTool.Application_reboot()
                     })

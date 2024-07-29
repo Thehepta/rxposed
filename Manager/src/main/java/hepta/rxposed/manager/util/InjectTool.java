@@ -4,7 +4,6 @@ import static android.content.Context.MODE_PRIVATE;
 
 import android.content.Context;
 import android.content.Intent;
-import android.system.Os;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -33,70 +32,45 @@ public  class InjectTool {
      */
 
     public static String TAG = "InjectTool";
-    public static String su_path;
-    public static String arm64_InjectTool = "assets/arm64_InjectTool";
-    public static String armv7_InjectTool = "assets/armv7_InjectTool";
-    public static String HostProviderName = BuildConfig.APPLICATION_ID+".Provider";
 
-    public static int arch_armv7=32;
-    public static int arch_armv8=64;
-    public static String InjectArg = BuildConfig.APPLICATION_ID+":"+HostProviderName;
-    public static Context context = RxposedApp.getRxposedContext();
-    private static String InjectTool_arm64_path;
-    private static String InjectTool_armv7_path;
-    private static String policy_path;
-    private static String policy_te;
 
-    public static String policy_tool = "magiskpolicy";
+    static {
 
-    private static String InjectSo_arm64_path;
-    private static String InjectSo_armv7_path;
-    private static String InjectTestSo_arm64_path;
-    private static String InjectTestSo_armv7_path;
+        Context context = RxposedApp.getRxposedContext();
+        InjectConfig.su_path = context.getSharedPreferences("rxposed",MODE_PRIVATE).getString("supath","su");
+        unziplib(context.getApplicationInfo().sourceDir,context.getFilesDir().getAbsolutePath()+ File.separator);
+        String AppFilePath = context.getFilesDir().getAbsolutePath()+ File.separator;
+        int App_Uid = RxposedApp.getRxposedContext().getApplicationInfo().uid;
+        InjectConfig.policy_path = AppFilePath+InjectConfig.assets_policy_tool;
+        InjectConfig.policy_te = AppFilePath+InjectConfig.assets_policy_te;
+        InjectConfig.InjectArg = App_Uid+":"+BuildConfig.APPLICATION_ID+":"+ InjectConfig.HostProviderName;;
+
+        InjectConfig.arm64_InjectTool = AppFilePath+InjectConfig.assets_arm64_InjectTool;
+        InjectConfig.arm32_InjectTool = AppFilePath+InjectConfig.assets_arm32_InjectTool;
+
+        InjectConfig.appfiles_arm64_InjectSo = AppFilePath+"lib/arm64-v8a/lib"+BuildConfig.Rxposed_Inject_So+".so";
+        InjectConfig.arm64_InjectSo = InjectConfig.appfiles_arm64_InjectSo;
+        InjectConfig.appfiles_arm32_InjectSo = AppFilePath+"lib/armeabi-v7a/lib"+BuildConfig.Rxposed_Inject_So+".so";
+        InjectConfig.arm32_InjectSo = InjectConfig.appfiles_arm32_InjectSo;
+
+        try {
+            Runtime.getRuntime().exec("chmod +x "+InjectConfig.arm64_InjectTool);
+            Runtime.getRuntime().exec("chmod +x "+InjectConfig.arm32_InjectTool);
+            Runtime.getRuntime().exec("chmod +x "+InjectConfig.policy_path);
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public static void zygote_reboot() throws IOException {
         rootRun("killall zygote");
     }
 
-    static {
-        InjectTool.su_path = context.getSharedPreferences("rxposed",MODE_PRIVATE).getString("supath","su");
-    }
-    public static void init(){
-
-        unziplib(context.getApplicationInfo().sourceDir,context.getFilesDir().getAbsolutePath()+ File.separator);
-
-        policy_path = context.getFilesDir().getAbsolutePath()+ File.separator+"assets/"+policy_tool;
-        policy_te = context.getFilesDir().getAbsolutePath()+ File.separator+"assets/rxposed.te";
-
-
-        InjectTool_arm64_path = context.getFilesDir().getAbsolutePath()+ File.separator+arm64_InjectTool;
-        InjectSo_arm64_path = context.getFilesDir().getAbsolutePath()+ File.separator+"lib/arm64-v8a/lib"+BuildConfig.Rxposed_Inject_So+".so";
-        InjectTool_armv7_path = context.getFilesDir().getAbsolutePath()+ File.separator+armv7_InjectTool;
-        InjectSo_armv7_path = context.getFilesDir().getAbsolutePath()+ File.separator+"lib/armeabi-v7a/lib"+BuildConfig.Rxposed_Inject_So+".so";
-
-        InjectTestSo_arm64_path = context.getFilesDir().getAbsolutePath()+ File.separator+"lib/arm64-v8a/lib"+BuildConfig.Rxposed_InjectTest_So+".so";
-        InjectTestSo_armv7_path = context.getFilesDir().getAbsolutePath()+ File.separator+"lib/armeabi-v7a/lib"+BuildConfig.Rxposed_InjectTest_So+".so";
-        try {
-            Runtime.getRuntime().exec("chmod +x "+InjectTool_arm64_path);
-            Runtime.getRuntime().exec("chmod +x "+InjectTool_armv7_path);
-            Runtime.getRuntime().exec("chmod +x "+policy_path);
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-//        Log.e(TAG,InjectTool_arm64_path);
-//        Log.e(TAG,InjectTool_armv7_path);
-//        Log.e(TAG,InjectSo_armv7_path);
-//        Log.e(TAG,InjectSo_arm64_path);
-
-    }
-
-    public static String getStatusAuthority(){
-        int uid = context.getApplicationInfo().uid;
-        return uid+":"+InjectArg;
-    }
     public static void Application_reboot() throws IOException {
+        Context context = RxposedApp.getRxposedContext();
         Intent intent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+        assert intent != null;
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); //与正常页面跳转一样可传递序列化数据,在Launch页面内获得
         intent.putExtra("REBOOT", "reboot");
         context.startActivity(intent);
@@ -105,9 +79,7 @@ public  class InjectTool {
 
     // /data/user/0/hepta.rxposed.manager/files/arm64_InjectTool  -n zygote64 -hidemaps 1 -so /data/user/0/hepta.rxposed.manager/files/arm64_libnativeloader.so -symbols _Z14Ptrace_ZygotesPKc hepta.rxposed.manager.Provider;com.hep>                                                     <
 
-    public static boolean Start()  {
-        init();
-
+    public static boolean StartInject()  {
         //修改selinux 规则
         set_selinux_context();
         //ptrace zygote
@@ -117,40 +89,51 @@ public  class InjectTool {
 
     private static void set_selinux_context() {
 //
-        String selinux_policy = policy_path +" --apply "+policy_te+" --live ";
-        // magiskpolicy  --live "allow zygote unstrsfe binder {  call  transfer }"
-
-
+        String selinux_policy = InjectConfig.policy_path +" --apply "+ InjectConfig.policy_te + " --live ";
         rootRun(selinux_policy);
-        String selinux_domain = getDomain();
-        String selinux_policy_domain = policy_path +  " --live \"allow zygote "+selinux_domain +" binder { call transfer }\"";
+        String selinux_domain = getAppDomain();
+        // magiskpolicy  --live "allow zygote unstrsfe binder {  call  transfer }"
+        String selinux_policy_domain = InjectConfig.policy_path +  " --live \"allow zygote "+selinux_domain +" binder { call transfer }\"";
         rootRun(selinux_policy_domain);
 
 
     }
 
-    private static String getDomain() {
-
-        String selinux = InjectTool.shell("id -Z");
-        String user_domain = selinux.split(":")[2];
-        return user_domain;
+    private static String getAppDomain() {
+        String selinux = shell("id -Z");
+        assert selinux != null;
+        return selinux.split(":")[2];
     }
 
-    public static void inject_text(){
-        init();
-        int uid = context.getApplicationInfo().uid;
-        String cmd_arm64 = InjectTool_arm64_path+" -n zygote64 -hidemaps 1 -so "+ InjectTestSo_arm64_path+" -symbols _Z14Ptrace_ZygotesPKc "+uid+":"+InjectArg;
-        String cmd_armv7 = InjectTool_armv7_path+" -n zygote -hidemaps 1 -so "  + InjectTestSo_armv7_path+" -symbols _Z14Ptrace_ZygotesPKc "+uid+":"+InjectArg;
 
-        rootRun(cmd_arm64);
-        rootRun(cmd_armv7);
-    }
+
     ///data/user/0/hepta.rxposed.manager/files/assets/armv7_InjectTool -n zygote -hidemaps 1 -so /data/user/0/hepta.rxposed.manager/files/lib/armeabi-v7a/librxposed.so -symbols _Z14Ptrace_ZygotesPKc 10288:hepta.rxposed.manager:hepta.rxposed.manager.Provider
     public static  void zygote_ptrace_hide_so_maps()  {
         //zygote 附加
-        int uid = context.getApplicationInfo().uid;
-        String cmd_arm64 = InjectTool_arm64_path+" -n zygote64 -hidemaps 1 -so "+ InjectSo_arm64_path+" -symbols _Z14Ptrace_ZygotesPKc "+uid+":"+InjectArg;
-        String cmd_armv7 = InjectTool_armv7_path+" -n zygote -hidemaps 1 -so "  + InjectSo_armv7_path+" -symbols _Z14Ptrace_ZygotesPKc "+uid+":"+InjectArg;
+        String hidemaps = "";
+        if (InjectConfig.hidemaps){ //添加maps hide功能，目前可能被放弃
+            hidemaps = "-hidemaps";
+        }
+        String InjectArg = InjectConfig.InjectArg;
+        String cmd_arm64 = InjectConfig.arm64_InjectTool+" -n zygote64 "+ hidemaps + " -so " + InjectConfig.arm64_InjectSo+" -symbols _Z14Ptrace_ZygotesPKc "+InjectArg;
+
+        LogFileHelper.writeLog(cmd_arm64);
+        String ret_cmd_64 = rootRun(cmd_arm64);
+        LogFileHelper.writeLog(ret_cmd_64);
+
+        String cmd_arm32 = InjectConfig.arm32_InjectTool +" -n zygote   "+ hidemaps + " -so " + InjectConfig.arm32_InjectSo +" -symbols _Z14Ptrace_ZygotesPKc "+InjectArg;
+
+        LogFileHelper.writeLog(cmd_arm32);
+        String ret_cmd_32 = rootRun(cmd_arm32);
+        LogFileHelper.writeLog(ret_cmd_32);
+
+    }
+
+
+    public static void inject_text(){
+        String cmd_arm64 = InjectConfig.arm64_InjectTool+" -n zygote64 -hidemaps  -so "+ InjectConfig.arm64_InjectSo+" -symbols _Z14Ptrace_ZygotesPKc "+InjectConfig.InjectArg;
+        String cmd_armv7 = InjectConfig.arm64_InjectTool+" -n zygote -hidemaps  -so "  + InjectConfig.arm32_InjectSo +" -symbols _Z14Ptrace_ZygotesPKc "+InjectConfig.InjectArg;
+
 
         LogFileHelper.writeLog(cmd_arm64);
         String ret_cmd_64 = rootRun(cmd_arm64);
@@ -159,41 +142,29 @@ public  class InjectTool {
         LogFileHelper.writeLog(cmd_armv7);
         String ret_cmd_32 = rootRun(cmd_armv7);
         LogFileHelper.writeLog(ret_cmd_32);
-
     }
-
-    public static  void zygote_ptrace()  {
-        //zygote 附加
-        int uid = context.getApplicationInfo().uid;
-        String cmd_arm64 = InjectTool_arm64_path+" -n zygote64 -so "+ InjectSo_arm64_path+" -symbols _Z14Ptrace_ZygotesPKc "+uid+":"+InjectArg;
-        String cmd_armv7 = InjectTool_armv7_path+" -n zygote -so "  + InjectSo_armv7_path+" -symbols _Z14Ptrace_ZygotesPKc "+uid+":"+InjectArg;
-
-        rootRun(cmd_arm64);
-        rootRun(cmd_armv7);
-    }
-
 
         //用于指定进程注入，目前用的不多
     // /data/user/0/hepta.rxposed.manager/files/arm64_InjectTool -p 4903  -so /data/user/0/hepta.rxposed.manager/files/arm64_libnativeloader.so -symbols _Z9Inject_ProcessPKc hepta.rxposed.manager.Provider;com.hep>                                                     <
     public static void Inject_Process(int Pid,String package_list)  {
 
-        String Inject_Arg = HostProviderName+":"+package_list;
-        int arch = ByPidGetProcessArch(Pid);
-        if(arch == arch_armv8){
+        String Inject_Arg = InjectConfig.HostProviderName+":"+package_list;
+        int arch = GetProcessArchByPid(Pid);
+        if(arch == 64){
 
-            String cmd_arm64 = InjectTool_arm64_path+" -p "+Pid+" -so "+ InjectSo_arm64_path+" -symbols _Z14Inject_PorcessPKc "+Inject_Arg;;
-            Log.e(TAG,"arch 64:"+cmd_arm64);
+            String cmd_arm64 = InjectConfig.arm64_InjectTool+" -p "+Pid+" -so "+ InjectConfig.arm64_InjectSo+" -symbols _Z14Inject_PorcessPKc "+Inject_Arg;;
+            Log.e(TAG,"arm64:"+cmd_arm64);
             rootRun(cmd_arm64);
         }else {
 
-            String cmd_armv7 = InjectTool_armv7_path+" -p "+Pid+" -so "+ InjectSo_armv7_path+" -symbols _Z14Inject_PorcessPKc "+Inject_Arg;
-            Log.e(TAG,"arch 32:"+cmd_armv7);
+            String cmd_armv7 = InjectConfig.arm32_InjectTool +" -p "+Pid+" -so "+ InjectConfig.arm32_InjectSo +" -symbols _Z14Inject_PorcessPKc "+Inject_Arg;
+            Log.e(TAG,"arm32:"+cmd_armv7);
             rootRun(cmd_armv7);
         }
 
     }
 
-    private static int ByPidGetProcessArch(int pid) {
+    private static int GetProcessArchByPid(int pid) {
         String exe = rootRun("file -L /proc/"+pid+"/exe");
         if(exe.contains("linker64")){
             return 64;
@@ -236,7 +207,7 @@ public  class InjectTool {
     }
 
 
-
+    //解压lib 和assets 目录到 filee 目录下
     public static void unziplib(String zippath,String resourcepath){
         //判断生成目录是否生成，如果没有就创建
         File pathFile=new File(resourcepath);
@@ -304,7 +275,7 @@ public  class InjectTool {
         String Result  ="";
         try {
             // 申请获取root权限
-            Process process = Runtime.getRuntime().exec(su_path); //"/system/xbin/su"
+            Process process = Runtime.getRuntime().exec(InjectConfig.su_path); //"/system/xbin/su"
             // 获取输出流
             OutputStream outputStream = process.getOutputStream();
             InputStream is = process.getInputStream();
@@ -335,5 +306,7 @@ public  class InjectTool {
         }
         return Result;
     }
+
+
 
 }
