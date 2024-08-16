@@ -24,13 +24,14 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.Spinner
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import hepta.rxposed.manager.R
 import hepta.rxposed.manager.util.InjectConfig
-import hepta.rxposed.manager.util.LogFileHelper
 
 /**
  * A simple [Fragment] subclass.
@@ -49,7 +50,7 @@ class SettingsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
+        init_ui()
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -71,8 +72,32 @@ class SettingsFragment : Fragment() {
 
         },viewLifecycleOwner, Lifecycle.State.RESUMED)
 
+    }
 
+    private fun init_ui() {
+        val inject_type = view?.findViewById<Spinner>(R.id.inject_type)
+        if (InjectConfig.hidemaps){
+            inject_type?.setSelection(0)
+        }else{
+            inject_type?.setSelection(1)
+        }
+        if (InjectConfig.injectInit){
+            inject_type?.setSelection(0)
+        }else{
+            inject_type?.setSelection(1)
+        }
+        val mountPath = view?.findViewById<EditText>(R.id.et_mount_path)
+        val remarks = view?.findViewById<EditText>(R.id.et_remarks)
+        val libPath = view?.findViewById<EditText>(R.id.et_lib_path)
+        val lib64Path = view?.findViewById<EditText>(R.id.et_lib64_path)
+        val injectArg = view?.findViewById<EditText>(R.id.et_inject_arg)
+        remarks?.setText(InjectConfig.config_name)
+        mountPath?.setText(InjectConfig.mountWorkDir)
+        libPath?.setText(InjectConfig.arm32_InjectSo)
+        lib64Path?.setText(InjectConfig.arm64_InjectSo)
+        injectArg?.setText(InjectConfig.InjectArg)
 
+        return
     }
 
 }

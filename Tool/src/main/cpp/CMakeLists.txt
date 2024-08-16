@@ -15,7 +15,8 @@ project("InjectTool")
 # Gradle automatically packages shared libraries with your APK.
 
 add_subdirectory(InjectTool)
-#add_subdirectory(mprop)
+add_subdirectory(initInjectTool)
+add_subdirectory(initInjectLib)
 
 #add_library( # Sets the name of the library.
 #        rxposedtool
