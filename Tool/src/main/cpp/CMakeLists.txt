@@ -7,16 +7,17 @@ cmake_minimum_required(VERSION 3.22.1)
 
 # Declares and names the project.
 
-project("InjectTool")
+project("generalInjectTool")
 
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
 # You can define multiple libraries, and CMake builds them for you.
 # Gradle automatically packages shared libraries with your APK.
 
-add_subdirectory(InjectTool)
-add_subdirectory(initInjectTool)
+add_subdirectory(generalInjectTool)
+add_subdirectory(initProcInjectTool)
 add_subdirectory(initInjectLib)
+add_subdirectory(mount)
 
 #add_library( # Sets the name of the library.
 #        rxposedtool

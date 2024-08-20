@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22.1)
-project (initInjectTool)
+project (generalInjectTool)
 # The version number.
 set (Tutorial_VERSION_MAJOR 1)
 set (Tutorial_VERSION_MINOR 0)
@@ -11,5 +11,5 @@ set (Tutorial_VERSION_MINOR 0)
 # so that we will find TutorialConfig.h
 
 # add the executable
-add_executable(initInjectTool InjectTool.cpp elf_symbol_resolver.cpp)
+add_executable(generalInjectTool InjectTool.cpp)
 

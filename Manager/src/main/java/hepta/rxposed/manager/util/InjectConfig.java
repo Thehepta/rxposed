@@ -44,8 +44,8 @@ public class InjectConfig {
         public final static String HostProviderName = BuildConfig.APPLICATION_ID+".Provider";
         public final static String assets_policy_tool = "assets/magiskpolicy";
         public final static String assets_policy_te = "assets/rxposed.te";
-        public final static String assets_arm64_InjectTool = "assets/arm64_InjectTool";
-        public final static String assets_arm32_InjectTool = "assets/armv7_InjectTool";
+        public final static String assets_arm64_InjectTool = "assets/arm64_generalInjectTool";
+        public final static String assets_arm32_InjectTool = "assets/armv7_generalInjectTool";
 
 
         static public  void Init(){
