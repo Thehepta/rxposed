@@ -18,8 +18,15 @@ package hepta.rxposed.manager.fragment
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.view.*
-import android.widget.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -31,6 +38,7 @@ import com.afollestad.materialdialogs.bottomsheets.BottomSheet
 import com.afollestad.materialdialogs.list.listItems
 import hepta.rxposed.manager.R
 import hepta.rxposed.manager.util.CheckTool11
+import hepta.rxposed.manager.util.InjectConfig
 import hepta.rxposed.manager.util.InjectTool
 import hepta.rxposed.manager.widget.DialogUtil
 
@@ -93,7 +101,10 @@ class HomeFragment : Fragment() {
                                         InjectTool.Application_reboot()
                                     })
                                     2 -> DialogUtil.DidalogSimple(requireContext(),R.string.injectTestMessage, {
-                                        InjectTool.inject_text()
+
+                                        //修改selinux 规则
+                                        val ic = InjectConfig.getInstance()
+                                        InjectTool.inject_text(ic)
                                     })
                                     3 ->  {
                                         cancel()

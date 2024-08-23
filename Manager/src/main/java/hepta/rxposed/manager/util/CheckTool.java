@@ -37,6 +37,7 @@ public class CheckTool {
 
 
     public static boolean get_rxposed_status(){
+
         boolean status = false;
         try {
             int zygote_host_uid = Process.getUidForName(InjectConfig.InjectArg);

@@ -31,10 +31,7 @@ public class RxposedApp extends Application {
     public void onCreate() {
         super.onCreate();
         instance = this;
-
-        //目前的注入不依赖要copy的文件路径，所以直接覆盖，不会有问题
-        InjectConfig.Init();
-
+        InjectConfig.getInstance();
     }
 
     @Override

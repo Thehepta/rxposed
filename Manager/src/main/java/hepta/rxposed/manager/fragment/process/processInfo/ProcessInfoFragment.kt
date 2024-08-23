@@ -39,6 +39,7 @@ import hepta.rxposed.manager.fragment.base.AppItemInfo
 import hepta.rxposed.manager.fragment.process.UIDPorcessItem
 import hepta.rxposed.manager.util.Consts.INJECTLIST_FRAGMENT_ARGE
 import hepta.rxposed.manager.util.Consts.INJECT_FRAGMENT_ARGE
+import hepta.rxposed.manager.util.InjectConfig
 import hepta.rxposed.manager.util.InjectTool
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -118,7 +119,10 @@ class ProcessInfoFragment : Fragment() {
                     retString.append(":")
                 }
             }
-            InjectTool.Inject_Process(inject_pid.toInt(),retString.toString())
+
+            //修改selinux 规则
+            val ic = InjectConfig.getInstance()
+            InjectTool.Inject_Process(ic,inject_pid.toInt(),retString.toString())
             Log.e("Rzx","ProcessInject_Apk:"+retString.toString())
         }
     }
