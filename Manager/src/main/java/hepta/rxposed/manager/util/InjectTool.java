@@ -9,17 +9,20 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Enumeration;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-import hepta.rxposed.manager.BuildConfig;
 import hepta.rxposed.manager.RxposedApp;
 
 public  class InjectTool {
@@ -31,7 +34,9 @@ public  class InjectTool {
      * which is packaged with this application.
      */
 
-    public static String TAG = "InjectTool";
+    public static String TAG = "InjectToolShell";
+
+
 
     public static void zygote_reboot() throws IOException {
         rootRun("killall zygote");
@@ -50,20 +55,35 @@ public  class InjectTool {
     // /data/user/0/hepta.rxposed.manager/files/arm64_InjectTool  -n zygote64 -hidemaps 1 -so /data/user/0/hepta.rxposed.manager/files/arm64_libnativeloader.so -symbols _Z14Ptrace_ZygotesPKc hepta.rxposed.manager.Provider;com.hep>                                                     <
 
     public static boolean StartInject()  {
+        InjectConfig.updateConfigSave();
         //修改selinux 规则
         set_selinux_context();
-        //ptrace zygote
-        zygote_ptrace();
+
+        String hidemaps = "";
+        if (InjectConfig.hidemaps){ //添加maps hide功能，目前可能被放弃
+            hidemaps = "-hidemaps";
+        }else {
+//            mount_libdir(InjectConfig.mountWorkDir,"");
+            mount_dir();
+        }
+
+        zygote_ptrace(hidemaps);
         return  true;
+    }
+
+
+    public static void mount_dir(){
+        InjectTool.rootRun(InjectConfig.mntSh64_tool_path+"  "+InjectConfig.shell_script_path +" "+InjectConfig.mountWorkDir+" "+InjectConfig.appfiles_arm64_InjectSo+" "+InjectConfig.arm64_InjectSo);
+        InjectTool.rootRun(InjectConfig.mntSh32_tool_path+"  "+InjectConfig.shell_script_path +" "+InjectConfig.mountWorkDir+" "+InjectConfig.appfiles_arm32_InjectSo+" "+InjectConfig.arm32_InjectSo);
     }
 
     private static void set_selinux_context() {
 //
-        String selinux_policy = InjectConfig.policy_path +" --apply "+ InjectConfig.policy_te + " --live ";
+        String selinux_policy = InjectConfig.policy_tool_path +" --apply "+ InjectConfig.policy_te_path + " --live ";
         rootRun(selinux_policy);
         String selinux_domain = getAppDomain();
         // magiskpolicy  --live "allow zygote unstrsfe binder {  call  transfer }"
-        String selinux_policy_domain = InjectConfig.policy_path +  " --live \"allow zygote "+selinux_domain +" binder { call transfer }\"";
+        String selinux_policy_domain = InjectConfig.policy_tool_path +  " --live \"allow zygote "+selinux_domain +" binder { call transfer }\"";
         rootRun(selinux_policy_domain);
 
 
@@ -74,30 +94,83 @@ public  class InjectTool {
         assert selinux != null;
         return selinux.split(":")[2];
     }
+    public static void unmount_libdir(String mountWorkDir,String srcLibDir) {
+        InjectTool.rootRun(InjectConfig.mntSh64_tool_path+" umount "+mountWorkDir);
+        InjectTool.rootRun(InjectConfig.mntSh32_tool_path+" umount "+mountWorkDir);
+    }
+    public static void mount_libdir(String mountWorkDir,String srcLibDir) {
 
+        if(findMount(mountWorkDir)){
+            Log.e("rzx",mountWorkDir+" is mounted");
+        }else {
+            Log.e("rzx",mountWorkDir+" is  not mount");
+        }
+//        InjectTool.rootRun("mkdir -p "+mountWorkDir);   //不需要创建目录，直接挂载即可
+//        InjectTool.rootRun(InjectConfig.mount_tool_path+" -t tmpfs tmpfs "+mountWorkDir);
+//        InjectTool.rootRun("chown -R system:system "+mountWorkDir);
+//        InjectTool.rootRun("chcon -R u:object_r:system_file:s0 "+mountWorkDir);
+//        InjectTool.rootRun("cp /data/data/hepta.rxposed.manager/files/lib/arm64-v8a "+mountWorkDir+"/lib64  -R");
+//        InjectTool.rootRun("cp /data/data/hepta.rxposed.manager/files/lib/armeabi-v7a "+mountWorkDir+"/lib  -R");
+//        InjectTool.rootRun("chcon -R u:object_r:system_lib_file:s0 "+mountWorkDir+"/lib");
+//        InjectTool.rootRun("chcon -R u:object_r:system_lib_file:s0 "+mountWorkDir+"/lib64");
+//        InjectTool.rootRun("chmod 0644 "+mountWorkDir+"/lib64/*");
+//        InjectTool.rootRun("chmod 0644 "+mountWorkDir+"/lib/*");
+
+    }
+
+    public static boolean  findMount(String mountWorkDir) {
+        String filePath = "/proc/self/mounts";
+        List<MountInfo> mountList = new ArrayList<>();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                // Split the line by spaces
+                String[] parts = line.split("\\s+");
+                if (parts.length == 6) {
+                    // Parse the fields
+                    String device = parts[0];
+                    String mountPoint = parts[1];
+                    String fileSystemType = parts[2];
+                    String options = parts[3];
+                    int dump = Integer.parseInt(parts[4]);
+                    int pass = Integer.parseInt(parts[5]);
+
+                    // Create a MountInfo object and add it to the list
+                    mountList.add(new MountInfo(device, mountPoint, fileSystemType, options, dump, pass));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Print all mount information
+        for (MountInfo mount : mountList) {
+            if(mount.mountPoint.equals(mountWorkDir)){
+                return true;
+            }
+            Log.e("rzx",mount.mountPoint);
+
+        }
+        return false;
+    }
 
 
     ///data/user/0/hepta.rxposed.manager/files/assets/armv7_InjectTool -n zygote -hidemaps 1 -so /data/user/0/hepta.rxposed.manager/files/lib/armeabi-v7a/librxposed.so -symbols _Z14Ptrace_ZygotesPKc 10288:hepta.rxposed.manager:hepta.rxposed.manager.Provider
-    public static  void zygote_ptrace()  {
+    public static  void zygote_ptrace(String hidemaps)  {
         //zygote 附加
-        String hidemaps = "";
-        if (InjectConfig.hidemaps){ //添加maps hide功能，目前可能被放弃
-            hidemaps = "-hidemaps";
-        }else {
-            InjectConfig.mount_libdir(InjectConfig.mountWorkDir,"");
-        }
-//        String InjectArg = InjectConfig.InjectArg;
-//        String cmd_arm64 = InjectConfig.arm64_InjectTool+" -n zygote64 "+ hidemaps + " -so " + InjectConfig.arm64_InjectSo+" -symbols _Z14Ptrace_ZygotesPKc "+InjectArg;
+
+        String InjectArg = InjectConfig.InjectArg;
+        String cmd_arm64 = InjectConfig.arm64_InjectTool+" -n zygote64 "+ hidemaps + " -so " + InjectConfig.arm64_InjectSo+" -symbols _Z14Ptrace_ZygotesPKc "+InjectArg;
+
+        LogFileHelper.writeLog(cmd_arm64);
+        String ret_cmd_64 = rootRun(cmd_arm64);
+        LogFileHelper.writeLog(ret_cmd_64);
+
+        String cmd_arm32 = InjectConfig.arm32_InjectTool +" -n zygote   "+ hidemaps + " -so " + InjectConfig.arm32_InjectSo +" -symbols _Z14Ptrace_ZygotesPKc "+InjectArg;
+        String ret_cmd_32 = rootRun(cmd_arm32);
+        LogFileHelper.writeLog(ret_cmd_32);
 //
-//        LogFileHelper.writeLog(cmd_arm64);
-//        String ret_cmd_64 = rootRun(cmd_arm64);
-//        LogFileHelper.writeLog(ret_cmd_64);
-//
-//        String cmd_arm32 = InjectConfig.arm32_InjectTool +" -n zygote   "+ hidemaps + " -so " + InjectConfig.arm32_InjectSo +" -symbols _Z14Ptrace_ZygotesPKc "+InjectArg;
-//
-//        LogFileHelper.writeLog(cmd_arm32);
-//        String ret_cmd_32 = rootRun(cmd_arm32);
-//        LogFileHelper.writeLog(ret_cmd_32);
 
     }
 
@@ -135,6 +208,8 @@ public  class InjectTool {
 
     }
 
+
+
     private static int GetProcessArchByPid(int pid) {
         String exe = rootRun("file -L /proc/"+pid+"/exe");
         if(exe.contains("linker64")){
@@ -143,6 +218,7 @@ public  class InjectTool {
             return 32;
         }
     }
+
 
 
     public static boolean copyAssetToDst(Context context, String fileName,String dstFilePath){
@@ -233,6 +309,33 @@ public  class InjectTool {
         return Result.toString();
     }
 
+
+
+    static class MountInfo {
+        String device;
+        String mountPoint;
+        String fileSystemType;
+        String options;
+        int dump;
+        int pass;
+
+        public MountInfo(String device, String mountPoint, String fileSystemType, String options, int dump, int pass) {
+            this.device = device;
+            this.mountPoint = mountPoint;
+            this.fileSystemType = fileSystemType;
+            this.options = options;
+            this.dump = dump;
+            this.pass = pass;
+        }
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "Device: %s\nMount Point: %s\nFile System Type: %s\nOptions: %s\nDump: %d\nPass: %d\n",
+                    device, mountPoint, fileSystemType, options, dump, pass
+            );
+        }
+    }
 
 
 }

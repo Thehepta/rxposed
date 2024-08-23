@@ -25,9 +25,13 @@ public class InjectConfig {
         //注入参数
         public static String InjectArg;
         //修改selinux策略工具路径
-        public static  String policy_path;
+        public static  String policy_tool_path;
         //要修改的selinux策略
-        public static  String policy_te;
+        public static  String policy_te_path;
+        // 自定一个的mount工具
+        public static  String mntSh32_tool_path;
+        public static  String mntSh64_tool_path;
+        public static  String shell_script_path;
         //是否隐藏注入到zygote中的so的 maps（隐藏是不需要本地路径的）
         public static  boolean hidemaps;
         //注入1号进程init，开启server注入功能，开发中
@@ -40,8 +44,16 @@ public class InjectConfig {
         //原始so路径，不会删除，用作初始化和修改后备份 (app files目录下)
         public  static String appfiles_arm64_InjectSo ;
         public  static String appfiles_arm32_InjectSo;
+
+
+
+
+
         public final static String soName = "lib"+BuildConfig.Rxposed_Inject_So+".so";
         public final static String HostProviderName = BuildConfig.APPLICATION_ID+".Provider";
+        public final static String assets_mntSh64_tool = "assets/arm64_mntSh";
+        public final static String assets_mntSh32_tool = "assets/armv7_mntSh";
+        public final static String assets_shell_script = "assets/Inject.sh";
         public final static String assets_policy_tool = "assets/magiskpolicy";
         public final static String assets_policy_te = "assets/rxposed.te";
         public final static String assets_arm64_InjectTool = "assets/arm64_generalInjectTool";
@@ -49,7 +61,7 @@ public class InjectConfig {
 
 
         static public  void Init(){
-                getConfigSave();
+
 
                 Context context = RxposedApp.getRxposedContext();
                 int App_Uid = context.getApplicationInfo().uid;
@@ -57,8 +69,11 @@ public class InjectConfig {
 
                 String AppFilePath = context.getFilesDir().getAbsolutePath()+ File.separator;
                 unziplib(context.getApplicationInfo().sourceDir,AppFilePath);
-                InjectConfig.policy_path = AppFilePath+InjectConfig.assets_policy_tool;
-                InjectConfig.policy_te = AppFilePath+InjectConfig.assets_policy_te;
+                InjectConfig.policy_tool_path = AppFilePath+InjectConfig.assets_policy_tool;
+                InjectConfig.policy_te_path = AppFilePath+InjectConfig.assets_policy_te;
+                InjectConfig.mntSh32_tool_path = AppFilePath+InjectConfig.assets_mntSh32_tool;
+                InjectConfig.mntSh64_tool_path = AppFilePath+InjectConfig.assets_mntSh64_tool;
+                InjectConfig.shell_script_path = AppFilePath+InjectConfig.assets_shell_script;
 
                 InjectConfig.arm64_InjectTool = AppFilePath+InjectConfig.assets_arm64_InjectTool;
                 InjectConfig.arm32_InjectTool = AppFilePath+InjectConfig.assets_arm32_InjectTool;
@@ -69,39 +84,34 @@ public class InjectConfig {
                 try {
                         Runtime.getRuntime().exec("chmod +x "+InjectConfig.arm64_InjectTool);
                         Runtime.getRuntime().exec("chmod +x "+InjectConfig.arm32_InjectTool);
-                        Runtime.getRuntime().exec("chmod +x "+InjectConfig.policy_path);
+                        Runtime.getRuntime().exec("chmod +x "+InjectConfig.policy_tool_path);
+                        Runtime.getRuntime().exec("chmod +x "+InjectConfig.mntSh32_tool_path);
+                        Runtime.getRuntime().exec("chmod +x "+InjectConfig.mntSh64_tool_path);
+                        Runtime.getRuntime().exec("chmod +x "+InjectConfig.assets_shell_script);
 
                 } catch (IOException e) {
                         throw new RuntimeException(e);
                 }
         }
 
-        public static void mount_libdir(String mountWorkDir,String srcLibDir) {
 
-                InjectTool.rootRun("mkdir -p "+mountWorkDir);
-                InjectTool.rootRun("mount -t tmpfs tmpfs "+mountWorkDir);
-                InjectTool.rootRun("chown -R system:system "+mountWorkDir);
-                InjectTool.rootRun("chcon -R u:object_r:system_file:s0 "+mountWorkDir);
-                InjectTool.rootRun("cp /data/data/hepta.rxposed.manager/files/lib/arm64-v8a "+mountWorkDir+"/lib64  -R");
-                InjectTool.rootRun("cp /data/data/hepta.rxposed.manager/files/lib/armeabi-v7a "+mountWorkDir+"/lib  -R");
-                InjectTool.rootRun("chcon -R u:object_r:system_lib_file:s0 "+mountWorkDir+"/lib");
-                InjectTool.rootRun("chcon -R u:object_r:system_lib_file:s0 "+mountWorkDir+"/lib64");
-                InjectTool.rootRun("chmod 0644 "+mountWorkDir+"/lib64/*");
-                InjectTool.rootRun("chmod 0644 "+mountWorkDir+"/lib/*");
 
-        }
+        static void updateConfigSave() {
 
-        private static void getConfigSave() {
-
-                InjectConfig.config_name = MmkvManager.INSTANCE.getString("config_name","default");
-                InjectConfig.su_path = MmkvManager.INSTANCE.getString("supath","su");
-                InjectConfig.mountWorkDir = MmkvManager.INSTANCE.getString("mountWorkDir","/apex/com.android.i18nrxp");
+                InjectConfig.config_name = MmkvManager.INSTANCE.getInjectConfigString("config_name","default");
+                InjectConfig.su_path = MmkvManager.INSTANCE.getInjectConfigString("supath","su");
 //                InjectConfig.hidemaps = MmkvManager.INSTANCE.getBoolean("hidemaps",true);
-                InjectConfig.hidemaps = MmkvManager.INSTANCE.getBoolean("hidemaps",false);
-                InjectConfig.injectInit = MmkvManager.INSTANCE.getBoolean("injectInit",false);
+                InjectConfig.hidemaps = MmkvManager.INSTANCE.getInjectConfigBoolean("hidemaps",false);
+                InjectConfig.injectInit = MmkvManager.INSTANCE.getInjectConfigBoolean("injectInit",false);
+                if(hidemaps){
+                        InjectConfig.arm32_InjectSo = InjectConfig.appfiles_arm32_InjectSo;
+                        InjectConfig.arm64_InjectSo = InjectConfig.appfiles_arm64_InjectSo;
+                }else {
+                        InjectConfig.mountWorkDir = MmkvManager.INSTANCE.getInjectConfigString("mountWorkDir","/apex/com.android.i18nrxp");
+                        InjectConfig.arm32_InjectSo = mountWorkDir+"/lib/"+InjectConfig.soName;
+                        InjectConfig.arm64_InjectSo = mountWorkDir+"/lib64/"+InjectConfig.soName;
+                }
 
-                InjectConfig.arm32_InjectSo = mountWorkDir+"/lib/"+InjectConfig.soName;
-                InjectConfig.arm64_InjectSo = mountWorkDir+"/lib64/"+InjectConfig.soName;
         }
 
         //解压lib 和assets 目录到 filee 目录下

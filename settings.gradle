@@ -16,7 +16,7 @@ dependencyResolutionManagement {
 
     }
 }
-rootProject.name = "Rxposed"
+rootProject.name = "rxposed"
 include ':Manager'
 include ':Tool'
 include ':hiddenapistubs'

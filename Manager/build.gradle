@@ -88,6 +88,7 @@ android {
             }
             mergeAssetsTask.get().doLast {
                 copy_file_to_assets(variant.name,"Tool","generalInjectTool")
+                copy_file_to_assets(variant.name,"Tool","mntSh")
             }
         }
     }

@@ -32,19 +32,22 @@ object MmkvManager {
     private val serverAffStorage by lazy { MMKV.mmkvWithID(ID_SERVER_AFF, MMKV.MULTI_PROCESS_MODE) }
     private val appListStorage by lazy { MMKV.mmkvWithID(ID_SETTING, MMKV.MULTI_PROCESS_MODE) }
 
-    fun putInt(key:String,value:Int){
+    fun putInjectConfigInt(key:String,value:Int){
         settingStorage.putInt(key,value)
     }
-    fun putString(key:String,value:String){
+    fun getInjectConfigInt(key:String,value:Int):Int{
+        return settingStorage.getInt(key,value)
+    }
+    fun putInjectConfigString(key:String,value:String){
         settingStorage.putString(key,value)
     }
-    fun getString(key:String,defalutValue:String): String? {
+    fun getInjectConfigString(key:String,defalutValue:String): String? {
         return settingStorage.getString(key,defalutValue)
     }
-    fun getBoolean(key:String,value:Boolean):Boolean{
+    fun getInjectConfigBoolean(key:String,value:Boolean):Boolean{
        return settingStorage.getBoolean(key,value)
     }
-    fun putBoolean(key:String,value:Boolean){
+    fun putInjectConfigBoolean(key:String,value:Boolean){
         settingStorage.putBoolean(key,value)
     }
 
