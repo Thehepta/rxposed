@@ -4,19 +4,17 @@
 
 
 
-#ifndef NDKAPPLICATION_ARTMETHOD_NATIVE_HOOK_H
-#define NDKAPPLICATION_ARTMETHOD_NATIVE_HOOK_H
-
+#pragma once
 #include <jni.h>
 #include <cstdlib>
 #include <android/log.h>
 
-#define Rxposed_jnihook "rxposed_hook"
+#define LOG_TAG "RxpInSO"
 
 
 #define async_safe_fatal(...)                                                                                          \
   do {                                                                                                                 \
-    __android_log_print(ANDROID_LOG_ERROR,Rxposed_jnihook,__VA_ARGS__);                                                                                            \
+    __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__);                                                                                            \
     abort();                                                                                                           \
   } while (0)
 
@@ -46,4 +44,3 @@ uintptr_t HookJniNativeFunction(uintptr_t *art_method, uintptr_t fun_addr);
 
 void unHookJniNativeFunction(uintptr_t *art_method);
 
-#endif //NDKAPPLICATION_ARTMETHOD_NATIVE_HOOK_H

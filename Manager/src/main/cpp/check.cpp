@@ -112,24 +112,7 @@ Java_hepta_rxposed_manager_util_CheckTool_chekc_1GetArtmethodNative_1init(JNIEnv
         return false;
     }
 }
-extern "C"
-JNIEXPORT jboolean JNICALL
-Java_hepta_rxposed_manager_util_CheckTool_chekc_1android_1os_1Process_1getUidForName(JNIEnv *env,
-                                                                                     jobject thiz) {
-    //如果rxposed已经激活了，那么这个检测应该是失败的
-    jclass  Process_cls = env->FindClass("android/os/Process");
-    jmethodID javamethod = env->GetStaticMethodID(Process_cls,"getUidForName", "(Ljava/lang/String;)I");
 
-    uintptr_t  getUidForName = reinterpret_cast<uintptr_t>(linkerResolveElfInternalSymbol("libandroid_runtime.so","_Z32android_os_Process_getUidForNameP7_JNIEnvP8_jobjectP8_jstring"));
-//    LOGE("getUidForName = %lx",getUidForName);
-
-    uintptr_t native_get_addr = getJmethod_JniFunction(env,Process_cls,javamethod);
-
-    if(getUidForName == native_get_addr){
-        return true;
-    }
-    return false;
-}
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_hepta_rxposed_manager_util_CheckTool_ELFresolveSymbol(JNIEnv *env, jobject thiz) {

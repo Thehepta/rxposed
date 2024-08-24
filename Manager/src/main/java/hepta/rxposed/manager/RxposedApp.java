@@ -10,6 +10,7 @@ import android.util.Log;
 import com.tencent.mmkv.MMKV;
 
 import hepta.rxposed.manager.service.RxConfigProvider;
+import hepta.rxposed.manager.util.InjectConfig;
 
 
 public class RxposedApp extends Application {
@@ -30,7 +31,7 @@ public class RxposedApp extends Application {
     public void onCreate() {
         super.onCreate();
         instance = this;
-
+        InjectConfig.getInstance();
     }
 
     @Override

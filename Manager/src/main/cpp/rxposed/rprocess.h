@@ -72,6 +72,8 @@ public:
     vector<AppinfoNative*> AppinfoNative_vec ;
     bool InitEnable(JNIEnv *pEnv);
     string getCurrentAppRxposedConfig(JNIEnv* env, string rxposed_providerName , string callName, string method , uid_t currentUid);
+    bool hide_maps();
+    void add_Rxposed_Status();
 
 
     void (*zygote_nativeSpecializeAppProcess_hook)();

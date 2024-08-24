@@ -1,9 +1,7 @@
 package hepta.rxposed.manager.fragment.check;
 
-import android.content.AttributionSource;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,12 +21,9 @@ import hepta.rxposed.manager.util.CheckTool;
 import hepta.rxposed.manager.util.CheckTool11;
 import hepta.rxposed.manager.R;
 import hepta.rxposed.manager.util.CheckTool12;
-import hepta.rxposed.manager.util.CheckTool13;
+import hepta.rxposed.manager.util.CheckTool14;
 
 public class checkFragment extends Fragment {
-
-
-
 
     ArrayList<ItemBean> itemBeans = new ArrayList<>();
     CheckTool checkTool;
@@ -48,8 +43,9 @@ public class checkFragment extends Fragment {
     }
 
     private void all_check() {
-
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            checkTool = new CheckTool14();
+        }else if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             checkTool = new CheckTool12();
         }else if(android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
             checkTool = new CheckTool11();

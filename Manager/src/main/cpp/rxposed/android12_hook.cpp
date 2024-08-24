@@ -60,32 +60,6 @@ namespace android12 {
 
 
 
-    // hook getUidForName 函数是为了进行rxposed进程激活状态
-    jint (*android_os_Process_getUidForName_org)(JNIEnv *env, jclass clazz, jstring name);
-    jint android_os_Process_getUidForName_hook(JNIEnv *env, jclass clazz, jstring name) {
-        DEBUG()
-        const char *Authority_arg = const_cast<char *>(env->GetStringUTFChars(name, nullptr));
-        const char *Authority = rprocess::GetInstance()->getStatusAuthority();
-        int ret = 0;
-        if (strncmp(Authority_arg, Authority, strlen(Authority_arg)) == 0) {
-            ret = rprocess::GetInstance()->getHostUid();
-        } else {
-            ret = android_os_Process_getUidForName_org(env, clazz, name);
-        }
-        DEBUG()
-        return ret;
-    }
-
-    void HOOK_Process_getUidForName(JNIEnv *env) {
-        jclass Process_cls = env->FindClass("android/os/Process");
-        jmethodID getUidForName_Jmethod = env->GetStaticMethodID(Process_cls, "getUidForName",
-                                                                 "(Ljava/lang/String;)I");
-
-        android_os_Process_getUidForName_org = reinterpret_cast<jint (*)(JNIEnv *, jclass,
-                                                                         jstring)>(HookJmethod_JniFunction(
-                env, Process_cls, getUidForName_Jmethod,
-                (uintptr_t) android_os_Process_getUidForName_hook));
-    }
 
 
 
@@ -126,7 +100,7 @@ namespace android12 {
         if(pid == 0){
             LOGE(" child nativeForkAndSpecialize_afore start uid = %d currentuid = %d pid = %d",uid,getuid(),getpid());
             if(is_HostProcess){
-                HOOK_Process_getUidForName(env);
+                rprocess::GetInstance()->add_Rxposed_Status();
             } else if (is_Init) {
                 HOOK_Process_setArgv0(env);
             }
@@ -189,7 +163,7 @@ namespace android12 {
         rprocess::GetInstance()->setProcessInfo(pkgName, uid, gid);
 
         if (rprocess::GetInstance()->is_HostProcess()) {
-            HOOK_Process_getUidForName(env);
+            rprocess::GetInstance()->add_Rxposed_Status();
         } else if (rprocess::GetInstance()->InitEnable(env)) {
             HOOK_Process_setArgv0(env);
         }
@@ -313,8 +287,4 @@ namespace android12 {
         DEBUG()
         return ret_bundle;
     }
-
-
-
-
 }

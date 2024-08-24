@@ -18,6 +18,7 @@
     <string name="shopping_cart">Shopping Cart</string>
     <string name="sync_cart">Sync</string>
     <string name="settings">Settings</string>
+    <string name="helplog">Inject zygote Log</string>
     <string name="modules">Modules</string>
     <string name="Plugs">Plugs</string>
     <string name="home">Rxposed</string>
@@ -53,6 +54,8 @@
     <string name="activityTips">激活提示:</string>
     <string name="activityMessage">rxposed激活需要提供root权限,通过ptrace的方式注入zygtoe进程</string>
     <string name="rxrebootMessage">rxposed管理应用在rxposed激活后需要重启一次来刷新状态,是否立即重启应用</string>
+    <string name="clearLogTis">是否清除zygote inject 的日志</string>
+    <string name="savdConfig">是否保存注入配置</string>
     <string name="rebootMessage">重新启动应用程序</string>
     <string name="injectTestMessage">进程注入检测测试</string>
     <string name="zygoteMessage">系统软重启是通过重启zygote实现了，重启后rxposed激活状态将消除</string>
@@ -66,4 +69,16 @@
     <string name="password">password</string>
     <string name="showPassword">showPassword</string>
     <string name="connect">connect</string>
+    <string name="title_server">Configuration file</string>
+    <string name="config_remarks">config_remarks</string>
+    <string name="supath">custom su path</string>
+    <string name="server_lab_address">address</string>
+    <string name="server_lab_port">port</string>
+    <string name="server_lab_NetWork_Type">NetWork Type</string>
+    <string name="So_Inject_Type">so inject type</string>
+    <string name="mount_tmp">mount tmp workdir</string>
+    <string name="lib_path">lib_path</string>
+    <string name="lib64_path">lib64_path</string>
+    <string name="InjectArg">inject argument</string>
+    <string name="initInject">initInject</string>
 </resources>

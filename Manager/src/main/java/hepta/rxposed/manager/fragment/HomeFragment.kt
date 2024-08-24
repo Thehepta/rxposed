@@ -17,11 +17,17 @@
 package hepta.rxposed.manager.fragment
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Bundle
-import android.text.InputType
-import android.view.*
-import android.widget.*
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -30,12 +36,11 @@ import androidx.navigation.fragment.findNavController
 import com.afollestad.materialdialogs.LayoutMode
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.bottomsheets.BottomSheet
-import com.afollestad.materialdialogs.input.input
 import com.afollestad.materialdialogs.list.listItems
 import hepta.rxposed.manager.R
 import hepta.rxposed.manager.util.CheckTool11
+import hepta.rxposed.manager.util.InjectConfig
 import hepta.rxposed.manager.util.InjectTool
-import hepta.rxposed.manager.util.Util
 import hepta.rxposed.manager.widget.DialogUtil
 
 
@@ -49,42 +54,25 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
-        Util.LogD("onCreateView")
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
 
-    @SuppressLint("CheckResult")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         rxposed_activity_ui_init()
-        val btn_modules = view.findViewById<Button>(R.id.btn_modules)
-        btn_modules?.setOnClickListener {
+        val btnModules = view.findViewById<Button>(R.id.btn_modules)
+        btnModules?.setOnClickListener {
             findNavController().navigate(R.id.modules_dest, null)
         }
 
-        val btn_root = view.findViewById<Button>(R.id.btn_root)
-        btn_root?.setOnClickListener {
+        val btnSetting = view.findViewById<Button>(R.id.btn_setting)
+        btnSetting?.setOnClickListener {
 
-            DialogUtil.DidalogSimple(requireContext(),"当前设置:"+ InjectTool.su_path,{
-                var search: CharSequence? = null
-                val dialog = MaterialDialog(requireContext(), BottomSheet(LayoutMode.WRAP_CONTENT)).show {
-                    title(R.string.setRootTips)
-                    input(hint = "当前root设置："+InjectTool.su_path, inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS) { _, text ->
-                        search = text
-                    }
-                    negativeButton(android.R.string.cancel)
-                    positiveButton(android.R.string.ok)
-                }
-                dialog.positiveButton {
-                    InjectTool.su_path = search.toString()
-                    requireContext().getSharedPreferences("rxposed", Context.MODE_PRIVATE).edit().putString("supath",InjectTool.su_path).commit()
-                }
-            }, Tips = R.string.RootShowTips, Ok = R.string.Edit)
+            findNavController().navigate(R.id.settings_dest, null)
 
-            true
         }
-        val btn_framework = view.findViewById<Button>(R.id.btn_framework)
-        btn_framework?.setOnClickListener {
+        val btnFramework = view.findViewById<Button>(R.id.btn_framework)
+        btnFramework?.setOnClickListener {
             findNavController().navigate(R.id.pluginject_dest, null)
 
         }
@@ -97,12 +85,14 @@ class HomeFragment : Fragment() {
 
             }
 
+
+
+            @SuppressLint("CheckResult")
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 when(menuItem.itemId){
                     R.id.id_toolbar_option->{
                         MaterialDialog(requireContext(), BottomSheet(LayoutMode.WRAP_CONTENT)).show {
-                            listItems(R.array.rxposetOptions, waitForPositiveButton = false) { _, index, text ->
-                                Util.LogD("$text")
+                            listItems(R.array.rxposetInjectOptions, waitForPositiveButton = false) { _, index, text ->
 
                                 when(index){
                                     0 -> DialogUtil.DidalogSimple(requireContext(),R.string.zygoteMessage, {
@@ -112,8 +102,15 @@ class HomeFragment : Fragment() {
                                         InjectTool.Application_reboot()
                                     })
                                     2 -> DialogUtil.DidalogSimple(requireContext(),R.string.injectTestMessage, {
-                                        InjectTool.inject_text()
+
+                                        //修改selinux 规则
+                                        val ic = InjectConfig.getInstance()
+                                        InjectTool.inject_text(ic)
                                     })
+                                    3 ->  {
+                                        cancel()
+                                        findNavController().navigate(R.id.helplog_dest, null)
+                                    }
                                 }
 
                             }
@@ -134,9 +131,8 @@ class HomeFragment : Fragment() {
         val Image_icon = view?.findViewById<ImageView>(R.id.status_icon)
         val Text_status = view?.findViewById<TextView>(R.id.status_text)
 
-        var activity = CheckTool11.get_rxposed_status();
-
-        if (activity){
+        val env = InjectTool.get_rxposed_status()
+        if (env != -1){
             btn_activity?.visibility=View.INVISIBLE
             Text_status?.visibility=View.INVISIBLE
         }else{
@@ -144,7 +140,7 @@ class HomeFragment : Fragment() {
             btn_activity?.setOnClickListener {
 
                 DialogUtil.DidalogSimple(requireContext(),R.string.activityMessage, {
-                    InjectTool.Start()
+                    InjectTool.StartInject()
                     DialogUtil.DidalogSimple(requireContext(),R.string.rxrebootMessage, {
                         InjectTool.Application_reboot()
                     })
