@@ -81,4 +81,5 @@
     <string name="lib64_path">lib64_path</string>
     <string name="InjectArg">inject argument</string>
     <string name="initInject">initInject</string>
+    <string name="setting">配置注入</string>
 </resources>
