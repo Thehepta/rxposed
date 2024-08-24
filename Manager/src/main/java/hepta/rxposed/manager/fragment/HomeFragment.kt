@@ -18,6 +18,7 @@ package hepta.rxposed.manager.fragment
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -130,9 +131,8 @@ class HomeFragment : Fragment() {
         val Image_icon = view?.findViewById<ImageView>(R.id.status_icon)
         val Text_status = view?.findViewById<TextView>(R.id.status_text)
 
-        val activity = CheckTool11.get_rxposed_status();
-
-        if (activity){
+        val env = System.getenv("RXPOSED_ACTIVITY")
+        if (env != null){
             btn_activity?.visibility=View.INVISIBLE
             Text_status?.visibility=View.INVISIBLE
         }else{

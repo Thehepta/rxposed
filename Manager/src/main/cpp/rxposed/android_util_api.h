@@ -16,12 +16,12 @@
 
 
 
-#define LOG_TAG "Rxposed_Inject"
+#define LOG_TAG "RxpInSO"
 #if 1
 // 调用 debug 版本方法
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
-#define DEBUG(...) __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,"[function %s],[line %d]",__func__, __LINE__);
-#define LOGD(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+#define DEBUG(...) __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,"[fun:%s],[line:%d]",__func__, __LINE__);
+#define LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__)
 #define LOGF(...) __android_log_print(ANDROID_LOG_FATAL, LOG_TAG, __VA_ARGS__)
 
 #else

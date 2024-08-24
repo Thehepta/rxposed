@@ -180,6 +180,15 @@ void rprocess::clearAppinfoNative() {
     AppinfoNative_vec.clear();
 }
 
+void rprocess::add_Rxposed_Status() {
+    // 设置rxposed环境变量
+    if (setenv("RXPOSED_ACTIVITY", "1", 1) == 0) {
+        DEBUG("RXPOSED_ACTIVITY set to %s\n", getenv("RXPOSED_ACTIVITY"));
+    } else {
+        DEBUG("setenv failed");
+    }
+}
+
 bool rprocess::is_Enable() {
     if(AppinfoNative_vec.size() >0){
         return true;
@@ -247,4 +256,6 @@ bool rprocess::hide_maps() {
 
     return true;
 }
+
+
 
