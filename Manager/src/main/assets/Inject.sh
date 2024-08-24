@@ -1,7 +1,6 @@
 #!/system/bin/sh
 
 echo `id`
-#zygote_pid=$1
 mount_dir=$1
 src=$2
 dst=$3
