@@ -62,7 +62,14 @@ public  class InjectTool {
         zygote_ptrace(ic,hidemaps);
         return  true;
     }
-
+    public static int get_rxposed_status()  {
+        String env = System.getenv("RXPOSED_ACTIVITY");
+        if (env != null){
+            return Integer.parseInt(env);
+        }else{
+            return -1;
+        }
+    }
 
     public static void mount_dir(InjectConfig ic){
         rootRun(InjectConfig.mntSh64_tool_path+"  "+InjectConfig.shell_script_path +" "+ic.mountWorkDir+" "+InjectConfig.appfiles_arm64_InjectSo+" "+ic.arm64_InjectSo);

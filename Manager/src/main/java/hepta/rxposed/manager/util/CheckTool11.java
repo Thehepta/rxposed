@@ -1,19 +1,10 @@
 package hepta.rxposed.manager.util;
 
-import android.content.AttributionSource;
-import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.Process;
-import android.util.Log;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 
-import hepta.rxposed.manager.RxposedApp;
 import hepta.rxposed.manager.fragment.check.ItemBean;
 
 public class CheckTool11 extends CheckTool {
@@ -25,27 +16,7 @@ public class CheckTool11 extends CheckTool {
     }
 
 
-    public void addCheckItem(ArrayList<ItemBean> itemBeans) {
-
-        if(chekc_GetArtmethodNative_init()){
-            itemBeans.add(new ItemBean("chekc_GetArtmethodNative_init",true));
-        }else {
-            itemBeans.add(new ItemBean("chekc_GetArtmethodNative_init",false));
-        }
-
-        if(CheckTool11.get_rxposed_status()) {
-            itemBeans.add(new ItemBean("chekc_android_os_Process_getUidForName",true));
-        }else {
-            itemBeans.add(new ItemBean("chekc_android_os_Process_getUidForName",chekc_android_os_Process_getUidForName()));
-        }
-
-        itemBeans.add(new ItemBean("chekc_PreGetenv", chekcPreGetenv()));
-        itemBeans.add(new ItemBean("linkerResolveElfInternalSymbol",ELFresolveSymbol()));
-        itemBeans.add(new ItemBean("check_artmethod_jni_hook",check_jni_hook()));
-
-
-        itemBeans.add(new ItemBean("Process."+check_Process_setArgV0(),true));
-
+    public void addExternCheckItem(ArrayList<ItemBean> itemBeans) {
         chekc_java_method(itemBeans);
     }
 
@@ -72,8 +43,6 @@ public class CheckTool11 extends CheckTool {
 
         Class<?>[] IContentProvider_call_parameter= {String.class,String.class,String.class,String.class,String.class,Bundle.class};
         itemBeans.add(Found_javaMethod("android.content.IContentProvider","call",IContentProvider_call_parameter));
-
-
 
     }
 

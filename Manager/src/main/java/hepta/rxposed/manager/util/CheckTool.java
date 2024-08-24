@@ -1,12 +1,8 @@
 package hepta.rxposed.manager.util;
 
-import android.content.AttributionSource;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.IBinder;
 import android.os.Process;
 import android.util.Log;
 
@@ -35,21 +31,6 @@ public class CheckTool {
         System.loadLibrary("check");
     }
 
-
-    public static boolean get_rxposed_status(){
-
-        boolean status = false;
-        try {
-            int zygote_host_uid = Process.getUidForName(InjectConfig.InjectArg);
-            if(zygote_host_uid!=-1){
-                status = true;
-            }
-            return status;
-        }catch (Exception e){
-            e.printStackTrace();
-            return status;
-        }
-    }
 
     public  boolean check_jni_hook() {
         boolean no_hook_ret =  jni_hook_test();
@@ -195,10 +176,18 @@ public class CheckTool {
     public native boolean  ELFresolveSymbol();
 
     public void addCheckItem(ArrayList<ItemBean> itemBeans) {
+        itemBeans.add(new ItemBean("chekc_GetArtmethodNative_init",chekc_GetArtmethodNative_init()));
+        itemBeans.add(new ItemBean("chekc_PreGetenv", chekcPreGetenv()));
+        itemBeans.add(new ItemBean("linkerResolveElfInternalSymbol",ELFresolveSymbol()));
+        itemBeans.add(new ItemBean("check_artmethod_jni_hook",check_jni_hook()));
+        itemBeans.add(new ItemBean("Process."+check_Process_setArgV0(),true));
+        addExternCheckItem(itemBeans);
+    }
+
+    public void addExternCheckItem(ArrayList<ItemBean> itemBeans) {
 
 
     }
-
     public native String check_Process_setArgV0();
 
     public void chekc_java_method(ArrayList<ItemBean> itemBeans){

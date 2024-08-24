@@ -131,8 +131,8 @@ class HomeFragment : Fragment() {
         val Image_icon = view?.findViewById<ImageView>(R.id.status_icon)
         val Text_status = view?.findViewById<TextView>(R.id.status_text)
 
-        val env = System.getenv("RXPOSED_ACTIVITY")
-        if (env != null){
+        val env = InjectTool.get_rxposed_status()
+        if (env != -1){
             btn_activity?.visibility=View.INVISIBLE
             Text_status?.visibility=View.INVISIBLE
         }else{

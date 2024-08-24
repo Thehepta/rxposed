@@ -17,29 +17,9 @@ public class CheckTool14 extends CheckTool{
 
 
 
-    public void addCheckItem(ArrayList<ItemBean> itemBeans) {
-
-        if(chekc_GetArtmethodNative_init()){
-            itemBeans.add(new ItemBean("chekc_GetArtmethodNative_init",true));
-        }else {
-            itemBeans.add(new ItemBean("chekc_GetArtmethodNative_init",false));
-        }
-
-        if(CheckTool11.get_rxposed_status()) {
-            itemBeans.add(new ItemBean("chekc_android_os_Process_getUidForName",true));
-        }else {
-            itemBeans.add(new ItemBean("chekc_android_os_Process_getUidForName",chekc_android_os_Process_getUidForName()));
-        }
-
-        itemBeans.add(new ItemBean("chekc_PreGetenv", chekcPreGetenv()));
-        itemBeans.add(new ItemBean("linkerResolveElfInternalSymbol",ELFresolveSymbol()));
-        itemBeans.add(new ItemBean("check_artmethod_jni_hook",check_jni_hook()));
-
-        itemBeans.add(new ItemBean("Process."+check_Process_setArgV0(),true));
-
+    public void addExternCheckItem(ArrayList<ItemBean> itemBeans) {
         chekc_java_method(itemBeans);
     }
-
 
     public void chekc_java_method(ArrayList<ItemBean> itemBeans){
 
