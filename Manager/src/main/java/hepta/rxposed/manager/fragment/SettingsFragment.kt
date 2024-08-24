@@ -17,7 +17,6 @@
 package hepta.rxposed.manager.fragment
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -34,9 +33,11 @@ import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import hepta.rxposed.manager.R
-import hepta.rxposed.manager.RxposedApp
+import hepta.rxposed.manager.util.Consts
 import hepta.rxposed.manager.util.InjectConfig
+import hepta.rxposed.manager.util.LogFileHelper
 import hepta.rxposed.manager.util.MmkvManager
+import hepta.rxposed.manager.widget.DialogUtil
 
 
 /**
@@ -71,31 +72,10 @@ class SettingsFragment : Fragment() {
                 when(menuItem.itemId){
                     R.id.set_save->{
 
-                        val initinject_type = view?.findViewById<Spinner>(R.id.sp_initInject)
-                        if(initinject_type?.selectedItemId?.toInt() == 0){
-                            MmkvManager.putInjectConfigBoolean("injectInit", true)
-                        }else{
-                            MmkvManager.putInjectConfigBoolean("injectInit", false)
-                        }
+                        DialogUtil.DidalogSimple(requireContext(),R.string.savdConfig, {
+                            savd_config()
+                        })
 
-                        val inject_type = view?.findViewById<Spinner>(R.id.inject_type)
-                        if(inject_type?.selectedItemId?.toInt() == InjectConfig.HIED_MAPS){
-                            MmkvManager.putInjectConfigInt("injectType", InjectConfig.HIED_MAPS)
-                            ic.updateConfigSave()
-                            parentFragmentManager.popBackStack()
-                        }else{
-                            MmkvManager.putInjectConfigInt("injectType", InjectConfig.MOUNT_TMP)
-
-                            val mountPath = view?.findViewById<EditText>(R.id.et_mount_path)
-                            if(mountPath?.text.toString().isEmpty()){
-                                Toast.makeText(requireContext(), "mountWorkDir is not null", Toast.LENGTH_LONG).show()
-
-                            }else{
-                                MmkvManager.putInjectConfigString("mountWorkDir", mountPath?.text.toString())
-                                ic.updateConfigSave()
-                                parentFragmentManager.popBackStack()
-                            }
-                        }
                     }
                 }
                 return false
@@ -104,6 +84,35 @@ class SettingsFragment : Fragment() {
         },viewLifecycleOwner, Lifecycle.State.RESUMED)
 
     }
+
+    private fun savd_config() {
+        val initinjectType = view?.findViewById<Spinner>(R.id.sp_initInject)
+        if(initinjectType?.selectedItemId?.toInt() == 0){
+            MmkvManager.putInjectConfigBoolean("injectInit", true)
+        }else{
+            MmkvManager.putInjectConfigBoolean("injectInit", false)
+        }
+
+        val injectType = view?.findViewById<Spinner>(R.id.inject_type)
+        if(injectType?.selectedItemId?.toInt() == Consts.HIDE_MAPS){
+            MmkvManager.putInjectConfigInt("injectType", Consts.HIDE_MAPS)
+            ic.updateConfigSave()
+            parentFragmentManager.popBackStack()
+        }else{
+            MmkvManager.putInjectConfigInt("injectType", Consts.MOUNT_TMP)
+
+            val mountPath = view?.findViewById<EditText>(R.id.et_mount_path)
+            if(mountPath?.text.toString().isEmpty()){
+                Toast.makeText(requireContext(), "mountWorkDir is not null", Toast.LENGTH_LONG).show()
+
+            }else{
+                MmkvManager.putInjectConfigString("mountWorkDir", mountPath?.text.toString())
+                ic.updateConfigSave()
+                parentFragmentManager.popBackStack()
+            }
+        }
+    }
+
 
     private fun init_ui() {
         val ll_mount = view?.findViewById<LinearLayout>(R.id.ll_mount)
@@ -116,15 +125,15 @@ class SettingsFragment : Fragment() {
         val injectArg = view?.findViewById<EditText>(R.id.et_inject_arg)
         remarks?.setText(ic.config_name)
         suPath?.setText(ic.su_path)
-        injectArg?.setText(InjectConfig.InjectArg)
+        injectArg?.setText(Consts.InjectArg)
 
-        if (ic.injectType == InjectConfig.HIED_MAPS){
-            inject_type?.setSelection(InjectConfig.HIED_MAPS)
+        if (ic.injectType == Consts.HIDE_MAPS){
+            inject_type?.setSelection(Consts.HIDE_MAPS)
             ll_mount?.visibility = View.GONE
             libPath?.setText( ic.arm32_InjectSo)
             lib64Path?.setText( ic.arm32_InjectSo)
         }else{
-            inject_type?.setSelection(InjectConfig.MOUNT_TMP)
+            inject_type?.setSelection(Consts.MOUNT_TMP)
             mountPath?.setText(ic.mountWorkDir)
             ll_mount?.visibility = View.VISIBLE
             libPath?.setText( ic.arm32_InjectSo)
@@ -141,7 +150,7 @@ class SettingsFragment : Fragment() {
         inject_type?.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
                 // 获取选择的项
-                if(position == InjectConfig.HIED_MAPS){
+                if(position == Consts.HIDE_MAPS){
                     ll_mount?.visibility = View.GONE
                 }else{
                     mountPath?.setText(ic.mountWorkDir)

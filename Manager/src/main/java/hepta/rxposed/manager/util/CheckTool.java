@@ -170,9 +170,6 @@ public class CheckTool {
 
     public native boolean chekc_GetArtmethodNative_init();
 
-
-    public native boolean chekc_android_os_Process_getUidForName();
-
     public native boolean  ELFresolveSymbol();
 
     public void addCheckItem(ArrayList<ItemBean> itemBeans) {
