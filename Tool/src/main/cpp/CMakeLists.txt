@@ -18,6 +18,7 @@ add_subdirectory(generalInjectTool)
 add_subdirectory(initProcInjectTool)
 add_subdirectory(initInjectLib)
 add_subdirectory(mntSh)
+add_subdirectory(ptraceInit)
 
 #add_library( # Sets the name of the library.
 #        rxposedtool

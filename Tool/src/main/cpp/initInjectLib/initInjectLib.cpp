@@ -22,6 +22,5 @@ void Ptrace_Init(const char* arg){
             LOGE("LD_PRELOAD set failed\n");
             return;
         }
-
     }
 }

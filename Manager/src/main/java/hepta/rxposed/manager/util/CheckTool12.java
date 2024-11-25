@@ -50,8 +50,6 @@ public class CheckTool12 extends CheckTool{
             Class<?>[] IContentProvider_call_parameter= {AttributionSource.class,String.class,String.class,String.class,Bundle.class};
             itemBeans.add(Found_javaMethod("android.content.IContentProvider","call",IContentProvider_call_parameter));
         }
-
-
     }
 
 }
