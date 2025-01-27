@@ -19,6 +19,8 @@ add_subdirectory(initProcInjectTool)
 add_subdirectory(initInjectLib)
 add_subdirectory(mntSh)
 add_subdirectory(ptraceInit)
+add_subdirectory(jsonDemo)
+add_subdirectory(resetprop)
 
 #add_library( # Sets the name of the library.
 #        rxposedtool
