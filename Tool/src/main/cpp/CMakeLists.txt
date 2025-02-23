@@ -18,9 +18,14 @@ add_subdirectory(generalInjectTool)
 add_subdirectory(initProcInjectTool)
 add_subdirectory(initInjectLib)
 add_subdirectory(mntSh)
-add_subdirectory(ptraceInit)
 add_subdirectory(jsonDemo)
 add_subdirectory(resetprop)
+add_subdirectory(testSvc)
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|AARCH64|ARM64")
+    add_subdirectory(ptraceInit)
+endif()
+
+add_subdirectory(dd)
 
 #add_library( # Sets the name of the library.
 #        rxposedtool

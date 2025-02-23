@@ -12,6 +12,10 @@
 class InjectProc {
 
 public:
+    InjectProc(){
+        this->zygote32_pid = -1;
+        this->zygote64_pid = -1;
+    }
     void setTracePid(pid_t pid){
         traced_pid = pid;
     }
@@ -23,18 +27,28 @@ public:
         return traced_pid;
     }
 
-    bool findPid(pid_t pid){
-        auto state = Child_Process.find(pid);
-        if (state == Child_Process.end()) {
-            return true;
+    bool is_zygote64_process(pid_t pid){
+        if(this->zygote64_pid != -1){
+            if(this->zygote64_pid == pid){
+                return true;
+            }
         }
-
         return false;
     }
-    void monitor_proc(pid_t pid);
-    bool filter_proc(pid_t pid);
+    bool is_zygote32_process(pid_t pid){
+        if(this->zygote32_pid != -1){
+            if(this->zygote32_pid == pid){
+                return true;
+            }
+        }
+        return false;
+    }
+        void monitor_proc(pid_t pid);
+    bool filter_zygote_proc(pid_t pid);
 private:
     pid_t traced_pid;
+    pid_t zygote64_pid;
+    pid_t zygote32_pid;
     std::set<pid_t> Child_Process;
 
 };

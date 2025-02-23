@@ -10,7 +10,9 @@
 #include <set>
 #include <fstream>
 #include <sys/signalfd.h>
-
+#include <sys/syscall.h>
+#include <bits/glibc-syscalls.h>
+#include <elf.h>
 #include "InjectProc.h"
 using namespace std;
 
@@ -56,28 +58,68 @@ void ptrace_event_cb(evutil_socket_t, short, void *arg) {
         }
         return;
     }
+    if(injectProc->is_zygote32_process(pid)) {
+        if (WIFSTOPPED(status)) {
+
+            struct user_pt_regs regs;
+            struct iovec ioVec;
+            ioVec.iov_base = &regs;
+            ioVec.iov_len = sizeof(regs);
+            ptrace(PTRACE_GETREGSET, pid, NT_PRSTATUS, &ioVec);
+
+            // 检查是否为系统调用入口点
+            if (regs.regs[7] == SYS_clone) {
+                cout<<"拦截到 fork 系统调用"<<pid<<endl;
+                ptrace(PTRACE_DETACH, pid, 0, 0);
+            } else {
+                // 继续执行子进程
+                ptrace(PTRACE_SYSCALL, pid, 0, 0);
+            }
+        }
+        return;
+    }
+    if(injectProc->is_zygote64_process(pid)){
+        if (WIFSTOPPED(status)) {
+            struct user_pt_regs regs;
+            struct iovec ioVec;
+            ioVec.iov_base = &regs;
+            ioVec.iov_len = sizeof(regs);
+            ptrace(PTRACE_GETREGSET, pid, NT_PRSTATUS, &ioVec);
+            // 检查是否为系统调用入口点
+            if (regs.regs[8] == SYS_clone) {
+                cout<<"拦截到 fork 系统调用"<<pid<<endl;
+                ptrace(PTRACE_DETACH, pid, 0, 0);
+            } else {
+                // 继续执行子进程
+                ptrace(PTRACE_SYSCALL, pid, 0, 0);
+            }
+        }
+        return;
+    }
+
     std::set<pid_t> &process = injectProc->get_Tracee_Process();
     auto state = process.find(pid);
-
-    if (state == process.end()) {
+    if (state == process.end()) {  //运行到这里说明都是子进程信号
+        //子进程如果不符合条件会被PTRACE_DETACH,所以要么是新创建的子进程,要么是符合条件的子进程
         cout<<"new process attached:"<<pid<<endl;
         process.emplace(pid);
-        ptrace(PTRACE_SETOPTIONS, pid, 0, PTRACE_O_TRACEEXEC);
+        //前面ptrace的时候,使用的是PTRACE_O_TRACEFORK,所以子进程会在调用fork以后停止,并被追踪到
+        ptrace(PTRACE_SETOPTIONS, pid, 0, PTRACE_O_TRACEEXEC); //这段代码 进程会停止在exec加载完,但是还没没有执行的时候
         ptrace(PTRACE_CONT, pid, 0, 0);
         return;
     }else{
         cout<<"old process handle: "<<pid<<endl;
         if (STOPPED_WITH(status,SIGTRAP, PTRACE_EVENT_EXEC)){
-            kill(pid, SIGSTOP);
-            ptrace(PTRACE_CONT, pid, 0, 0);
+            kill(pid, SIGSTOP);             // 信号会在进程运行起来以后接受到
+            ptrace(PTRACE_CONT, pid, 0, 0); //由于进程当前已经停止,所以先运行起来
             waitpid(pid, &status, __WALL);
-            if (STOPPED_WITH(status,SIGSTOP, 0)) {
-                if(injectProc->filter_proc(pid)){
-                    ptrace(PTRACE_DETACH, pid, 0, SIGSTOP);
-                    injectProc->monitor_proc(pid);
+            if (STOPPED_WITH(status,SIGSTOP, 0)) {   //这个就是接受到的信号,前面 kill(pid, SIGSTOP);  发送的
+                if(injectProc->filter_zygote_proc(pid)){
+                    ptrace(PTRACE_SETOPTIONS, pid, 0, PTRACE_O_TRACESYSGOOD);
+                    ptrace(PTRACE_SYSCALL, pid, 0, 0);
+                    ptrace(PTRACE_CONT, pid, 0, 0);
                 } else{
                     ptrace(PTRACE_DETACH, pid, 0, 0);
-
                 }
             }
         } else {

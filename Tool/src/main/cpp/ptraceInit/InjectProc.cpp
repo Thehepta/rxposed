@@ -10,6 +10,7 @@
 #include <linux/ptrace.h>
 #include <sys/ptrace.h>
 #include <sys/wait.h>
+#include <sys/signalfd.h>
 
 using namespace std;
 std::string get_program(int pid) {
@@ -27,11 +28,13 @@ std::string get_program(int pid) {
     return buf;
 }
 
-bool InjectProc::filter_proc(pid_t pid){
+bool InjectProc::filter_zygote_proc(pid_t pid){
     auto program = get_program(pid);
     if(program =="/system/bin/app_process64"){
+        this->zygote64_pid = pid;
         return true;
     } else if(program =="/system/bin/app_process32"){
+        this->zygote32_pid = pid;
         return true;
     }
     return false;
@@ -57,6 +60,65 @@ void wait_for_trace(int pid, int* status, int flags) {
     }
 }
 
+void handle_process_on_fork(pid_t pid) {
+    int status;
+    std::string file_name = std::to_string(pid)+".log";
+
+    std::ofstream log_file(file_name);
+    std::cout.rdbuf(log_file.rdbuf());
+    if (ptrace(PTRACE_SEIZE, pid, 0, PTRACE_O_TRACEFORK) == -1) {
+        std::cout<<"PTRACE_SEIZE failed"<<std::endl;
+    }
+    wait_for_trace(pid, &status, __WALL); //阻塞等待目标进程返回,后面在接着处理
+    if (STOPPED_WITH(status,SIGSTOP, PTRACE_EVENT_STOP)) {
+//        string lib_path =  "libzygisk.so";
+//        if (!inject_on_main(pid, lib_path.c_str())) {
+//            printf("failed to inject");
+//            return ;
+//        }
+        std::cout<<"inject done, continue process"<<endl;
+        if (kill(pid, SIGCONT)) {
+            std::cout<<"kill"<<endl;
+            return;
+        }
+        if (ptrace(PTRACE_CONT, pid, 0, 0) == -1) {
+            std::cout<<"cont"<<endl;
+            return ;
+        }
+        wait_for_trace(pid, &status, __WALL);
+        if (STOPPED_WITH(status,SIGTRAP, PTRACE_EVENT_STOP)) {
+            if (ptrace(PTRACE_CONT, pid, 0, 0) == -1) {
+                std::cout<<"cont"<<endl;
+                return ;
+            }
+            wait_for_trace(pid, &status, __WALL);
+            if (STOPPED_WITH(status,SIGCONT, 0)) {
+                std::cout<<"received SIGCONT"<<endl;
+                while(1){
+                    wait_for_trace(pid, &status, __WALL);
+                    if (STOPPED_WITH(status,SIGTRAP, PTRACE_EVENT_FORK)) {
+                        long child_pid;
+                        ptrace(PTRACE_GETEVENTMSG, pid, 0, &child_pid);
+                        std::cout<<"fork fork forked  "<<child_pid<<endl;
+                        ptrace(PTRACE_DETACH, pid, 0, SIGCONT);
+                        std::cout<<"fork fork received SIGCONT"<<endl;
+                        return;
+                    }
+                }
+            }
+        } else {
+            std::cout<<"nknown state,not SIGTRAP + EVENT_STOP"<<endl;
+
+//            LOGE("unknown state %s, not SIGTRAP + EVENT_STOP", parse_status(status).c_str());
+            ptrace(PTRACE_DETACH, pid, 0, 0);
+            return ;
+        }
+    } else {
+        std::cout<<"unknown state , not SIGSTOP + EVENT_STOP"<<endl;
+        ptrace(PTRACE_DETACH, pid, 0, 0);
+        return ;
+    }
+}
 
 void handle_process(pid_t pid){
     int status;
@@ -116,7 +178,6 @@ void InjectProc::monitor_proc(pid_t pid){
     pid_t trace_pid = fork();
     if(trace_pid == 0){
         handle_process(pid);
-
     }
 }
 
