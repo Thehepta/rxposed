@@ -60,7 +60,6 @@ void ptrace_event_cb(evutil_socket_t, short, void *arg) {
     }
     if(injectProc->is_zygote32_process(pid)) {
         if (WIFSTOPPED(status)) {
-
             struct user_pt_regs regs;
             struct iovec ioVec;
             ioVec.iov_base = &regs;
@@ -85,6 +84,7 @@ void ptrace_event_cb(evutil_socket_t, short, void *arg) {
             ioVec.iov_base = &regs;
             ioVec.iov_len = sizeof(regs);
             ptrace(PTRACE_GETREGSET, pid, NT_PRSTATUS, &ioVec);
+
             // 检查是否为系统调用入口点
             if (regs.regs[8] == SYS_clone) {
                 cout<<"拦截到 fork 系统调用"<<pid<<endl;
@@ -96,7 +96,6 @@ void ptrace_event_cb(evutil_socket_t, short, void *arg) {
         }
         return;
     }
-
     std::set<pid_t> &process = injectProc->get_Tracee_Process();
     auto state = process.find(pid);
     if (state == process.end()) {  //运行到这里说明都是子进程信号

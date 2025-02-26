@@ -236,7 +236,7 @@ public  class InjectTool {
     }
 
 
-        public static String shell(String cmd){
+    public static String shell(String cmd){
         try {
             Process process = Runtime.getRuntime().exec(cmd);
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
