@@ -181,7 +181,7 @@ int inject_init_process(pid_t pid, char *LibPath, char *FunctionName, char *Func
     } while (false);
 
     // 解除attach
-    ptrace_detach(pid);
+    ptrace_detach(pid, 0);
 
     return -1;
 }

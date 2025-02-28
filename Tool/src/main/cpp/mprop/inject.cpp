@@ -278,7 +278,7 @@ int ptrace_attach(pid_t pid) {
     return 0;
 }
 
-int ptrace_detach(pid_t pid) {
+void ptrace_detach(pid_t pid, int i) {
     if (ptrace(PTRACE_DETACH, pid, NULL, 0) < 0) {
         perror("ptrace_detach");
         return -1;
@@ -556,6 +556,6 @@ int main(int argc, char **argv) {
     exit:
 
     ptrace_setregs(target_pid, &original_regs);
-    ptrace_detach(target_pid);
+    ptrace_detach(target_pid, 0);
     return 0;
 }

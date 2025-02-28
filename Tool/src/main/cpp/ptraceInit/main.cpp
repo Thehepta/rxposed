@@ -13,10 +13,25 @@
 #include <sys/syscall.h>
 #include <bits/glibc-syscalls.h>
 #include <elf.h>
+#include "json.hpp"
 #include "InjectProc.h"
 using namespace std;
 
 #define WPTEVENT(x) (x >> 16)
+
+void ptrace_detach(void *arg,pid_t pid) {
+    InjectProc *injectProc  = (InjectProc*)arg;
+    int status;
+    kill(pid, SIGSTOP);
+    ptrace(PTRACE_CONT, pid, 0, 0);
+    waitpid(pid, &status, __WALL);
+    if (STOPPED_WITH(status,SIGSTOP, 0)) {
+        ptrace(PTRACE_DETACH, pid, 0, SIGSTOP);
+        injectProc->inject_zygote64_process();
+//        ptrace(PTRACE_DETACH, pid, 0, 0);
+    }
+
+}
 
 
 void ptrace_event_cb(evutil_socket_t, short, void *arg) {
@@ -58,25 +73,29 @@ void ptrace_event_cb(evutil_socket_t, short, void *arg) {
         }
         return;
     }
-    if(injectProc->is_zygote32_process(pid)) {
-        if (WIFSTOPPED(status)) {
-            struct user_pt_regs regs;
-            struct iovec ioVec;
-            ioVec.iov_base = &regs;
-            ioVec.iov_len = sizeof(regs);
-            ptrace(PTRACE_GETREGSET, pid, NT_PRSTATUS, &ioVec);
-
-            // 检查是否为系统调用入口点
-            if (regs.regs[7] == SYS_clone) {
-                cout<<"拦截到 fork 系统调用"<<pid<<endl;
-                ptrace(PTRACE_DETACH, pid, 0, 0);
-            } else {
-                // 继续执行子进程
-                ptrace(PTRACE_SYSCALL, pid, 0, 0);
-            }
-        }
-        return;
-    }
+//    if(injectProc->is_zygote32_process(pid)) {
+//        if (WIFSTOPPED(status)) {
+//            ptrace_detach(pid);
+//
+//            struct user_pt_regs regs;
+//            struct iovec ioVec;
+//            ioVec.iov_base = &regs;
+//            ioVec.iov_len = sizeof(regs);
+//            ptrace(PTRACE_GETREGSET, pid, NT_PRSTATUS, &ioVec);
+//
+//            // 检查是否为系统调用入口点
+//            if (regs.regs[7] == SYS_clone) {
+//                cout<<"拦截到 fork 系统调用"<<pid<<endl;
+//                ptrace_detach(pid);
+////                injectProc->inject_zygote32_process();
+////                ptrace(PTRACE_DETACH, pid, 0, 0);
+//            } else {
+//                // 继续执行子进程
+//                ptrace(PTRACE_SYSCALL, pid, 0, 0);
+//            }
+//        }
+//        return;
+//    }
     if(injectProc->is_zygote64_process(pid)){
         if (WIFSTOPPED(status)) {
             struct user_pt_regs regs;
@@ -84,11 +103,13 @@ void ptrace_event_cb(evutil_socket_t, short, void *arg) {
             ioVec.iov_base = &regs;
             ioVec.iov_len = sizeof(regs);
             ptrace(PTRACE_GETREGSET, pid, NT_PRSTATUS, &ioVec);
-
             // 检查是否为系统调用入口点
             if (regs.regs[8] == SYS_clone) {
                 cout<<"拦截到 fork 系统调用"<<pid<<endl;
-                ptrace(PTRACE_DETACH, pid, 0, 0);
+//                ptrace_detach(injectProc, pid);
+
+                injectProc->inject_zygote64_process();
+//                ptrace(PTRACE_DETACH, pid, 0, 0);
             } else {
                 // 继续执行子进程
                 ptrace(PTRACE_SYSCALL, pid, 0, 0);
@@ -132,6 +153,8 @@ void ptrace_event_cb(evutil_socket_t, short, void *arg) {
         }
     }
 }
+
+
 void clean_trace(evutil_socket_t, short, void *arg) {
     InjectProc *injectProc = (InjectProc *) arg;
     cout<<"clean_trace "<<endl;
@@ -147,15 +170,19 @@ void clean_trace(evutil_socket_t, short, void *arg) {
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <pid>" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " <config_file>" << std::endl;
         return -1;
     }
+    std::ifstream f(argv[1]);
+    nlohmann::json jsonData = nlohmann::json::parse(f);
+    InjectProc *injectProc = new InjectProc();
+    injectProc->set_zygote32_Inject_So(jsonData["zygote32_Inject_So"]);
+    injectProc->set_zygote64_Inject_So(jsonData["zygote64_Inject_So"]);
 
     std::ofstream log_file("initlog");
 //    std::cout.rdbuf(log_file.rdbuf());
-    pid_t traced_pid = atoi(argv[1]);
+    pid_t traced_pid = 1;
     cout<<"buile time: "<<__TIMESTAMP__<<endl;
-    InjectProc *injectProc = new InjectProc();
     injectProc->setTracePid(traced_pid);
     sigset_t mask;
     sigemptyset(&mask);

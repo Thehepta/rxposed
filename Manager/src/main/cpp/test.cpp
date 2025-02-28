@@ -6,12 +6,6 @@
 #define LOG_TAG "Rxposed_Test"
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
-void Ptrace_Zygotes(const char* AUTHORITY){
+extern "C" void entry(void* handle, const char* path) {
     LOGE("Rxposed_Test inject successful");
-}
-
-
-void Inject_Porcess(const char* AUTHORITY_pkgName){
-
-
 }

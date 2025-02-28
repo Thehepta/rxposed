@@ -206,7 +206,7 @@ int inject_remote_process(pid_t pid, char *LibPath, char *FunctionName, char *Fu
     } while (false);
 
     // 解除attach
-    ptrace_detach(pid);
+    ptrace_detach(pid, 0);
 
     return -1;
 }

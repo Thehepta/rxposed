@@ -4,181 +4,128 @@
 
 #include <unistd.h>
 #include "InjectProc.h"
-#include "string"
+#include <string>
 #include "iostream"
 #include <fstream>
 #include <linux/ptrace.h>
 #include <sys/ptrace.h>
 #include <sys/wait.h>
 #include <sys/signalfd.h>
+#include "utils.hpp"
+#include <vector>
+#include <dlfcn.h>
 
 using namespace std;
-std::string get_program(int pid) {
-    std::string path = "/proc/";
-    path += std::to_string(pid);
-    path += "/exe";
-    constexpr const auto SIZE = 256;
-    char buf[SIZE + 1];
-    auto sz = readlink(path.c_str(), buf, SIZE);
-    if (sz == -1) {
-        printf("readlink /proc/%d/exe", pid);
-        return "";
-    }
-    buf[sz] = 0;
-    return buf;
-}
 
 bool InjectProc::filter_zygote_proc(pid_t pid){
     auto program = get_program(pid);
     if(program =="/system/bin/app_process64"){
         this->zygote64_pid = pid;
         return true;
-    } else if(program =="/system/bin/app_process32"){
-        this->zygote32_pid = pid;
-        return true;
     }
+//    else if(program =="/system/bin/app_process32"){
+//        this->zygote32_pid = pid;
+//        return true;
+//    }
     return false;
 }
 
+bool inject_process(pid_t pid,const char *LibPath,const char *FunctionName){
 
-void wait_for_trace(int pid, int* status, int flags) {
-    while (true) {
-        auto result = waitpid(pid, status, flags);
-        if (result == -1) {
-            if (errno == EINTR) {
-                continue;
-            } else {
-                cout<<"wait"<<pid<<"failed"<<endl;
-                exit(1);
-            }
+
+
+
+    struct user_regs_struct regs{}, backup{};
+
+    if (!get_regs(pid, regs)) return false;
+    memcpy(&backup, &regs, sizeof(regs));
+
+
+    auto target_map = MapInfo::Scan(std::to_string(pid));
+    auto local_map = MapInfo::Scan();
+    auto libc_return_addr = find_module_return_addr(target_map, "libc.so");
+    LOGD("libc return addr %p", libc_return_addr);
+
+    // call dlopen
+    auto dlopen_addr = find_func_addr(local_map, target_map, "libdl.so", "dlopen");
+    if (dlopen_addr == nullptr) return false;
+    std::vector<long> args;
+    auto str = push_string(pid, regs, LibPath);
+    args.clear();
+    args.push_back((long) str);
+    args.push_back((long) RTLD_NOW);
+    auto remote_handle = remote_call(pid, regs, (uintptr_t) dlopen_addr, (uintptr_t) libc_return_addr, args);
+    LOGD("remote handle %p", (void *) remote_handle);
+    if (remote_handle == 0) {
+        LOGE("handle is null");
+        // call dlerror
+        auto dlerror_addr = find_func_addr(local_map, target_map, "libdl.so", "dlerror");
+        if (dlerror_addr == nullptr) {
+            LOGE("find dlerror");
+            return false;
         }
-        if (!WIFSTOPPED(*status)) {
-            cout<<"process"<<pid<<"not stopped for trace"<<endl;
-            exit(1);
+        args.clear();
+        auto dlerror_str_addr = remote_call(pid, regs, (uintptr_t) dlerror_addr, (uintptr_t) libc_return_addr, args);
+        LOGD("dlerror str %p", (void*) dlerror_str_addr);
+        if (dlerror_str_addr == 0) return false;
+        auto strlen_addr = find_func_addr(local_map, target_map, "libc.so", "strlen");
+        if (strlen_addr == nullptr) {
+            LOGE("find strlen");
+            return false;
         }
-        return;
+        args.clear();
+        args.push_back(dlerror_str_addr);
+        auto dlerror_len = remote_call(pid, regs, (uintptr_t) strlen_addr, (uintptr_t) libc_return_addr, args);
+        if (dlerror_len <= 0) {
+            LOGE("dlerror len <= 0");
+            return false;
+        }
+        std::string err;
+        err.resize(dlerror_len + 1, 0);
+//        read_p
+        read_proc(pid, (uintptr_t) dlerror_str_addr, (void*)err.data(), (size_t)dlerror_len);
+        LOGE("dlerror info %s", err.c_str());
+        return false;
     }
+
+    // call dlsym(handle, "entry")
+    auto dlsym_addr = find_func_addr(local_map, target_map, "libdl.so", "dlsym");
+    if (dlsym_addr == nullptr) return false;
+    args.clear();
+    str = push_string(pid, regs, FunctionName);
+    args.push_back(remote_handle);
+    args.push_back((long) str);
+    auto injector_entry = remote_call(pid, regs, (uintptr_t) dlsym_addr, (uintptr_t) libc_return_addr, args);
+    LOGD("injector entry %p", (void*) injector_entry);
+    if (injector_entry == 0) {
+        LOGE("injector entry is null");
+        return false;
+    }
+
+    // call injector entry(handle, path)
+    args.clear();
+    args.push_back(remote_handle);
+    str = push_string(pid, regs, "");
+    args.push_back((long) str);
+    remote_call(pid, regs, injector_entry, (uintptr_t) libc_return_addr, args);
+
+    // reset pc to entry
+    LOGD("invoke entry");
+    // restore registers
+    if (!set_regs(pid, backup)) return false;
+
+
+
+
 }
-
-void handle_process_on_fork(pid_t pid) {
-    int status;
-    std::string file_name = std::to_string(pid)+".log";
-
-    std::ofstream log_file(file_name);
-    std::cout.rdbuf(log_file.rdbuf());
-    if (ptrace(PTRACE_SEIZE, pid, 0, PTRACE_O_TRACEFORK) == -1) {
-        std::cout<<"PTRACE_SEIZE failed"<<std::endl;
-    }
-    wait_for_trace(pid, &status, __WALL); //阻塞等待目标进程返回,后面在接着处理
-    if (STOPPED_WITH(status,SIGSTOP, PTRACE_EVENT_STOP)) {
-//        string lib_path =  "libzygisk.so";
-//        if (!inject_on_main(pid, lib_path.c_str())) {
-//            printf("failed to inject");
-//            return ;
-//        }
-        std::cout<<"inject done, continue process"<<endl;
-        if (kill(pid, SIGCONT)) {
-            std::cout<<"kill"<<endl;
-            return;
-        }
-        if (ptrace(PTRACE_CONT, pid, 0, 0) == -1) {
-            std::cout<<"cont"<<endl;
-            return ;
-        }
-        wait_for_trace(pid, &status, __WALL);
-        if (STOPPED_WITH(status,SIGTRAP, PTRACE_EVENT_STOP)) {
-            if (ptrace(PTRACE_CONT, pid, 0, 0) == -1) {
-                std::cout<<"cont"<<endl;
-                return ;
-            }
-            wait_for_trace(pid, &status, __WALL);
-            if (STOPPED_WITH(status,SIGCONT, 0)) {
-                std::cout<<"received SIGCONT"<<endl;
-                while(1){
-                    wait_for_trace(pid, &status, __WALL);
-                    if (STOPPED_WITH(status,SIGTRAP, PTRACE_EVENT_FORK)) {
-                        long child_pid;
-                        ptrace(PTRACE_GETEVENTMSG, pid, 0, &child_pid);
-                        std::cout<<"fork fork forked  "<<child_pid<<endl;
-                        ptrace(PTRACE_DETACH, pid, 0, SIGCONT);
-                        std::cout<<"fork fork received SIGCONT"<<endl;
-                        return;
-                    }
-                }
-            }
-        } else {
-            std::cout<<"nknown state,not SIGTRAP + EVENT_STOP"<<endl;
-
-//            LOGE("unknown state %s, not SIGTRAP + EVENT_STOP", parse_status(status).c_str());
-            ptrace(PTRACE_DETACH, pid, 0, 0);
-            return ;
-        }
-    } else {
-        std::cout<<"unknown state , not SIGSTOP + EVENT_STOP"<<endl;
-        ptrace(PTRACE_DETACH, pid, 0, 0);
-        return ;
-    }
-}
-
-void handle_process(pid_t pid){
-    int status;
-    std::string file_name = std::to_string(pid)+".log";
-
-    std::ofstream log_file(file_name);
-    std::cout.rdbuf(log_file.rdbuf());
-    if (ptrace(PTRACE_SEIZE, pid, 0, PTRACE_O_EXITKILL) == -1) {
-        std::cout<<"PTRACE_SEIZE failed"<<std::endl;
-    }
-    wait_for_trace(pid, &status, __WALL);
-    if (STOPPED_WITH(status,SIGSTOP, PTRACE_EVENT_STOP)) {
-//        string lib_path =  "libzygisk.so";
-//        if (!inject_on_main(pid, lib_path.c_str())) {
-//            printf("failed to inject");
-//            return ;
-//        }
-        std::cout<<"inject done, continue process"<<endl;
-        if (kill(pid, SIGCONT)) {
-            std::cout<<"kill"<<endl;
-            return;
-        }
-        if (ptrace(PTRACE_CONT, pid, 0, 0) == -1) {
-            std::cout<<"cont"<<endl;
-            return ;
-        }
-        wait_for_trace(pid, &status, __WALL);
-        if (STOPPED_WITH(status,SIGTRAP, PTRACE_EVENT_STOP)) {
-            if (ptrace(PTRACE_CONT, pid, 0, 0) == -1) {
-                std::cout<<"cont"<<endl;
-                return ;
-            }
-            wait_for_trace(pid, &status, __WALL);
-            if (STOPPED_WITH(status,SIGCONT, 0)) {
-                std::cout<<"received SIGCONT"<<endl;
-
-                ptrace(PTRACE_DETACH, pid, 0, SIGCONT);
-            }
-        } else {
-            std::cout<<"nknown state,not SIGTRAP + EVENT_STOP"<<endl;
-
-//            LOGE("unknown state %s, not SIGTRAP + EVENT_STOP", parse_status(status).c_str());
-            ptrace(PTRACE_DETACH, pid, 0, 0);
-            return ;
-        }
-    } else {
-        std::cout<<"unknown state , not SIGSTOP + EVENT_STOP"<<endl;
-        ptrace(PTRACE_DETACH, pid, 0, 0);
-        return ;
-    }
-
+bool InjectProc::inject_zygote64_process() {
+    inject_process(this->zygote64_pid,zygote64_Inject_So.c_str(), "entry");
 }
 
 
 
-void InjectProc::monitor_proc(pid_t pid){
-    pid_t trace_pid = fork();
-    if(trace_pid == 0){
-        handle_process(pid);
-    }
+bool InjectProc::inject_zygote32_process() {
+    inject_process(this->zygote64_pid,zygote64_Inject_So.c_str(), "entry");
 }
 
 
