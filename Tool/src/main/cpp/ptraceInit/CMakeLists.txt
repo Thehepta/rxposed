@@ -25,7 +25,7 @@ set_target_properties( event
 
 include_directories("libevent/include")
 
-add_executable(ptraceInit main.cpp InjectProc.cpp utils.cpp logging.cpp)
+add_executable(ptraceInit main.cpp InjectProc.cpp logging.cpp)
 
 target_link_libraries( # Specifies the target library.
         ptraceInit

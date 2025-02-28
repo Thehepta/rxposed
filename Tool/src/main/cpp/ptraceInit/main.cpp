@@ -17,7 +17,7 @@
 #include "json.hpp"
 #include "InjectProc.h"
 #include "logging.h"
-#include "utils.hpp"
+//#include "utils.hpp"
 
 using namespace std;
 
@@ -36,6 +36,11 @@ using namespace std;
 //    }
 //
 //}
+
+inline const char* sigabbrev_np(int sig) {
+    if (sig > 0 && sig < NSIG) return sys_signame[sig];
+    return "(unknown)";
+}
 
 
 void ptrace_event_cb(evutil_socket_t, short, void *arg) {
@@ -113,7 +118,8 @@ void ptrace_event_cb(evutil_socket_t, short, void *arg) {
 //                ptrace_detach(injectProc, pid);
 
                 injectProc->inject_zygote64_process();
-//                ptrace(PTRACE_DETACH, pid, 0, 0);
+                ptrace(PTRACE_CONT, pid, 0, 0);
+                ptrace(PTRACE_DETACH, pid, 0, 0);
             } else {
                 // 继续执行子进程
                 ptrace(PTRACE_SYSCALL, pid, 0, 0);
