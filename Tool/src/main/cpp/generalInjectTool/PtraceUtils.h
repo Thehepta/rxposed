@@ -91,7 +91,7 @@ int ptrace_continue(pid_t pid){
  * @param pid pid表示远程进程的ID
  * @return int 返回0表示detach成功，返回-1表示失败
  */
-void ptrace_detach(pid_t pid, int i) {
+int ptrace_detach(pid_t pid, int i) {
     if (ptrace(PTRACE_DETACH, pid, NULL, 0) < 0){
         printf("[-] detach process error, pid:%d, err:%s\n", pid, strerror(errno));
         return -1;

@@ -13,10 +13,7 @@
 class InjectProc {
 
 public:
-    InjectProc(){
-        this->zygote32_pid = -1;
-        this->zygote64_pid = -1;
-    }
+
     void setTracePid(pid_t pid){
         traced_pid = pid;
     }
@@ -28,6 +25,9 @@ public:
         return traced_pid;
     }
 
+    bool is_zygote_process(pid_t pid){
+       return is_zygote64_process(pid);
+    }
     bool is_zygote64_process(pid_t pid){
         if(this->zygote64_pid != -1){
             if(this->zygote64_pid == pid){
@@ -53,8 +53,21 @@ public:
         }
         return false;
     }
+
     bool filter_zygote_proc(pid_t pid);
+
+    // 获取单例实例的静态方法
+    static InjectProc& getInstance() {
+        static InjectProc instance; // 使用static保证只创建一次
+        return instance;
+    }
+
 private:
+    InjectProc(){
+        this->zygote32_pid = -1;
+        this->zygote64_pid = -1;
+    }
+
     pid_t traced_pid;
     pid_t zygote64_pid;
     std::string zygote64_Inject_So;

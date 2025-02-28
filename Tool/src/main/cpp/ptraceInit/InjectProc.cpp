@@ -19,6 +19,7 @@ using namespace std;
 
 bool InjectProc::filter_zygote_proc(pid_t pid){
     auto program = get_program(pid);
+    LOGD("filter_zygote_proc %s", program.c_str());
     if(program =="/system/bin/app_process64"){
         this->zygote64_pid = pid;
         return true;
@@ -33,21 +34,17 @@ bool InjectProc::filter_zygote_proc(pid_t pid){
 bool inject_process(pid_t pid,const char *LibPath,const char *FunctionName){
 
 
-
-
     struct user_regs_struct regs{}, backup{};
 
     if (!get_regs(pid, regs)) return false;
     memcpy(&backup, &regs, sizeof(regs));
-
-
-    auto target_map = MapInfo::Scan(std::to_string(pid));
+    auto map = MapInfo::Scan(std::to_string(pid));
     auto local_map = MapInfo::Scan();
-    auto libc_return_addr = find_module_return_addr(target_map, "libc.so");
+    auto libc_return_addr = find_module_return_addr(map, "libc.so");
     LOGD("libc return addr %p", libc_return_addr);
 
     // call dlopen
-    auto dlopen_addr = find_func_addr(local_map, target_map, "libdl.so", "dlopen");
+    auto dlopen_addr = find_func_addr(local_map, map, "libdl.so", "dlopen");
     if (dlopen_addr == nullptr) return false;
     std::vector<long> args;
     auto str = push_string(pid, regs, LibPath);
@@ -59,7 +56,7 @@ bool inject_process(pid_t pid,const char *LibPath,const char *FunctionName){
     if (remote_handle == 0) {
         LOGE("handle is null");
         // call dlerror
-        auto dlerror_addr = find_func_addr(local_map, target_map, "libdl.so", "dlerror");
+        auto dlerror_addr = find_func_addr(local_map, map, "libdl.so", "dlerror");
         if (dlerror_addr == nullptr) {
             LOGE("find dlerror");
             return false;
@@ -68,7 +65,7 @@ bool inject_process(pid_t pid,const char *LibPath,const char *FunctionName){
         auto dlerror_str_addr = remote_call(pid, regs, (uintptr_t) dlerror_addr, (uintptr_t) libc_return_addr, args);
         LOGD("dlerror str %p", (void*) dlerror_str_addr);
         if (dlerror_str_addr == 0) return false;
-        auto strlen_addr = find_func_addr(local_map, target_map, "libc.so", "strlen");
+        auto strlen_addr = find_func_addr(local_map, map, "libc.so", "strlen");
         if (strlen_addr == nullptr) {
             LOGE("find strlen");
             return false;
@@ -89,7 +86,7 @@ bool inject_process(pid_t pid,const char *LibPath,const char *FunctionName){
     }
 
     // call dlsym(handle, "entry")
-    auto dlsym_addr = find_func_addr(local_map, target_map, "libdl.so", "dlsym");
+    auto dlsym_addr = find_func_addr(local_map, map, "libdl.so", "dlsym");
     if (dlsym_addr == nullptr) return false;
     args.clear();
     str = push_string(pid, regs, FunctionName);
