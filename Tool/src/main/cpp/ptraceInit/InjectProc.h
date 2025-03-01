@@ -50,8 +50,8 @@ public:
     void set_zygote32_Inject_So(std::string soPath){
         this->zygote32_Inject_So = soPath;
     }
-    bool inject_zygote64_process(std::string str);
-    bool inject_zygote32_process(std::string str);
+    bool inject_zygote64_process();
+    bool inject_zygote32_process();
     bool is_zygote32_process(pid_t pid){
         if(this->zygote32_pid != -1){
             if(this->zygote32_pid == pid){

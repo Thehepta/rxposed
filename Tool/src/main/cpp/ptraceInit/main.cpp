@@ -29,6 +29,9 @@ inline const char* sigabbrev_np(int sig) {
     return "(unknown)";
 }
 
+
+
+
 [[noreturn]]
 void PtraceTask(){
     InjectProc & injectProc = InjectProc::getInstance();
@@ -89,26 +92,6 @@ void PtraceTask(){
                 continue;
             }else{
 
-                if(injectProc.is_zygote_process(pid)){
-                    if (WIFSTOPPED(status)) {
-                        struct user_pt_regs regs;
-                        struct iovec ioVec;
-                        ioVec.iov_base = &regs;
-                        ioVec.iov_len = sizeof(regs);
-                        ptrace(PTRACE_GETREGSET, pid, NT_PRSTATUS, &ioVec);
-                        // 检查是否为系统调用入口点
-                        if (regs.regs[8] == SYS_clone) {
-                            cout<<"拦截到 fork 系统调用"<<pid<<endl;
-                            injectProc.inject_zygote64_process(injectProc.getRequestoSocket());
-                            ptrace(PTRACE_DETACH, pid, 0, 0);
-                        } else {
-                            // 继续执行子进程
-                            ptrace(PTRACE_SYSCALL, pid, 0, 0);
-                        }
-                    }
-                    continue;
-                }
-
                 cout<<"old process handle: "<<pid<<endl;
                 if (STOPPED_WITH(status,SIGTRAP, PTRACE_EVENT_EXEC)){
                     kill(pid, SIGSTOP);             // 信号会在进程运行起来以后接受到
@@ -116,8 +99,9 @@ void PtraceTask(){
                     waitpid(pid, &status, __WALL);
                     if (STOPPED_WITH(status,SIGSTOP, 0)) {   //这个就是接受到的信号,前面 kill(pid, SIGSTOP);  发送的
                         if(injectProc.filter_zygote_proc(pid)){
-                            ptrace(PTRACE_SETOPTIONS, pid, 0, PTRACE_O_TRACESYSGOOD);
-                            ptrace(PTRACE_SYSCALL, pid, 0, 0);
+                            injectProc.inject_zygote64_process();
+//                            ptrace(PTRACE_SETOPTIONS, pid, 0, PTRACE_O_TRACESYSGOOD);
+//                            ptrace(PTRACE_SYSCALL, pid, 0, 0);
                             ptrace(PTRACE_CONT, pid, 0, 0);
                         } else{
                             ptrace(PTRACE_DETACH, pid, 0, 0);

@@ -36,6 +36,15 @@ std::string get_program(int pid) {
     return buf;
 }
 
+void wait_nativePreFork(pid_t pid){
+    struct pt_regs CurrentRegs, OriginalRegs;
+    if (ptrace_getregs(pid, &CurrentRegs) != 0){
+        return;
+    }
+    // 保存原始寄存器
+    memcpy(&OriginalRegs, &CurrentRegs, sizeof(CurrentRegs));
+
+}
 
 
 bool InjectProc::filter_zygote_proc(pid_t pid){
@@ -203,16 +212,16 @@ bool inject_process(pid_t pid,const char *LibPath,const char *FunctionName,const
     return true;
 
 }
-bool InjectProc::inject_zygote64_process(string str) {
-
-    inject_process(this->zygote64_pid,zygote64_Inject_So.c_str(), "entry",str.c_str());
+bool InjectProc::inject_zygote64_process() {
+    wait_nativePreFork(this->zygote64_pid);
+    inject_process(this->zygote64_pid,zygote64_Inject_So.c_str(), "entry",this->requestoSocket.c_str());
     return true;
 }
 
 
 
-bool InjectProc::inject_zygote32_process(string str) {
-    inject_process(this->zygote64_pid,zygote64_Inject_So.c_str(), "entry",str.c_str());
+bool InjectProc::inject_zygote32_process() {
+    inject_process(this->zygote64_pid,zygote64_Inject_So.c_str(), "entry",this->requestoSocket.c_str());
     return true;
 }
 

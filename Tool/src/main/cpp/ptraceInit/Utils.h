@@ -277,3 +277,31 @@ void *get_remote_func_addr(pid_t pid, const char *ModuleName, void *LocalFuncAdd
     return RemoteFuncAddr;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
