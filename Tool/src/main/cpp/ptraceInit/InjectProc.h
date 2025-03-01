@@ -40,11 +40,18 @@ public:
         this->zygote64_Inject_So = soPath;
     }
 
+    void setRequestoSocket(std::string rs){
+        this->requestoSocket = rs;
+    }
+    std::string getRequestoSocket(){
+        return this->requestoSocket;
+    }
+
     void set_zygote32_Inject_So(std::string soPath){
         this->zygote32_Inject_So = soPath;
     }
-    bool inject_zygote64_process();
-    bool inject_zygote32_process();
+    bool inject_zygote64_process(std::string str);
+    bool inject_zygote32_process(std::string str);
     bool is_zygote32_process(pid_t pid){
         if(this->zygote32_pid != -1){
             if(this->zygote32_pid == pid){
@@ -67,7 +74,7 @@ private:
         this->zygote32_pid = -1;
         this->zygote64_pid = -1;
     }
-
+    std::string requestoSocket;
     pid_t traced_pid;
     pid_t zygote64_pid;
     std::string zygote64_Inject_So;

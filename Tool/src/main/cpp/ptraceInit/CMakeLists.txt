@@ -24,8 +24,9 @@ set_target_properties( event
         ${CMAKE_SOURCE_DIR}/ptraceInit/libevent/libs/${ANDROID_ABI}/libevent.a)
 
 include_directories("libevent/include")
+include_directories("common")
 
-add_executable(ptraceInit main.cpp InjectProc.cpp logging.cpp)
+add_executable(ptraceInit main.cpp InjectProc.cpp common/logging.cpp common/socket_utils.cpp common/daemon.cpp zygiskd.cpp RootImp.cpp)
 
 target_link_libraries( # Specifies the target library.
         ptraceInit
