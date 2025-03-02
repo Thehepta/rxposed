@@ -278,10 +278,62 @@ void *get_remote_func_addr(pid_t pid, const char *ModuleName, void *LocalFuncAdd
 }
 
 
+ssize_t read_proc(int pid, uintptr_t remote_addr, void *buf, size_t len) {
+    struct iovec local{
+            .iov_base = (void *) buf,
+            .iov_len = len
+    };
+    struct iovec remote{
+            .iov_base = (void *) remote_addr,
+            .iov_len = len
+    };
+    auto l = process_vm_readv(pid, &local, 1, &remote, 1, 0);
+    if (l == -1) {
+        PLOGE("process_vm_readv");
+    } else if (static_cast<size_t>(l) != len) {
+        LOGW("not fully read: %zu, excepted %zu", l, len);
+    }
+    return l;
+}
+
+ssize_t write_proc(int pid, uintptr_t remote_addr, const void *buf, size_t len) {
+    LOGV("write to remote addr %" PRIxPTR " size %zu", remote_addr, len);
+    struct iovec local{
+            .iov_base = (void *) buf,
+            .iov_len = len
+    };
+    struct iovec remote{
+            .iov_base = (void *) remote_addr,
+            .iov_len = len
+    };
+    auto l = process_vm_writev(pid, &local, 1, &remote, 1, 0);
+    if (l == -1) {
+        PLOGE("process_vm_writev");
+    } else if (static_cast<size_t>(l) != len) {
+        LOGW("not fully written: %zu, excepted %zu", l, len);
+    }
+    return l;
+}
 
 
-
-
+void wait_for_trace(int pid, int* status, int flags) {
+    while (true) {
+        auto result = waitpid(pid, status, flags);
+        if (result == -1) {
+            if (errno == EINTR) {
+                continue;
+            } else {
+                PLOGE("wait %d failed", pid);
+                exit(1);
+            }
+        }
+        if (!WIFSTOPPED(*status)) {
+//            LOGE("process %d not stopped for trace: %s, exit", pid, parse_status(*status).c_str());
+            exit(1);
+        }
+        return;
+    }
+}
 
 
 
