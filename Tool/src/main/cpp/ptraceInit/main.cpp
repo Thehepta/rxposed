@@ -102,7 +102,7 @@ void PtraceTask(){
                             injectProc.inject_zygote64_process();
 //                            ptrace(PTRACE_SETOPTIONS, pid, 0, PTRACE_O_TRACESYSGOOD);
 //                            ptrace(PTRACE_SYSCALL, pid, 0, 0);
-                            ptrace(PTRACE_CONT, pid, 0, 0);
+                            ptrace(PTRACE_DETACH, pid, 0, 0);
                         } else{
                             ptrace(PTRACE_DETACH, pid, 0, 0);
                         }
