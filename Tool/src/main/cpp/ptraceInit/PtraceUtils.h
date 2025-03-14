@@ -29,6 +29,7 @@
 #define ARM_cpsr pstate
 #define ARM_lr regs[30]
 #define ARM_r0 regs[0]
+#define BREAKPOINT_INSTR 0xD4200000 // BRK #0
 // 这两个宏定义比较有意思 意思就是在 arm64下
 // 强制 PTRACE_GETREGS 为 PTRACE_GETREGSET 这种
 #define PTRACE_GETREGS PTRACE_GETREGSET
@@ -59,11 +60,11 @@
 int ptrace_attach(pid_t pid){
     int status = 0;
     if (ptrace(PTRACE_ATTACH, pid, NULL, NULL) < 0){
-        printf("[-] ptrace attach process error, pid:%d, err:%s\n", pid, strerror(errno));
+        LOGE("[-] ptrace attach process error, pid:%d, err:%s\n", pid, strerror(errno));
         return -1;
     }
 
-    printf("[+] attach porcess success, pid:%d\n", pid);
+    LOGD("[+] attach porcess success, pid:%d\n", pid);
     waitpid(pid, &status, WUNTRACED);
 
     return 0;
@@ -77,11 +78,11 @@ int ptrace_attach(pid_t pid){
  */
 int ptrace_continue(pid_t pid){
     if (ptrace(PTRACE_CONT, pid, NULL, NULL) < 0){
-        printf("[-] ptrace continue process error, pid:%d, err:%ss\n", pid, strerror(errno));
+        LOGE("[-] ptrace continue process error, pid:%d, err:%ss\n", pid, strerror(errno));
         return -1;
     }
 
-    printf("[+] ptrace continue process success, pid:%d\n", pid);
+    LOGD("[+] ptrace continue process success, pid:%d\n", pid);
     return 0;
 }
 
@@ -93,11 +94,11 @@ int ptrace_continue(pid_t pid){
  */
 int ptrace_detach(pid_t pid, int i) {
     if (ptrace(PTRACE_DETACH, pid, NULL, 0) < 0){
-        printf("[-] detach process error, pid:%d, err:%s\n", pid, strerror(errno));
+        LOGE("[-] detach process error, pid:%d, err:%s\n", pid, strerror(errno));
         return -1;
     }
 
-    printf("[+] detach process success, pid:%d\n", pid);
+    LOGD("[+] detach process success, pid:%d\n", pid);
     return 0;
 }
 
@@ -116,7 +117,7 @@ int ptrace_getregs(pid_t pid, struct pt_regs *regs){
     ioVec.iov_base = regs;
     ioVec.iov_len = sizeof(*regs);
     if (ptrace(PTRACE_GETREGSET, pid, (void *)regset, &ioVec) < 0){
-        printf("[-] ptrace_getregs: Can not get register values, io %llx, %d\n", ioVec.iov_base,ioVec.iov_len);
+        LOGE("[-] ptrace_getregs: Can not get register values, io %llx, %d\n", ioVec.iov_base,ioVec.iov_len);
         return -1;
     }
 
@@ -145,7 +146,7 @@ int ptrace_setregs(pid_t pid, struct pt_regs *regs){
     ioVec.iov_base = regs;
     ioVec.iov_len = sizeof(*regs);
     if (ptrace(PTRACE_SETREGSET, pid, (void *)regset, &ioVec) < 0){
-        perror("[-] ptrace_setregs: Can not get register values");
+        LOGE("[-] ptrace_setregs: Can not get register values");
         return -1;
     }
 
@@ -189,96 +190,7 @@ long ptrace_getpc(struct pt_regs *regs) {
 #endif
 }
 
-/**
- * @brief 获取mmap函数在远程进程中的地址
- *
- * @param pid pid表示远程进程的ID
- * @return void* mmap函数在远程进程中的地址
- */
-void *get_mmap_address(pid_t pid){
-    return get_remote_func_addr(pid, process_libs.libc_path, (void *)mmap);
-}
 
-/**
- * @brief 获取dlopen函数在远程进程中的地址
- * @param pid pid表示远程进程的ID
- * @return void* dlopen函数在远程进程中的地址
- */
-void *get_dlopen_address(pid_t pid) {
-    void *dlopen_addr;
-    char sdk_ver[32];
-    memset(sdk_ver, 0, sizeof(sdk_ver));
-    __system_property_get("ro.build.version.sdk", sdk_ver);
-
-    printf("[+] linker_path value:%s\n",process_libs.linker_path);
-    if (atoi(sdk_ver) <= 23) { // 安卓7
-        dlopen_addr = get_remote_func_addr(pid, process_libs.linker_path, (void *) dlopen);
-    } else {
-        dlopen_addr = get_remote_func_addr(pid, process_libs.libdl_path, (void *) dlopen);
-    }
-    printf("[+] dlopen RemoteFuncAddr:0x%lx\n", (uintptr_t) dlopen_addr);
-    return dlopen_addr;
-}
-
-/**
- * @brief 获取dlclose函数在远程进程中的地址
- * @param pid pid表示远程进程的ID
- * @return void* dlclose函数在远程进程中的地址
- */
-void *get_dlclose_address(pid_t pid) {
-    void *dlclose_addr;
-    char sdk_ver[32];
-    memset(sdk_ver, 0, sizeof(sdk_ver));
-    __system_property_get("ro.build.version.sdk", sdk_ver);
-
-    if (atoi(sdk_ver) <= 23) {
-        dlclose_addr = get_remote_func_addr(pid, process_libs.linker_path, (void *) dlclose);
-    } else {
-        dlclose_addr = get_remote_func_addr(pid, process_libs.libdl_path, (void *) dlclose);
-    }
-    printf("[+] dlclose RemoteFuncAddr:0x%lx\n", (uintptr_t) dlclose_addr);
-    return dlclose_addr;
-}
-
-/**
- * @brief 获取dlsym函数在远程进程中的地址
- * @param pid pid表示远程进程的ID
- * @return void* dlsym函数在远程进程中的地址
- */
-void *get_dlsym_address(pid_t pid) {
-    void *dlsym_addr;
-    char sdk_ver[32];
-    memset(sdk_ver, 0, sizeof(sdk_ver));
-    __system_property_get("ro.build.version.sdk", sdk_ver);
-
-    if (atoi(sdk_ver) <= 23) {
-        dlsym_addr = get_remote_func_addr(pid, process_libs.linker_path, (void *) dlsym);
-    } else {
-        dlsym_addr = get_remote_func_addr(pid, process_libs.libdl_path, (void *) dlsym);
-    }
-    printf("[+] dlsym RemoteFuncAddr:0x%lx\n", (uintptr_t) dlsym_addr);
-    return dlsym_addr;
-}
-
-/**
- * @brief 获取dlerror函数在远程进程中的地址
- * @param pid pid表示远程进程的ID
- * @return void* dlerror函数在远程进程中的地址
- */
-void *get_dlerror_address(pid_t pid) {
-    void *dlerror_addr;
-    char sdk_ver[32];
-    memset(sdk_ver, 0, sizeof(sdk_ver));
-    __system_property_get("ro.build.version.sdk", sdk_ver);
-
-    if (atoi(sdk_ver) <= 23) {
-        dlerror_addr = get_remote_func_addr(pid, process_libs.linker_path, (void *) dlerror);
-    } else {
-        dlerror_addr = get_remote_func_addr(pid, process_libs.libdl_path, (void *) dlerror);
-    }
-    printf("[+] dlerror RemoteFuncAddr:0x%lx\n", (uintptr_t) dlerror_addr);
-    return dlerror_addr;
-}
 
 /**
  * @brief 使用ptrace从远程进程内存中读取数据
@@ -340,7 +252,7 @@ int ptrace_writedata(pid_t pid, uint8_t *pWriteAddr, uint8_t *pWriteData, size_t
     for (i = 0; i < nWriteCount; i++){
         memcpy((void *)(&lTmpBuf), pCurSrcBuf, sizeof(long));
         if (ptrace(PTRACE_POKETEXT, pid, (void *)pCurDestBuf, (void *)lTmpBuf) < 0){ // PTRACE_POKETEXT表示从远程内存空间写入一个sizeof(long)大小的数据
-            printf("[-] Write Remote Memory error, MemoryAddr:0x%lx, err:%s\n", (uintptr_t)pCurDestBuf, strerror(errno));
+            LOGE("[-] Write Remote Memory error, MemoryAddr:0x%lx, err:%s\n", (uintptr_t)pCurDestBuf, strerror(errno));
             return -1;
         }
         pCurSrcBuf += sizeof(long);
@@ -351,7 +263,7 @@ int ptrace_writedata(pid_t pid, uint8_t *pWriteAddr, uint8_t *pWriteData, size_t
         lTmpBuf = ptrace(PTRACE_PEEKTEXT, pid, pCurDestBuf, NULL); //先取出原内存中的数据，然后将要写入的数据以单字节形式填充到低字节处
         memcpy((void *)(&lTmpBuf), pCurSrcBuf, nRemainCount);
         if (ptrace(PTRACE_POKETEXT, pid, pCurDestBuf, lTmpBuf) < 0){
-            printf("[-] Write Remote Memory error, MemoryAddr:0x%lx, err:%s\n", (uintptr_t)pCurDestBuf, strerror(errno));
+            LOGE("[-] Write Remote Memory error, MemoryAddr:0x%lx, err:%s\n", (uintptr_t)pCurDestBuf, strerror(errno));
             return -1;
         }
     }
@@ -499,7 +411,7 @@ int ptrace_call(pid_t pid, uintptr_t ExecuteAddr, long *parameters, long num_par
     regs->ARM_lr = 0;
 
     // Android 7.0以上修正lr为libc.so的起始地址 getprop获取ro.build.version.sdk
-    long lr_val = 0;
+    uintptr_t lr_val = 0;
     char sdk_ver[32];
     memset(sdk_ver, 0, sizeof(sdk_ver));
     __system_property_get("ro.build.version.sdk", sdk_ver);
@@ -507,16 +419,16 @@ int ptrace_call(pid_t pid, uintptr_t ExecuteAddr, long *parameters, long num_par
     if (atoi(sdk_ver) <= 23){
         lr_val = 0;
     } else { // Android 7.0
-        static long start_ptr = 0;
+        static uintptr_t start_ptr = 0;
         if (start_ptr == 0){
-            start_ptr = (long)get_module_base_addr(pid, process_libs.libc_path);
+            start_ptr = ge_remote_module_base(std::to_string(pid), "libc.so");
         }
         lr_val = start_ptr;
     }
     regs->ARM_lr = lr_val;
 
     if (ptrace_setregs(pid, regs) == -1 || ptrace_continue(pid) == -1){
-        printf("[-] ptrace set regs or continue error, pid:%d\n", pid);
+        LOGD("[-] ptrace set regs or continue error, pid:%d\n", pid);
         return -1;
     }
 
@@ -527,10 +439,10 @@ int ptrace_call(pid_t pid, uintptr_t ExecuteAddr, long *parameters, long num_par
     waitpid(pid, &stat, WUNTRACED);
 
     // 判断是否成功执行函数
-    printf("[+] ptrace call ret status is %d\n", stat);
+    LOGD("[+] ptrace call ret status is %d\n", stat);
     while ((stat & 0xFF) != 0x7f){
         if (ptrace_continue(pid) == -1){
-            printf("[-] ptrace call error\n");
+            LOGE("[-] ptrace call error\n");
             return -1;
         }
         waitpid(pid, &stat, WUNTRACED);
@@ -538,7 +450,7 @@ int ptrace_call(pid_t pid, uintptr_t ExecuteAddr, long *parameters, long num_par
 
     // 获取远程进程的寄存器值，方便获取返回值
     if (ptrace_getregs(pid, regs) == -1){
-        printf("[-] After call getregs error\n");
+        LOGE("[-] After call getregs error\n");
         return -1;
     }
 
@@ -548,158 +460,181 @@ int ptrace_call(pid_t pid, uintptr_t ExecuteAddr, long *parameters, long num_par
     return 0;
 }
 
-struct Module {
-    char name[256];
-    uintptr_t start_address;
-    uintptr_t end_address;
-    uint8_t perms;
-};
 
-
-
-int map_hide(pid_t pid,char *path) {
-    char maps_file_path[255];
-    sprintf(maps_file_path, "/proc/%d/maps", pid);
-    FILE* maps_file = fopen(maps_file_path, "r");
-    if (!maps_file) {
-        printf("[-][function:%s] Failed to open maps file: %s\n",__func__ ,maps_file_path);
-        return -1;
+bool stop_int_app_process_entry(pid_t pid){
+    struct pt_regs CurrentRegs;
+    if (ptrace_getregs(pid, &CurrentRegs) != 0){
+        return false;
     }
-    char line[256];
-    void *mprotect_addr = get_remote_func_addr(pid, process_libs.libc_path, (void *) mprotect);
-    void *memcpy_addr = get_remote_func_addr(pid, process_libs.libc_path, (void *) memcpy);
-    void *mremap_addr = get_remote_func_addr(pid, process_libs.libc_path, (void *) mremap);
-    void *mmap_addr = get_mmap_address(pid);
-
-    while (fgets(line, sizeof(line), maps_file)) {
-        char address_range[256];
-        char permissions[256];
-        char offset[256];
-        char device[256];
-        char inode[256];
-        char pathname[256];
-
-        if (sscanf(line, "%s %s %s %s %s %s", address_range, permissions, offset, device, inode, pathname) == 6) {
-            char start_address_str[256];
-            char end_address_str[256];
-
-            sscanf(address_range, "%[^-]-%s", start_address_str, end_address_str);
-
-            unsigned long long start_address = strtoull(start_address_str, NULL, 16);
-            unsigned long long end_address = strtoull(end_address_str, NULL, 16);
-
-            struct Module module;
-            memset(&module,0,sizeof(struct Module));
-            strncpy(module.name, pathname, strlen(pathname));
-            module.start_address = start_address;
-            module.end_address = end_address;
-            if(strncmp(module.name,path, strlen(module.name))==0){
-                module.perms = 0;
-                if (permissions[0] == 'r')
-                    module.perms |= PROT_READ;
-                if (permissions[1] == 'w')
-                    module.perms |= PROT_WRITE;
-                if (permissions[2] == 'x')
-                    module.perms |= PROT_EXEC;
-                printf("[+][function:%s] %s,perms:%d Address: %llx-%llx\n",__func__ , module.name,module.perms, module.start_address, module.end_address);
-                size_t size = module.end_address - module.start_address;
-                void *addr = reinterpret_cast<void *>(module.start_address);
-
-                do {
-
-                    struct pt_regs CurrentRegs, OriginalRegs;
-                    if (ptrace_getregs(pid, &CurrentRegs) != 0){
-                        break;
-                    }
-                    // 保存原始寄存器
-                    memcpy(&OriginalRegs, &CurrentRegs, sizeof(CurrentRegs));
-
-
-                    //  1.  void *copy = mmap(nullptr, size, PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-                    long mmap_parameters[6];
-                    mmap_parameters[0] = NULL; // 设置为NULL表示让系统自动选择分配内存的地址
-                    mmap_parameters[1] = size; // 映射内存的大小
-                    mmap_parameters[2] = PROT_WRITE ; // 表示映射内存区域 可读|可写|可执行
-                    mmap_parameters[3] = MAP_ANONYMOUS | MAP_PRIVATE; // 建立匿名映射
-                    mmap_parameters[4] = -1; //  若需要映射文件到内存中，则为文件的fd
-                    mmap_parameters[5] = 0; //文件映射偏移量
-
-                    // 调用远程进程的mmap函数 建立远程进程的内存映射 在目标进程中为libxxx.so分配内存
-                    if (ptrace_call(pid, (uintptr_t) mmap_addr, mmap_parameters, 6, &CurrentRegs) == -1) {
-                        printf("[-][function:%s] Call Remote mmap Func Failed, err:%s\n", __func__ ,strerror(errno));
-                        return -1;
-                    }
-                    void *copy = (void *)ptrace_getret(&CurrentRegs);
-
-                    //  2 .if ((module.perms & PROT_READ) == 0) {
-                    //        mprotect(addr, size, PROT_READ);
-                    //    }
-
-                    if ((module.perms & PROT_READ) == 0) {
-
-                        long mprotect_parameters[3];
-                        mprotect_parameters[0] = reinterpret_cast<long>(addr);
-                        mprotect_parameters[1] = size;
-                        mprotect_parameters[2] = PROT_READ;
-                        if (ptrace_call(pid, (uintptr_t) mprotect_addr, mprotect_parameters, 3, &CurrentRegs) == -1) {
-                            printf("[-][function:%s] Call Remote mprotect Func Failed, err:%s\n",__func__ ,strerror(errno));
-                            return -1;
-                        }
-                    }
-
-//     3.memcpy(copy, addr, size);
-
-                    long memcpy_parameters[3];
-                    memcpy_parameters[0] = reinterpret_cast<long>(copy);
-                    memcpy_parameters[1] = reinterpret_cast<long>(addr);
-                    memcpy_parameters[2] = size;
-                    if (ptrace_call(pid, (uintptr_t) memcpy_addr, memcpy_parameters, 3, &CurrentRegs) == -1) {
-                        printf("[-][function:%s] Call Remote memcpy Func Failed, err:%s\n", __func__ ,strerror(errno));
-                        return -1;
-                    }
-
-//    4.mremap(copy, size, size, MREMAP_MAYMOVE | MREMAP_FIXED, addr);
-
-                    long mremap_parameters[5];
-                    mremap_parameters[0] = reinterpret_cast<long>(copy);
-                    mremap_parameters[1] = size;
-                    mremap_parameters[2] = size;
-                    mremap_parameters[3] = MREMAP_MAYMOVE | MREMAP_FIXED;
-                    mremap_parameters[4] = reinterpret_cast<long>(addr);
-                    if (ptrace_call(pid, (uintptr_t) mremap_addr, mremap_parameters, 5, &CurrentRegs) == -1) {
-                        printf("[-][function:%s] Call Remote mmap Func Failed, err:%s\n",__func__ ,strerror(errno));
-                        return -1;
-                    }
-
-
-//      5. mprotect(addr, size, module.perms);
-                    long mprotect_parameters[3];
-                    mprotect_parameters[0] = reinterpret_cast<long>(addr);
-                    mprotect_parameters[1] = size;
-                    mprotect_parameters[2] = module.perms;
-                    if (ptrace_call(pid, (uintptr_t) mprotect_addr, mprotect_parameters, 3, &CurrentRegs) == -1) {
-                        printf("[-][function:%s] Call Remote mprotect Func Failed, err:%s\n",__func__ ,strerror(errno));
-                        return -1;
-                    }
-
-
-                    if (ptrace_setregs(pid, &OriginalRegs) == -1) {
-                        printf("[-][function:%s] Recover reges failed\n",__func__ );
-                        return -1;
-                    }
-
-                    ptrace_getregs(pid, &CurrentRegs);
-                    if (memcmp(&OriginalRegs, &CurrentRegs, sizeof(CurrentRegs)) != 0) {
-                        printf("[-][function:%s] Set Regs Error\n",__func__ );
-                        return -1;
-                    }
-
-                } while (false);
-
-            }
+    auto arg = static_cast<uintptr_t>(CurrentRegs.sp);
+    int argc;
+    auto argv = reinterpret_cast<char **>(reinterpret_cast<uintptr_t *>(arg) + 1);
+    read_proc(pid, arg,  (uintptr_t)&argc, sizeof(argc));
+    LOGV("argc %d", argc);
+    auto envp = argv + argc + 1;
+    LOGV("envp %p", envp);
+    auto p = envp;
+    while (true) {
+        uintptr_t *buf;
+        read_proc(pid, (uintptr_t) p,  (uintptr_t)&buf, sizeof(buf));
+        if (buf != nullptr) ++p;
+        else break;
+    }
+    ++p;
+    auto auxv = reinterpret_cast<ElfW(auxv_t) *>(p);
+    auto v = auxv;
+    uintptr_t entry_addr = 0;
+    uintptr_t addr_of_entry_addr = 0;
+    while (true) {
+        ElfW(auxv_t) buf;
+        read_proc(pid, (uintptr_t) v, (uintptr_t)&buf, sizeof(buf));
+        if (buf.a_type == AT_ENTRY) {
+            entry_addr = (uintptr_t) buf.a_un.a_val;
+            addr_of_entry_addr = (uintptr_t) v + offsetof(ElfW(auxv_t), a_un);
+            break;
         }
+        if (buf.a_type == AT_NULL) break;
+        v++;
     }
-    fclose(maps_file);
-    return 0;
+    if (entry_addr == 0) {
+        LOGE("failed to get entry");
+        return false;
+    }
+
+    uintptr_t break_addr = (-0x05ec1cff & ~1) | ((uintptr_t) entry_addr & 1);
+
+    if (!write_proc(pid, (uintptr_t) addr_of_entry_addr,  (uintptr_t)&break_addr, sizeof(break_addr))) return false;
+    ptrace(PTRACE_CONT, pid, 0, 0);
+    int status;
+    wait_for_trace(pid, &status, __WALL);
+    if (WIFSTOPPED(status) && WSTOPSIG(status) == SIGSEGV) {
+        if (ptrace_getregs(pid, &CurrentRegs) != 0) {
+            return false;
+        }
+        if (static_cast<uintptr_t>(CurrentRegs.pc & ~1) != (break_addr & ~1)) {
+            LOGE("stopped at unknown addr %p", (void *) CurrentRegs.pc);
+            return false;
+        }
+        // The linker has been initialized now, we can do dlopen
+        LOGD("stopped at entry");
+
+        // restore entry address
+        if (!write_proc(pid, (uintptr_t) addr_of_entry_addr, (uintptr_t)&entry_addr,
+                        sizeof(entry_addr)))
+            return false;
+        // reset pc to entry
+        CurrentRegs.pc = (long) entry_addr;
+
+        LOGD("invoke entry");
+        // restore registers
+        ptrace_setregs(pid, &CurrentRegs);
+
+        return true;
+    }
+    return false;
+
+}
+
+
+
+bool remote_ptrace_dlopen(pid_t pid,char*LibPath){
+    struct pt_regs CurrentRegs, OriginalRegs;
+    if (ptrace_getregs(pid, &CurrentRegs) != 0){
+        return false;
+    }
+    auto map = MapScan(std::to_string(pid));
+    auto local_map = MapScan(std::to_string(getpid()));
+
+    memcpy(&OriginalRegs, &CurrentRegs, sizeof(CurrentRegs));
+
+    do{
+        void *mmap_addr = find_func_addr(local_map, map, "libc.so", "mmap");
+        long parameters[6];
+        // mmap映射 <-- 设置mmap的参数
+        // void *mmap(void *start, size_t length, int prot, int flags, int fd, off_t offsize);
+        parameters[0] = NULL; // 设置为NULL表示让系统自动选择分配内存的地址
+        parameters[1] = 0x3000; // 映射内存的大小
+        parameters[2] = PROT_READ | PROT_WRITE; // 表示映射内存区域 可读|可写|可执行
+        parameters[3] = MAP_ANONYMOUS | MAP_PRIVATE; // 建立匿名映射
+        parameters[4] = -1; //  若需要映射文件到内存中，则为文件的fd
+        parameters[5] = 0; //文件映射偏移量
+
+        // 调用远程进程的mmap函数 建立远程进程的内存映射 在目标进程中为libxxx.so分配内存
+        if (ptrace_call(pid, (uintptr_t)mmap_addr, parameters, 6, &CurrentRegs) == -1){
+            LOGE("[-][function:%s] Call Remote mmap Func Failed, err:%s\n",__func__ , strerror(errno));
+            break;
+        }
+        // 打印一下
+        LOGD("[+][function:%s] ptrace_call mmap success, return value=%lX, pc=%lX\n",__func__ , ptrace_getret(&CurrentRegs), ptrace_getpc(&CurrentRegs));
+
+        // 获取mmap函数执行后的返回值，也就是内存映射的起始地址
+        // 从寄存器中获取mmap函数的返回值 即申请的内存首地址
+        auto RemoteMapMemoryAddr = (uintptr_t)ptrace_getret(&CurrentRegs);
+        LOGD("[+][function:%s] Remote Process Map Memory Addr:0x%lx\n",__func__ , RemoteMapMemoryAddr);
+
+//    // 分别获取dlopen、dlsym、dlclose等函数的地址
+        auto dlopen_addr = find_func_addr(local_map, map, "libdl.so", "dlopen");
+        auto dlsym_addr = find_func_addr(local_map, map, "libdl.so", "dlsym");
+        auto dlclose_addr = find_func_addr(local_map, map, "libdl.so", "dlclose");
+        auto dlerror_addr = find_func_addr(local_map, map, "libdl.so", "dlerror");
+
+        //    // 打印一下
+//    LOGD("[+][function:%s] Get imports: dlopen: %lx, dlsym: %lx, dlclose: %lx, dlerror: %lx\n",__func__ , dlopen_addr, dlsym_addr, dlclose_addr, dlerror_addr);
+
+        // 打印注入so的路径
+        LOGD("[+][function:%s] LibPath = %s\n",__func__ , LibPath);
+
+        // 将要加载的so库路径写入到远程进程内存空间中
+        /**
+         * pid  开始写入数据的地址   写入内容    写入数据大小
+         */
+        if (write_proc(pid,  RemoteMapMemoryAddr, (uintptr_t) LibPath,strlen(LibPath) + 1) == -1) {
+            LOGE("[-][function:%s] Write LibPath:%s to RemoteProcess error\n",__func__ , LibPath);
+            break;
+        }
+
+        // 设置dlopen的参数,返回值为模块加载的地址
+        // void *dlopen(const char *filename, int flag);
+        parameters[0] = (uintptr_t) RemoteMapMemoryAddr; // 写入的libPath
+        parameters[1] = RTLD_NOW ; // dlopen的标识                            不能使用RTLD_GLOBAL ,会导致无法dlclose 无法关闭so库
+
+        // 执行dlopen 载入so
+        if (ptrace_call(pid, (uintptr_t) dlopen_addr, parameters, 2, &CurrentRegs) == -1) {
+            LOGE("[-][function:%s] Call Remote dlopen Func Failed\n",__func__ );
+            break;
+        }
+
+        // RemoteModuleAddr为远程进程加载注入模块的地址
+        void *RemoteModuleAddr = (void *) ptrace_getret(&CurrentRegs);
+        LOGD("[+][function:%s] ptrace_call dlopen success, Remote Process load module Addr:0x%lx\n",__func__ ,(long) RemoteModuleAddr);
+
+        // dlopen 错误
+        if ((long) RemoteModuleAddr == 0x0){
+            if (ptrace_call(pid, (uintptr_t) dlerror_addr, parameters, 0, &CurrentRegs) == -1) {
+                LOGE("[-][function:%s] Call Remote dlerror Func Failed\n",__func__ );
+                break;
+            }
+            uintptr_t Error =  ptrace_getret(&CurrentRegs);
+            char LocalErrorInfo[1024] = {0};
+            read_proc(pid,  Error, ( uintptr_t) LocalErrorInfo, 1024);
+            LOGE("[-][function:%s] dlopen error:%s\n",__func__, LocalErrorInfo );
+            break;
+        }
+        if (ptrace_setregs(pid, &OriginalRegs) == -1) {
+            LOGE("[-][function:%s] Recover reges failed\n",__func__);
+            break;
+        }
+
+        LOGD("[+][function:%s] Recover Regs Success\n",__func__);
+
+        ptrace_getregs(pid, &CurrentRegs);
+        if (memcmp(&OriginalRegs, &CurrentRegs, sizeof(CurrentRegs)) != 0) {
+            LOGE("[-][function:%s] Set Regs Error\n",__func__);
+            break;
+        }
+        return true;
+    } while (false);
+
+    return false;
 }
 

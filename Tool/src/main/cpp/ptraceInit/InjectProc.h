@@ -9,7 +9,7 @@
 #include <set>
 
 #define STOPPED_WITH(status,sig, event) WIFSTOPPED(status) && (status >> 8 == ((sig) | (event << 8)))
-
+void func_test();
 class InjectProc {
 
 public:

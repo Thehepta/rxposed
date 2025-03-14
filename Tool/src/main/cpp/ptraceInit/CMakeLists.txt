@@ -26,7 +26,7 @@ set_target_properties( event
 include_directories("libevent/include")
 include_directories("common")
 
-add_executable(ptraceInit main.cpp InjectProc.cpp common/logging.cpp common/socket_utils.cpp common/daemon.cpp zygiskd.cpp RootImp.cpp)
+add_executable(ptraceInit main.cpp InjectProc.cpp common/logging.cpp common/socket_utils.cpp common/daemon.cpp zygiskd.cpp RootImp.cpp common/elf_symbol_resolver.cpp)
 
 target_link_libraries( # Specifies the target library.
         ptraceInit

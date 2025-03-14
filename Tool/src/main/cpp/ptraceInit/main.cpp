@@ -84,15 +84,14 @@ void PtraceTask(){
             auto state = process.find(pid);
             if (state == process.end()) {  //运行到这里说明都是子进程信号
                 //子进程如果不符合条件会被PTRACE_DETACH,所以要么是新创建的子进程,要么是符合条件的子进程
-                cout<<"new process attached:"<<pid<<endl;
+                LOGD("new process attached %d",pid);
                 process.emplace(pid);
                 //前面ptrace的时候,使用的是PTRACE_O_TRACEFORK,所以子进程会在调用fork以后停止,并被追踪到
                 ptrace(PTRACE_SETOPTIONS, pid, 0, PTRACE_O_TRACEEXEC); //这段代码 进程会停止在exec加载完,但是还没没有执行的时候
                 ptrace(PTRACE_CONT, pid, 0, 0);
                 continue;
             }else{
-
-                cout<<"old process handle: "<<pid<<endl;
+                LOGD("old process attached %d",pid);
                 if (STOPPED_WITH(status,SIGTRAP, PTRACE_EVENT_EXEC)){
                     kill(pid, SIGSTOP);             // 信号会在进程运行起来以后接受到
                     ptrace(PTRACE_CONT, pid, 0, 0); //由于进程当前已经停止,所以先运行起来
@@ -102,18 +101,19 @@ void PtraceTask(){
                             injectProc.inject_zygote64_process();
 //                            ptrace(PTRACE_SETOPTIONS, pid, 0, PTRACE_O_TRACESYSGOOD);
 //                            ptrace(PTRACE_SYSCALL, pid, 0, 0);
+                            ptrace(PTRACE_CONT, pid, 0, 0);
                             ptrace(PTRACE_DETACH, pid, 0, 0);
                         } else{
                             ptrace(PTRACE_DETACH, pid, 0, 0);
                         }
                     }
                 } else {
-                    cout<<"old process handle: STOPPED_WITH is not"<<endl;
+                    LOGE("old process handle: STOPPED_WITH is not");
                 }
 
                 process.erase(state);
                 if (WIFSTOPPED(status)) {
-                    cout<<"detach process "<< pid<<endl;
+                    LOGE("detach process");
                     ptrace(PTRACE_DETACH, pid, 0, 0);
                 }
             }
@@ -123,13 +123,14 @@ void PtraceTask(){
 
 
 void clean_trace(int arg) {
-    cout<<"clean_trace "<<endl;
+    LOGE("clean_trace ");
     InjectProc & injectProc = InjectProc::getInstance();
     std::set<pid_t> &process = injectProc.get_Tracee_Process();
     for (auto pid:process){
-        cout<<"clean_trace detach pid "<< pid <<endl;
+        LOGD("clean_trace detach pid: %d",pid);
         ptrace(PTRACE_DETACH, pid, nullptr, nullptr);
     }
+    LOGD("clean_trace trace pid: %d",injectProc.getTracePid());
     ptrace(PTRACE_DETACH, injectProc.getTracePid(), nullptr, nullptr);
     exit(0);
 }
@@ -155,18 +156,12 @@ int main(int argc, char *argv[]) {
     injectProc.set_zygote64_Inject_So(jsonData["zygote64_Inject_So"]);
     injectProc.setRequestoSocket(jsonData["requestSocketPath"]);
 
-    std::ofstream log_file("initlog");
-//    std::cout.rdbuf(log_file.rdbuf());
-    cout<<"buile time: "<<__TIMESTAMP__<<endl;
+    LOGD("buile time: %s",__TIMESTAMP__);
     injectProc.setTracePid(traced_pid);
     std::thread ptraceThread(PtraceTask);
     std::thread ZygiskThread(ZygiskTask);
     ptraceThread.join();
     ZygiskThread.join();
-
-
-
-
 
     return 0;
 }
