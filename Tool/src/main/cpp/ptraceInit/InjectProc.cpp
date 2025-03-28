@@ -106,7 +106,8 @@ uintptr_t wait_lib_load_get_base(pid_t pid,char *LibPath){
     struct pt_regs CurrentRegs;
     // linker nof load self it,so
 
-    auto local_dl_notify_gdb_of_load = reinterpret_cast<uintptr_t>(ResolveElfInternalSymbol("/apex/com.android.runtime/bin/linker64", "__dl_notify_gdb_of_load"));
+    auto local_dl_notify_gdb_of_load = reinterpret_cast<uintptr_t>(get_self_load_Sym_Addr(
+            "/apex/com.android.runtime/bin/linker64", "__dl_notify_gdb_of_load"));
     auto remote_dl_notify_gdb_of_load_addr = reinterpret_cast<uintptr_t>(get_remote_func_addr(pid, "/apex/com.android.runtime/bin/linker64", (void *) local_dl_notify_gdb_of_load));
     uint32_t orig_instr;
     read_proc(pid, remote_dl_notify_gdb_of_load_addr, (uintptr_t)&orig_instr, sizeof(orig_instr));
@@ -354,12 +355,11 @@ bool InjectProc::inject_zygote32_process() {
 #include "iostream"
 
 void func_test(){
-    auto remote_nativePreFork_addr = get_libFile_Symbol_off("/apex/com.android.art/lib64/libart.so", "_ZN3artL25ZygoteHooks_nativePreForkEP7_JNIEnvP7_jclass");
-    std::cout<<"nativePreFork:"<<hex<<remote_nativePreFork_addr<< endl;
-    pid_t pid =10711;
+    pid_t pid =1017;
     auto remote_map = MapScan(std::to_string(pid));
     auto local_map = MapScan(std::to_string(getpid()));
-    void *mmap_addr = find_func_addr(local_map,remote_map,"libc.so","mmap");
-
-    cout<<"mmap_addr:"<<hex<<mmap_addr<< endl;
+    auto mmap_addr2 = get_self_load_Sym_Addr("/apex/com.android.runtime/lib64/bionic/libc.so","mmap");
+    void * mmap_addr = (void*)mmap;
+    cout<<"mmap_addr:"<<hex<<mmap_addr<< endl;  //mmap_addr:0x7f29d23180
+    cout<<"mmap_addr2:"<<hex<<mmap_addr2<< endl;  //mmap_addr:0x7f29d23180
 }
