@@ -17,11 +17,8 @@ public:
     }
 
 
-
     uint32_t elf_hash();
     uint32_t gnu_hash();
-
-
 
 
 private:
@@ -33,7 +30,7 @@ private:
 
 };
 
-
+void *get_remote_load_Sym_Addr(void *so_addr, pid_t pid, const char *symbol_name) ;
 
 void *get_self_load_Sym_Addr(const char *library_name, const char *symbol_name) ;
 

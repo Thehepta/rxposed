@@ -358,8 +358,10 @@ void func_test(){
     pid_t pid =1017;
     auto remote_map = MapScan(std::to_string(pid));
     auto local_map = MapScan(std::to_string(getpid()));
+    auto mmap_addr3 = get_remote_load_Sym_Addr((void*)0x6fa5c09000,841,"mmap");
     auto mmap_addr2 = get_self_load_Sym_Addr("/apex/com.android.runtime/lib64/bionic/libc.so","mmap");
-    void * mmap_addr = (void*)mmap;
-    cout<<"mmap_addr:"<<hex<<mmap_addr<< endl;  //mmap_addr:0x7f29d23180
-    cout<<"mmap_addr2:"<<hex<<mmap_addr2<< endl;  //mmap_addr:0x7f29d23180
+//    void * mmap_addr = (void*)mmap;
+//    cout<<"mmap_addr:"<<hex<<mmap_addr<< endl;  //mmap_addr:0x7f29d23180
+//    cout<<"mmap_addr2:"<<hex<<mmap_addr2<< endl;  //mmap_addr:0x7f29d23180
+//    cout<<"mmap_addr3:"<<hex<<mmap_addr3<< endl;  //mmap_addr:0x7f29d23180
 }

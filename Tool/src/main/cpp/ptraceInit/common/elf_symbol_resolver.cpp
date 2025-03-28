@@ -22,9 +22,23 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "elf_symbol_resolver.h"
+#include <android/log.h>
+
+
+#define LOGN_TAG "remote_findSym"
+#define LOGDN(...) __android_log_print(ANDROID_LOG_DEBUG,LOGN_TAG,__VA_ARGS__)
+
+#define LOG_TAG "old_findSym"
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG,LOG_TAG,__VA_ARGS__)
+
+
+#define LOGT_TAG "Tool_findSym"
+#define LOGDT(...) __android_log_print(ANDROID_LOG_DEBUG,LOGT_TAG,__VA_ARGS__)
 #define LINE_MAX 2048
 
 #include <utility>
+#include <sys/uio.h>
+
 #if defined(__arm__) || defined(__aarch64__)
 #define USE_GNU_HASH_NEON 1
 #else
@@ -91,7 +105,6 @@ typedef struct elfctx {
         this->phnum = ehdr->e_phnum;
         this->phdr = reinterpret_cast<const ElfW(Phdr)   *>(this->base + ehdr->e_phoff);
         this->load_bias = reinterpret_cast<ElfW(Addr)>(ehdr);
-        this->prelink_image();
     }
     const ElfW(Sym) * find_symbol_by_name(SymbolName &symbol_name) const {
         return is_gnu_hash() ? gnu_lookup(symbol_name) : elf_lookup(symbol_name);
@@ -209,6 +222,7 @@ typedef struct elfctx {
         }
 
         for (ElfW(Dyn) *d = dynamic; d->d_tag != DT_NULL; ++d) {
+            LOGD("d.d_tag %llx",d->d_tag);
             switch (d->d_tag) {
 
                 case DT_HASH:
@@ -231,13 +245,14 @@ typedef struct elfctx {
                                  reinterpret_cast<uint32_t *>(load_bias + d->d_un.d_ptr)[1];
 
                     if (!powerof2(gnu_maskwords_)) {
-//                        DL_ERR("invalid maskwords for gnu_hash = 0x%x, in \"%s\" expecting power to two",
-//                               gnu_maskwords_, get_realpath());
+                        LOGDN("invalid maskwords for gnu_hash = 0x%x", gnu_maskwords_);
                         return false;
                     }
+//                    LOGD("invalid maskwords for gnu_hash = 0x%x", gnu_maskwords_);
                     --gnu_maskwords_;
 
                     flags_ |= FLAG_GNU_HASH;
+
                     break;
                 case DT_STRTAB:
                     strtab_ = reinterpret_cast<const char *>(load_bias + d->d_un.d_ptr);
@@ -252,6 +267,8 @@ typedef struct elfctx {
                     break;
 
             }
+//            LOGD("read addr %p",d);
+
 
         }
         return true;
@@ -478,8 +495,240 @@ uintptr_t get_libFile_Symbol_off(char *lib_path,char *fun_name){
     close(fd);
     return result;
 }
-void *get_remote_load_Sym_Addr(const char *library_name, const char *symbol_name) {
 
+ssize_t read_pid_mem(int pid, uintptr_t remote_addr, uintptr_t buf, size_t len) {
+    struct iovec local{
+            .iov_base = (void *) buf,
+            .iov_len = len
+    };
+    struct iovec remote{
+            .iov_base = (void *) remote_addr,
+            .iov_len = len
+    };
+    auto l = process_vm_readv(pid, &local, 1, &remote, 1, 0);
+    if (l == -1) {
+        LOGDT("process_vm_readv read = -1");
+    } else if (static_cast<size_t>(l) != len) {
+        LOGDT("not fully read: %zu, excepted %zu", l, len);
+    }
+    return l;
+}
+
+const ElfW(Sym)* elf_lookup(SymbolName& symbol_name,soinfo *si)  {
+    uint32_t hash = symbol_name.elf_hash();
+
+//        LOGE( "SEARCH %s in %s@%p h=%x(elf) %zd",
+//              symbol_name.get_name(), get_realpath(),
+//              reinterpret_cast<void*>(base), hash, hash % nbucket_);
+
+    for (uint32_t n = si->bucket_[hash % si->nbucket_]; n != 0; n = si->chain_[n]) {
+        ElfW(Sym)* s = si->symtab_ + n;
+
+        if (strcmp(si->get_string(s->st_name), symbol_name.get_name()) == 0 &&
+            si->is_symbol_global_and_defined(s)) {
+//                LOGE("FOUND %s in %s (%p) %zd",
+//                     symbol_name.get_name(), get_realpath(),
+//                     reinterpret_cast<void*>(s->st_value),
+//                     static_cast<size_t>(s->st_size));
+            return si->symtab_ + n;
+        }
+    }
+
+//        LOGE( "NOT FOUND %s in %s@%p %x %zd",
+//              symbol_name.get_name(), get_realpath(),
+//              reinterpret_cast<void*>(base), hash, hash % nbucket_);
+
+    return nullptr;
+}
+
+ElfW(Sym)* gnu_lookup(SymbolName& symbol_name,soinfo *si,pid_t pid)  {
+    LOGDN("START gnu_lookup");
+
+    const uint32_t hash = symbol_name.gnu_hash();
+
+    constexpr uint32_t kBloomMaskBits = sizeof(ElfW(Addr)) * 8;
+    //    read_pid_mem(pid,(uintptr_t)so_addr,(uintptr_t)&ehdr,sizeof (ElfW(Ehdr)));
+
+    const uint32_t word_num = (hash / kBloomMaskBits) & si->gnu_maskwords_;
+    uintptr_t  bloom_word_addr = reinterpret_cast<uintptr_t>(si->gnu_bloom_filter_ + word_num);
+    ElfW(Addr) bloom_word;
+    read_pid_mem(pid,(uintptr_t)bloom_word_addr,(uintptr_t)&bloom_word,sizeof (ElfW(Addr)));
+//    const ElfW(Addr) bloom_word = si->gnu_bloom_filter_[word_num];
+
+    const uint32_t h1 = hash % kBloomMaskBits;
+    const uint32_t h2 = (hash >> si->gnu_shift2_) % kBloomMaskBits;
+
+//        LOGE( "SEARCH %s in %s@%p (gnu)",
+//              symbol_name.get_name(), get_realpath(), reinterpret_cast<void*>(base));
+
+    // test against bloom filter
+    if ((1 & (bloom_word >> h1) & (bloom_word >> h2)) == 0) {
+//            LOGE( "NOT FOUND %s in %s@%p",
+//                  symbol_name.get_name(), get_realpath(), reinterpret_cast<void*>(base));
+        return nullptr;
+    }
+    uintptr_t  n_addr = reinterpret_cast<uintptr_t>(si->gnu_bucket_ + hash % si->gnu_nbucket_);
+    // bloom test says "probably yes"...
+//    uint32_t n = si->gnu_bucket_[hash % si->gnu_nbucket_];
+    uint32_t n ;
+    read_pid_mem(pid,(uintptr_t)n_addr,(uintptr_t)&n,sizeof (uintptr_t));
+    if (n == 0) {
+//            LOGE( "NOT FOUND %s in %s@%p",
+//                  symbol_name.get_name(), get_realpath(), reinterpret_cast<void*>(base));
+        return nullptr;
+    }
+    uint32_t symbol_length = strlen(symbol_name.get_name()) ;
+    ElfW(Sym) s;
+    uint32_t gnu_hash;
+    uintptr_t gnu_hash_addr;
+    uintptr_t gnu_chain_addr;
+    uint32_t gnu_chain;
+    char* buff = static_cast<char *>(malloc(symbol_length));
+    do {
+
+        read_pid_mem(pid,(uintptr_t)(si->symtab_ + n),(uintptr_t)&s,sizeof(ElfW(Sym)));
+//        ElfW(Sym)* s = si->symtab_ + n;
+        gnu_hash_addr = reinterpret_cast<uintptr_t>(si->gnu_chain_ + n);
+        read_pid_mem(pid,gnu_hash_addr,(uintptr_t)&gnu_hash, sizeof(uint32_t));
+        if ((s.st_name >= si->strtab_size_)) {
+//            LOGE("%s: strtab out of bounds error; STRSZ=%zd, name=%d",
+//                 get_realpath(), strtab_size_, index);
+            return nullptr;
+        }
+        read_pid_mem(pid,(uintptr_t)(si->strtab_ + s.st_name),(uintptr_t)buff, sizeof(uint32_t));
+
+        if (((gnu_hash ^ hash) >> 1) == 0 &&
+            strncmp(buff, symbol_name.get_name(),symbol_length) == 0 ) {
+//                LOGE( "FOUND %s in %s (%p) %zd",
+//                      symbol_name.get_name(), get_realpath(), reinterpret_cast<void*>(s->st_value),
+//                      static_cast<size_t>(s->st_size));
+            return si->symtab_ + n;
+        }
+
+        gnu_chain_addr = reinterpret_cast<uintptr_t>(si->gnu_chain_ + n++);
+        read_pid_mem(pid,(uintptr_t)gnu_chain_addr,(uintptr_t)&gnu_chain,sizeof(uint32_t));
+
+    } while ((gnu_chain & 1) == 0);
+//        LOGE( "NOT FOUND %s in %s@%p",
+//              symbol_name.get_name(), get_realpath(), reinterpret_cast<void*>(base));
+    return nullptr;
+}
+
+
+
+
+
+void *get_remote_load_Sym_Addr(void *so_addr, pid_t pid, const char *symbol_name) {
+
+    soinfo load_si;
+    soinfo * si = &load_si;
+    SymbolName symbol_JNI_OnLoad(symbol_name);
+
+    memset(&load_si, 0, sizeof(soinfo));
+    ElfW(Ehdr) ehdr ;
+    read_pid_mem(pid,(uintptr_t)so_addr,(uintptr_t)&ehdr,sizeof (ElfW(Ehdr)));
+    si->base = reinterpret_cast<ElfW(Addr)>(so_addr);
+//    this->size = lib_si->size;
+    si->flags_ = 0;
+    si->phnum = ehdr.e_phnum;
+    si->phdr = reinterpret_cast<const ElfW(Phdr)   *>(si->base + ehdr.e_phoff);
+    si->load_bias = reinterpret_cast<ElfW(Addr)>(so_addr);
+    LOGDN("si->phnum %d",si->phnum);
+    LOGDN("si->phdr %p",si->phdr);
+
+    ElfW(Word) dynamic_flags = 0;
+    for (size_t i = 0; i<si->phnum; ++i) {
+        ElfW(Phdr) phdr ;
+        read_pid_mem(pid,(uintptr_t) &si->phdr[i],(uintptr_t)&phdr,sizeof (ElfW(Phdr)));
+//        const ElfW(Phdr)& phdr = si->phdr[i];
+        if (phdr.p_type == PT_DYNAMIC) {
+            si->dynamic = reinterpret_cast<ElfW(Dyn)*>(si->load_bias + phdr.p_vaddr);
+            if (dynamic_flags) {
+                dynamic_flags = phdr.p_flags;
+            }
+        }
+    }
+    if (si->dynamic == nullptr) {
+        return nullptr;
+    }
+    LOGDN("si->dynamic %p",si->dynamic);
+    ElfW(Dyn) d;
+    ElfW(Dyn)* d_ptr = si->dynamic;
+    read_pid_mem(pid,(uintptr_t) d_ptr,(uintptr_t)&d,sizeof (ElfW(Dyn)));
+    uint32_t * tmp_ptr;
+    while (d.d_tag != DT_NULL){
+        LOGDN("d.d_tag %llx",d.d_tag);
+
+        switch (d.d_tag) {
+            case DT_HASH:
+                tmp_ptr = reinterpret_cast<uint32_t *>(si->load_bias + d.d_un.d_ptr);
+                read_pid_mem(pid,(uintptr_t) tmp_ptr,(uintptr_t)&si->nbucket_,sizeof (uint32_t));
+                read_pid_mem(pid,(uintptr_t) (tmp_ptr+1),(uintptr_t)&si->nchain_,sizeof (uint32_t));
+                read_pid_mem(pid,(uintptr_t) (si->load_bias + d.d_un.d_ptr + 8),(uintptr_t)&si->bucket_,sizeof (uint32_t));
+                read_pid_mem(pid,(uintptr_t) (si->load_bias + d.d_un.d_ptr + 8 + si->nbucket_ * 4 ),(uintptr_t)&si->chain_,sizeof (uint32_t));
+                LOGDN("DT_HASH");
+                break;
+            case DT_GNU_HASH:
+                LOGDN("DT_GNU_HASH");
+                tmp_ptr = reinterpret_cast<uint32_t *>(si->load_bias + d.d_un.d_ptr);
+                read_pid_mem(pid,(uintptr_t)tmp_ptr,(uintptr_t)&si->gnu_nbucket_,sizeof (uint32_t));
+//                si->gnu_nbucket_ = reinterpret_cast<uint32_t *>(si->load_bias + d.d_un.d_ptr)[0];
+                // skip symndx
+                read_pid_mem(pid,(uintptr_t)(tmp_ptr+2),(uintptr_t)&si->gnu_maskwords_,sizeof (uint32_t));
+//                si->gnu_maskwords_ = reinterpret_cast<uint32_t *>(si->load_bias + d.d_un.d_ptr)[2];
+                read_pid_mem(pid,(uintptr_t)(tmp_ptr+3),(uintptr_t)&si->gnu_shift2_,sizeof (uint32_t));
+//////                si->gnu_shift2_ = reinterpret_cast<uint32_t *>(si->load_bias + d.d_un.d_ptr)[3];
+                read_pid_mem(pid,(uintptr_t) (si->load_bias + d.d_un.d_ptr + 16),(uintptr_t)&si->gnu_bloom_filter_,sizeof (uint32_t));
+//////                si->gnu_bloom_filter_ = reinterpret_cast<ElfW(Addr) *>(si->load_bias + d.d_un.d_ptr + 16);
+                read_pid_mem(pid,(uintptr_t) (si->gnu_bloom_filter_ + si->gnu_maskwords_),(uintptr_t)&si->gnu_bucket_,sizeof (uint32_t));
+////                si->gnu_bucket_ = reinterpret_cast<uint32_t *>(si->gnu_bloom_filter_ + si->gnu_maskwords_);
+//                // amend chain for symndx = header[1]
+
+                uint32_t tmp;
+                read_pid_mem(pid,(uintptr_t) tmp_ptr+1,(uintptr_t)&tmp,sizeof (uint32_t));
+                si->gnu_chain_ = si->gnu_bucket_ + si->gnu_nbucket_ - tmp;
+//                si->gnu_chain_ = si->gnu_bucket_ + si->gnu_nbucket_ - reinterpret_cast<uint32_t *>(si->load_bias + d.d_un.d_ptr)[1];
+
+                if (!powerof2(si->gnu_maskwords_)) {
+                    LOGDN("invalid maskwords for gnu_hash = 0x%x", si->gnu_maskwords_);
+                    return nullptr;
+                }
+                --si->gnu_maskwords_;
+                si->flags_ |= FLAG_GNU_HASH;
+
+                break;
+            case DT_STRTAB:
+                read_pid_mem(pid,(uintptr_t) (((uint32_t *)(si->load_bias + d.d_un.d_ptr))),(uintptr_t)&si->strtab_,sizeof (uintptr_t));
+//                si->strtab_ = reinterpret_cast<const char *>(si->load_bias + d->d_un.d_ptr);
+                break;
+
+            case DT_STRSZ:
+//                read_pid_mem(pid,(uintptr_t) (((uint32_t *)(d.d_un.d_val))),(uintptr_t)&si->strtab_size_,sizeof (uintptr_t));
+                si->strtab_size_ = d.d_un.d_val;
+                break;
+
+            case DT_SYMTAB:
+                read_pid_mem(pid,(uintptr_t) (((uint32_t *)(si->load_bias + d.d_un.d_ptr))),(uintptr_t)&si->symtab_,sizeof (uintptr_t));
+//                si->symtab_ = reinterpret_cast<ElfW(Sym) *>(si->load_bias + d->d_un.d_ptr);
+                break;
+
+        }
+        ++d_ptr;
+        size_t size = read_pid_mem(pid,(uintptr_t) d_ptr,(uintptr_t)&d,sizeof (ElfW(Dyn)));
+//        LOGDN("read addr %p",d_ptr);
+    }
+
+//    result = sym->st_value + si.load_bias;
+
+    const ElfW(Sym)* sym_addr =  (si->is_gnu_hash() ? gnu_lookup(symbol_JNI_OnLoad, si,pid) : elf_lookup(symbol_JNI_OnLoad, si));
+    ElfW(Sym) sym;
+    LOGDN("read sym");
+    read_pid_mem(pid,(uintptr_t) sym_addr,(uintptr_t)&sym,sizeof (ElfW(Sym)));
+//    uint32_t off;
+//    LOGDN("read off");
+//    read_pid_mem(pid,(uintptr_t) sym.st_value,(uintptr_t)&off,sizeof (uint32_t));
+    LOGDN("sym off: %llx",sym.st_value);
+    return nullptr;
 }
 
 void *get_self_load_Sym_Addr(const char *library_name, const char *symbol_name) {
@@ -490,9 +739,11 @@ void *get_self_load_Sym_Addr(const char *library_name, const char *symbol_name) 
     RuntimeModule module = GetProcessMaps(library_name);
     if(module.load_address){
         si.transform((ElfW(Ehdr)*)module.load_address);
+        si.prelink_image();
         SymbolName symbol_JNI_OnLoad(symbol_name);
         const ElfW(Sym)* sym = si.find_symbol_by_name(symbol_JNI_OnLoad);
         if(sym!= nullptr){
+            LOGDN("sym off: %llx",sym->st_value);
             result = sym->st_value + si.load_bias;
         }
     }

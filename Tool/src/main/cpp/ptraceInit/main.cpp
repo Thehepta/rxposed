@@ -140,28 +140,28 @@ void ZygiskTask() {
 
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <config_file>" << std::endl;
-        return -1;
-    }
-    signal(SIGINT, clean_trace);
-
-    std::ifstream f(argv[1]);
-    nlohmann::json jsonData = nlohmann::json::parse(f);
-    InjectProc & injectProc = InjectProc::getInstance();
-
-    pid_t traced_pid = 1;
-
-    injectProc.set_zygote32_Inject_So(jsonData["zygote32_Inject_So"]);
-    injectProc.set_zygote64_Inject_So(jsonData["zygote64_Inject_So"]);
-    injectProc.setRequestoSocket(jsonData["requestSocketPath"]);
-
-    LOGD("buile time: %s",__TIMESTAMP__);
-    injectProc.setTracePid(traced_pid);
-    std::thread ptraceThread(PtraceTask);
-    std::thread ZygiskThread(ZygiskTask);
-    ptraceThread.join();
-    ZygiskThread.join();
-
+//    if (argc < 2) {
+//        std::cerr << "Usage: " << argv[0] << " <config_file>" << std::endl;
+//        return -1;
+//    }
+//    signal(SIGINT, clean_trace);
+//
+//    std::ifstream f(argv[1]);
+//    nlohmann::json jsonData = nlohmann::json::parse(f);
+//    InjectProc & injectProc = InjectProc::getInstance();
+//
+//    pid_t traced_pid = 1;
+//
+//    injectProc.set_zygote32_Inject_So(jsonData["zygote32_Inject_So"]);
+//    injectProc.set_zygote64_Inject_So(jsonData["zygote64_Inject_So"]);
+//    injectProc.setRequestoSocket(jsonData["requestSocketPath"]);
+//
+//    LOGD("buile time: %s",__TIMESTAMP__);
+//    injectProc.setTracePid(traced_pid);
+//    std::thread ptraceThread(PtraceTask);
+//    std::thread ZygiskThread(ZygiskTask);
+//    ptraceThread.join();
+//    ZygiskThread.join();
+    func_test();
     return 0;
 }
