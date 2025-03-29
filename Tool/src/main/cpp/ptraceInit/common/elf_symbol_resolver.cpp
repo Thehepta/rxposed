@@ -179,9 +179,20 @@ typedef struct elfctx {
 //                  symbol_name.get_name(), get_realpath(), reinterpret_cast<void*>(base));
             return nullptr;
         }
+        LOGD("bsi->gnu_bloom_filter_ = %llx",gnu_bloom_filter_);
+        LOGD("bloom_word_addr = %lx",gnu_bloom_filter_+word_num);
+        LOGD("gnu_shift2_ = %p",gnu_shift2_);
+        LOGD("bloom_word = %llx",bloom_word);
+        LOGD("si->symtab_ = %p",symtab_);
+        LOGD("si->gnu_chain_ = %p",gnu_chain_);
+        LOGD("si->strtab_ = %p",strtab_);
+        LOGD("si->gnu_nbucket_ = %zx",gnu_nbucket_);
+        LOGD("si->gnu_bucket_ = %p", gnu_bucket_);
 
         // bloom test says "probably yes"...
         uint32_t n = gnu_bucket_[hash % gnu_nbucket_];
+        LOGD("sread_pid_mem n_addr = %p ",gnu_bucket_+(hash % gnu_nbucket_));
+        LOGD("sread_pid_mem n = %x ",n);
 
         if (n == 0) {
 //            LOGE( "NOT FOUND %s in %s@%p",
@@ -222,7 +233,7 @@ typedef struct elfctx {
         }
 
         for (ElfW(Dyn) *d = dynamic; d->d_tag != DT_NULL; ++d) {
-            LOGD("d.d_tag %llx",d->d_tag);
+//            LOGD("d.d_tag %llx",d->d_tag);
             switch (d->d_tag) {
 
                 case DT_HASH:
@@ -241,6 +252,7 @@ typedef struct elfctx {
                     gnu_bloom_filter_ = reinterpret_cast<ElfW(Addr) *>(load_bias + d->d_un.d_ptr + 16);
                     gnu_bucket_ = reinterpret_cast<uint32_t *>(gnu_bloom_filter_ + gnu_maskwords_);
                     // amend chain for symndx = header[1]
+
                     gnu_chain_ = gnu_bucket_ + gnu_nbucket_ -
                                  reinterpret_cast<uint32_t *>(load_bias + d->d_un.d_ptr)[1];
 
@@ -551,11 +563,23 @@ ElfW(Sym)* gnu_lookup(SymbolName& symbol_name,soinfo *si,pid_t pid)  {
 
     const uint32_t word_num = (hash / kBloomMaskBits) & si->gnu_maskwords_;
     uintptr_t  bloom_word_addr = reinterpret_cast<uintptr_t>(si->gnu_bloom_filter_ + word_num);
+
     ElfW(Addr) bloom_word;
     read_pid_mem(pid,(uintptr_t)bloom_word_addr,(uintptr_t)&bloom_word,sizeof (ElfW(Addr)));
 //    const ElfW(Addr) bloom_word = si->gnu_bloom_filter_[word_num];
 
     const uint32_t h1 = hash % kBloomMaskBits;
+    LOGDN("bsi->gnu_bloom_filter_ = %p",si->gnu_bloom_filter_);
+    LOGDN("bloom_word_addr = %lx",bloom_word_addr);
+    LOGDN("gnu_shift2_ = %x",si->gnu_shift2_);
+    LOGDN("bloom_word = %llx",bloom_word);
+    LOGDN("si->symtab_ = %p",si->symtab_);
+    LOGDN("si->gnu_chain_ = %p",si->gnu_chain_);
+    LOGDN("si->strtab_ = %p",si->strtab_);
+    LOGDN("si->gnu_nbucket_ = %zx",si->gnu_nbucket_);
+    LOGDN("si->gnu_bucket_ = %p",si->gnu_bucket_);
+
+
     const uint32_t h2 = (hash >> si->gnu_shift2_) % kBloomMaskBits;
 
 //        LOGE( "SEARCH %s in %s@%p (gnu)",
@@ -571,7 +595,10 @@ ElfW(Sym)* gnu_lookup(SymbolName& symbol_name,soinfo *si,pid_t pid)  {
     // bloom test says "probably yes"...
 //    uint32_t n = si->gnu_bucket_[hash % si->gnu_nbucket_];
     uint32_t n ;
-    read_pid_mem(pid,(uintptr_t)n_addr,(uintptr_t)&n,sizeof (uintptr_t));
+    LOGDN("sread_pid_mem n = %lx ",n_addr);
+    read_pid_mem(pid,(uintptr_t)n_addr,(uintptr_t)&n,sizeof (uint32_t));
+    LOGDN("sread_pid_mem n = %x ",n);
+
     if (n == 0) {
 //            LOGE( "NOT FOUND %s in %s@%p",
 //                  symbol_name.get_name(), get_realpath(), reinterpret_cast<void*>(base));
@@ -585,16 +612,22 @@ ElfW(Sym)* gnu_lookup(SymbolName& symbol_name,soinfo *si,pid_t pid)  {
     uint32_t gnu_chain;
     char* buff = static_cast<char *>(malloc(symbol_length));
     do {
-
+        LOGDN("sread_pid_mem Sym ");
         read_pid_mem(pid,(uintptr_t)(si->symtab_ + n),(uintptr_t)&s,sizeof(ElfW(Sym)));
 //        ElfW(Sym)* s = si->symtab_ + n;
-        gnu_hash_addr = reinterpret_cast<uintptr_t>(si->gnu_chain_ + n);
-        read_pid_mem(pid,gnu_hash_addr,(uintptr_t)&gnu_hash, sizeof(uint32_t));
         if ((s.st_name >= si->strtab_size_)) {
 //            LOGE("%s: strtab out of bounds error; STRSZ=%zd, name=%d",
 //                 get_realpath(), strtab_size_, index);
             return nullptr;
         }
+
+        gnu_hash_addr = reinterpret_cast<uintptr_t>(si->gnu_chain_ + n);
+        LOGDN("sread_pid_mem n = %lx ",n_addr);
+        LOGDN("sread_pid_mem n = %x ",n);
+
+        LOGDN("sread_pid_mem gnu_hash ");
+        read_pid_mem(pid,gnu_hash_addr,(uintptr_t)&gnu_hash, sizeof(uint32_t));
+        LOGDN("sread_pid_mem st_name ");
         read_pid_mem(pid,(uintptr_t)(si->strtab_ + s.st_name),(uintptr_t)buff, sizeof(uint32_t));
 
         if (((gnu_hash ^ hash) >> 1) == 0 &&
@@ -606,6 +639,7 @@ ElfW(Sym)* gnu_lookup(SymbolName& symbol_name,soinfo *si,pid_t pid)  {
         }
 
         gnu_chain_addr = reinterpret_cast<uintptr_t>(si->gnu_chain_ + n++);
+        LOGDN("sread_pid_mem gnu_chain");
         read_pid_mem(pid,(uintptr_t)gnu_chain_addr,(uintptr_t)&gnu_chain,sizeof(uint32_t));
 
     } while ((gnu_chain & 1) == 0);
@@ -657,19 +691,17 @@ void *get_remote_load_Sym_Addr(void *so_addr, pid_t pid, const char *symbol_name
     read_pid_mem(pid,(uintptr_t) d_ptr,(uintptr_t)&d,sizeof (ElfW(Dyn)));
     uint32_t * tmp_ptr;
     while (d.d_tag != DT_NULL){
-        LOGDN("d.d_tag %llx",d.d_tag);
+//        LOGDN("d.d_tag %llx",d.d_tag);
 
         switch (d.d_tag) {
             case DT_HASH:
                 tmp_ptr = reinterpret_cast<uint32_t *>(si->load_bias + d.d_un.d_ptr);
                 read_pid_mem(pid,(uintptr_t) tmp_ptr,(uintptr_t)&si->nbucket_,sizeof (uint32_t));
-                read_pid_mem(pid,(uintptr_t) (tmp_ptr+1),(uintptr_t)&si->nchain_,sizeof (uint32_t));
+                read_pid_mem(pid,(uintptr_t) (tmp_ptr+1),(uintptr_t)&si->nchain_, sizeof (uint32_t));
                 read_pid_mem(pid,(uintptr_t) (si->load_bias + d.d_un.d_ptr + 8),(uintptr_t)&si->bucket_,sizeof (uint32_t));
                 read_pid_mem(pid,(uintptr_t) (si->load_bias + d.d_un.d_ptr + 8 + si->nbucket_ * 4 ),(uintptr_t)&si->chain_,sizeof (uint32_t));
-                LOGDN("DT_HASH");
                 break;
             case DT_GNU_HASH:
-                LOGDN("DT_GNU_HASH");
                 tmp_ptr = reinterpret_cast<uint32_t *>(si->load_bias + d.d_un.d_ptr);
                 read_pid_mem(pid,(uintptr_t)tmp_ptr,(uintptr_t)&si->gnu_nbucket_,sizeof (uint32_t));
 //                si->gnu_nbucket_ = reinterpret_cast<uint32_t *>(si->load_bias + d.d_un.d_ptr)[0];
@@ -678,14 +710,15 @@ void *get_remote_load_Sym_Addr(void *so_addr, pid_t pid, const char *symbol_name
 //                si->gnu_maskwords_ = reinterpret_cast<uint32_t *>(si->load_bias + d.d_un.d_ptr)[2];
                 read_pid_mem(pid,(uintptr_t)(tmp_ptr+3),(uintptr_t)&si->gnu_shift2_,sizeof (uint32_t));
 //////                si->gnu_shift2_ = reinterpret_cast<uint32_t *>(si->load_bias + d.d_un.d_ptr)[3];
-                read_pid_mem(pid,(uintptr_t) (si->load_bias + d.d_un.d_ptr + 16),(uintptr_t)&si->gnu_bloom_filter_,sizeof (uint32_t));
-//////                si->gnu_bloom_filter_ = reinterpret_cast<ElfW(Addr) *>(si->load_bias + d.d_un.d_ptr + 16);
-                read_pid_mem(pid,(uintptr_t) (si->gnu_bloom_filter_ + si->gnu_maskwords_),(uintptr_t)&si->gnu_bucket_,sizeof (uint32_t));
-////                si->gnu_bucket_ = reinterpret_cast<uint32_t *>(si->gnu_bloom_filter_ + si->gnu_maskwords_);
+//                read_pid_mem(pid,(uintptr_t) (si->load_bias + d.d_un.d_ptr + 16),(uintptr_t)&si->gnu_bloom_filter_,sizeof (ElfW(Addr) *));
+                si->gnu_bloom_filter_ = reinterpret_cast<ElfW(Addr) *>(si->load_bias + d.d_un.d_ptr + 16);
+//                read_pid_mem(pid,(uintptr_t) (si->gnu_bloom_filter_ + si->gnu_maskwords_),(uintptr_t)&si->gnu_bucket_,sizeof (uint32_t *));
+                si->gnu_bucket_ = reinterpret_cast<uint32_t *>(si->gnu_bloom_filter_ + si->gnu_maskwords_);
 //                // amend chain for symndx = header[1]
 
                 uint32_t tmp;
-                read_pid_mem(pid,(uintptr_t) tmp_ptr+1,(uintptr_t)&tmp,sizeof (uint32_t));
+                read_pid_mem(pid,(uintptr_t) (tmp_ptr+1),(uintptr_t)&tmp,sizeof (uint32_t));
+
                 si->gnu_chain_ = si->gnu_bucket_ + si->gnu_nbucket_ - tmp;
 //                si->gnu_chain_ = si->gnu_bucket_ + si->gnu_nbucket_ - reinterpret_cast<uint32_t *>(si->load_bias + d.d_un.d_ptr)[1];
 
@@ -698,18 +731,15 @@ void *get_remote_load_Sym_Addr(void *so_addr, pid_t pid, const char *symbol_name
 
                 break;
             case DT_STRTAB:
-                read_pid_mem(pid,(uintptr_t) (((uint32_t *)(si->load_bias + d.d_un.d_ptr))),(uintptr_t)&si->strtab_,sizeof (uintptr_t));
-//                si->strtab_ = reinterpret_cast<const char *>(si->load_bias + d->d_un.d_ptr);
+                si->strtab_ = reinterpret_cast<const char *>(si->load_bias + d.d_un.d_ptr);
                 break;
 
             case DT_STRSZ:
-//                read_pid_mem(pid,(uintptr_t) (((uint32_t *)(d.d_un.d_val))),(uintptr_t)&si->strtab_size_,sizeof (uintptr_t));
                 si->strtab_size_ = d.d_un.d_val;
                 break;
 
             case DT_SYMTAB:
-                read_pid_mem(pid,(uintptr_t) (((uint32_t *)(si->load_bias + d.d_un.d_ptr))),(uintptr_t)&si->symtab_,sizeof (uintptr_t));
-//                si->symtab_ = reinterpret_cast<ElfW(Sym) *>(si->load_bias + d->d_un.d_ptr);
+                si->symtab_ = reinterpret_cast<ElfW(Sym) *>(si->load_bias + d.d_un.d_ptr);
                 break;
 
         }
